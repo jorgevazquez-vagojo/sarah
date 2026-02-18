@@ -32,6 +32,7 @@ class SalesforceAdapter extends CRMAdapter {
       }),
     });
     const data = await res.json();
+    if (!data.access_token) throw new Error(`Salesforce auth failed: ${data.error || 'no token'}`);
     await redis.set('crm:sf:token', data.access_token, 3500);
     return data.access_token;
   }
@@ -159,6 +160,7 @@ class ZohoAdapter extends CRMAdapter {
       }),
     });
     const data = await res.json();
+    if (!data.access_token) throw new Error(`Zoho auth failed: ${data.error || 'no token'}`);
     await redis.set('crm:zoho:token', data.access_token, 3500);
     return data.access_token;
   }

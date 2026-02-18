@@ -1,32 +1,131 @@
-# Tech - Desarrollo Tecnológico
+# Tech - Desarrollo Tecnologico
+# Sources:
+#   - https://www.redegal.com/es/servicios/desarrollo-web/
+#   - https://www.redegal.com/es/servicios/plataformas-ecommerce/
+#   - https://www.redegal.com/es/servicios/aplicaciones-moviles/
+#   - https://www.redegal.com/es/tecnologias/shopify/
+#   - https://www.redegal.com/es/tecnologias/bigcommerce/
+#   - https://www.redegal.com/es/tecnologias/magento/
 entries:
-  - title: "Qué es Tech en Redegal"
+  - title: "Desarrollo Tecnologico en Redegal"
     category: servicio
     content: |
-      La línea de Desarrollo Tecnológico de Redegal diseña, desarrolla y mantiene plataformas digitales:
-      e-commerce, apps, integraciones y modernización de sistemas legacy.
+      La unidad de Tech de Redegal disena, desarrolla y mantiene plataformas digitales:
+      e-commerce, webs corporativas, aplicaciones moviles, integraciones y soluciones a medida.
+      Casi 20 anos de experiencia en proyectos digitales y mas de 100 proyectos e-commerce gestionados.
+      Equipo de mas de 160 profesionales con especializacion en desarrollo web, e-commerce y mobile.
 
-  - title: "Servicios Tech"
+  - title: "Desarrollo Web"
     category: servicio
     content: |
-      - E-commerce: Magento (Adobe Commerce), Shopify Plus, VTEX, custom headless.
-      - Desarrollo Web: React, Next.js, Vue.js, Node.js, Python (Django/FastAPI).
-      - Aplicaciones Móviles: React Native, Flutter, apps nativas iOS/Android.
-      - Integraciones: ERP (SAP, Dynamics), PIM (Akeneo), OMS, WMS, pasarelas de pago.
-      - Cloud & DevOps: AWS, GCP, Azure, Kubernetes, CI/CD, IaC (Terraform).
-      - Modernización: migración de monolitos a microservicios, headless commerce.
+      Desarrollo de paginas web a medida para diferentes tipos de proyecto:
+      sitios corporativos, catalogos online, webs promocionales, informativas y landing pages.
+      Competencias tecnicas:
+      - Desarrollo responsive y optimizado para SEO: webs adaptadas a cualquier dispositivo.
+      - CMS: WordPress y soluciones CMS a medida.
+      - Backend: especialistas en Java, PHP, Node.js y arquitecturas basadas en microservicios.
+      - Frontend: experiencia avanzada en Angular, Vue.js y React.js.
+      Metodologia en 4 fases:
+      1. Analisis de requisitos: comprension de necesidades y objetivos del cliente.
+      2. Preparacion del proyecto: asignacion de Project Manager, evaluacion de tecnologias y CMS,
+         diseno de interfaces.
+      3. Desarrollo y testing: programacion de funcionalidad a medida con servicios integrados,
+         pruebas de calidad (QA).
+      4. Soporte post-lanzamiento: mantenimiento y actualizaciones continuas.
 
-  - title: "Clientes Tech"
-    category: referencias
+  - title: "Plataformas E-commerce"
+    category: servicio
     content: |
-      Retailers, fabricantes, marcas DTC y empresas de servicios que necesitan digitalizar
-      sus operaciones o escalar sus plataformas e-commerce.
+      Especialistas en las principales soluciones e-commerce:
+      Magento (Adobe Commerce), PrestaShop, Shopify, BigCommerce, WooCommerce y tiendas custom.
+      Capacidades:
+      - Evaluacion de plataforma optima segun necesidades del cliente.
+      - Diseno responsive optimizado para venta en movil y tablet.
+      - Estrategia omnicanal para experiencias de cliente unificadas.
+      - Integraciones con ERPs, pasarelas de pago y funcionalidades avanzadas.
+      - Funcionalidades personalizadas: metodos de pago, envios, programas de fidelidad, registro.
+      - Testing de usabilidad y optimizacion SEO.
+      Post-lanzamiento: resolucion de incidencias, optimizacion, migraciones, actualizaciones
+      de version y transiciones de plataforma.
+      Clientes e-commerce destacados: Chopo (+200% ventas, +60% trafico), Pedro Garcia (+55% ticket medio,
+      migracion Salesforce a Shopify), Pescanova (migracion internacional 9 paises).
 
-  - title: "Diferencial Tech"
-    category: ventajas
+  - title: "Shopify - Partnership y capacidades"
+    category: servicio
     content: |
-      - Partner de Adobe Commerce (Magento), Shopify Plus, AWS.
-      - Equipo de +60 desarrolladores full-stack.
-      - Experiencia en proyectos de alta complejidad (catálogos +1M SKUs, picos Black Friday).
-      - Metodología ágil con entregas cada 2 semanas.
-      - Equipo de QA dedicado con testing automatizado.
+      Redegal es Shopify Partner oficial en Espana con 6 certificaciones.
+      Capacidades Shopify:
+      - Despliegue e implementacion de tiendas Shopify y Shopify Plus (enterprise).
+      - Migracion desde otras plataformas a Shopify.
+      - Soluciones de venta multicanal.
+      - Integracion de Point of Sales (POS).
+      - Tiendas B2C y B2B.
+      Ventajas de Shopify destacadas por Redegal:
+      - Shopify App Store: reduce costes de desarrollo.
+      - Page builder drag-and-drop intuitivo.
+      - Mas de 100 metodos de pago integrados.
+      - Multi-divisa y multi-idioma.
+      - Integracion con marketplaces (Amazon, eBay, canales sociales).
+      - Herramientas de segmentacion y personalizacion de clientes.
+      Caso de exito: Pedro Garcia (moda de lujo) - migracion de Salesforce a Shopify.
+
+  - title: "BigCommerce - Partnership y capacidades"
+    category: servicio
+    content: |
+      Redegal es BigCommerce Certified Partner con 6 certificaciones.
+      Capacidades BigCommerce:
+      - Tecnologia Open-SaaS: personalizacion sin sacrificar seguridad ni escalabilidad.
+      - Page builder para personalizacion sin dependencia de desarrolladores.
+      - Frontend headless para control de experiencia de usuario.
+      - Soporte multi-pais y multi-divisa (+100 divisas).
+      - Soluciones B2B y B2C.
+      - 90% de funcionalidad accesible via APIs para integracion con sistemas de terceros.
+      - Pagos integrados: Amazon Pay, Apple Pay, Google Pay.
+      - Uptime 99.99%, certificacion PCI DSS 3.1 Level 1, ISO/IEC 27001:2013.
+      Clientes BigCommerce: ABANCA, Adolfo Dominguez, Chopo, Coren, Euskatel, Supermercados Mas.
+
+  - title: "Magento / Adobe Commerce - Partnership y capacidades"
+    category: servicio
+    content: |
+      Redegal es Adobe Solution Partner Bronze para Magento/Adobe Commerce.
+      Capacidades Magento:
+      - Configuraciones multi-tienda, multi-divisa, multi-idioma.
+      - Personalizacion de arquitectura open-source.
+      - Optimizacion SEO y control avanzado.
+      - Motor promocional avanzado.
+      - Soluciones B2C y B2B.
+      - Implementaciones headless commerce.
+      - Acceso a la mayor comunidad de desarrolladores y marketplace de extensiones.
+      Clientes Magento: Nine West, Nutrisa, Pablosky, Laboratorio Medico del Chopo.
+
+  - title: "Desarrollo de Aplicaciones Moviles"
+    category: servicio
+    content: |
+      Desarrollo de apps para iOS, iPadOS y Android. Publicacion en App Store, Google Play Store
+      y HUAWEI AppGallery.
+      Tipos: aplicaciones nativas (iOS/Android) y apps hibridas.
+      Capacidades:
+      - Optimizacion multi-dispositivo independiente del sistema operativo.
+      - Integracion de librerias premium siguiendo estandares de la industria.
+      - Diseno UX centrado en interaccion de contenido y satisfaccion del usuario.
+      - Analitica de rendimiento y optimizacion basada en estadisticas de uso.
+      Proceso de desarrollo en 4 fases:
+      1. Definicion: funcionalidades, objetivos, seleccion de SO, integraciones, geolocalizacion,
+         permisos, microservicios.
+      2. Diseno: Project Manager, propuestas iniciales y disenos de pantallas para UX optima.
+      3. Desarrollo: programacion con mejores librerias y practicas, testing iterativo.
+      4. Post-lanzamiento: publicacion en stores, mantenimiento, resolucion de incidencias,
+         analisis de metricas de usuario, mejoras y nuevas funcionalidades.
+
+  - title: "Stack tecnologico completo"
+    category: servicio
+    content: |
+      Backend: Java, PHP, Node.js, Python (Django/FastAPI). Arquitecturas de microservicios.
+      Frontend: React, Next.js, Angular, Vue.js.
+      E-commerce: Magento (Adobe Commerce), Shopify Plus, BigCommerce, PrestaShop, WooCommerce, VTEX, custom headless.
+      CMS: WordPress y CMS a medida.
+      Mobile: React Native, Flutter, apps nativas iOS/Android.
+      Integraciones: ERP (SAP, Dynamics), PIM (Akeneo), OMS, WMS, pasarelas de pago.
+      Cloud y DevOps: AWS, GCP, Azure, Kubernetes, CI/CD, IaC (Terraform).
+      Modernizacion: migracion de monolitos a microservicios, headless commerce.
+      Analitica: GA4, Looker Studio, BigQuery.

@@ -1,31 +1,141 @@
-# Marketing Digital
+# Marketing Digital - Servicios de Redegal
+# Sources:
+#   - https://www.redegal.com/es/servicios/seo/
+#   - https://www.redegal.com/es/servicios/seo-ia-geo/
+#   - https://www.redegal.com/es/servicios/aso/
+#   - https://www.redegal.com/es/servicios/publicidad-online/
+#   - https://www.redegal.com/es/servicios/estrategia-de-contenidos/
+#   - https://www.redegal.com/es/servicios/estrategia-email-marketing-y-automatizacion/
+#   - https://www.redegal.com/es/servicios/marketplaces/
+#   - https://www.redegal.com/es/servicios/diseno-grafico-produccion-y-audiovisual/
 entries:
-  - title: "Qué es Marketing Digital en Redegal"
+  - title: "Marketing Digital en Redegal"
     category: servicio
     content: |
-      La línea de Marketing Digital de Redegal gestiona campañas de adquisición, branding y fidelización
-      en canales digitales: SEM, Social Media, Programática, Email Marketing y CRO.
+      La unidad de Digital Business de Redegal ofrece servicios integrales de marketing digital 360:
+      SEO, SEO+IA, ASO, publicidad online (SEM/Social Ads/Programatica), estrategia de contenidos,
+      email marketing y automatizacion, gestion de marketplaces, diseno grafico y produccion audiovisual.
+      Certificaciones: Google Premier Partner 2025, Meta Business Partner, Microsoft Partner.
+      Enfoque full-funnel: awareness, consideration, conversion, retention.
 
-  - title: "Servicios Marketing Digital"
+  - title: "SEO - Posicionamiento organico"
     category: servicio
     content: |
-      - SEM / PPC: Google Ads, Microsoft Ads, Amazon Ads. Gestión de campañas de búsqueda, shopping y display.
-      - Social Media Ads: Meta (Facebook/Instagram), TikTok Ads, LinkedIn Ads, Pinterest Ads.
-      - Programática: DSPs, retargeting, audiencias lookalike, brand safety.
-      - Email Marketing & Automation: Salesforce Marketing Cloud, Klaviyo, Brevo, flujos automatizados.
-      - CRO: optimización de landing pages, testing A/B, personalización.
-      - Estrategia de contenido y Social Media Management.
+      El SEO es el pilar fundamental para conseguir visibilidad y trafico cualificado.
+      Metodologia:
+      - Auditorias completas de web/app para preparar estrategia SEO o ASO.
+      - Analisis de objetivos de negocio, competencia y keywords objetivo.
+      - Evaluacion on-page y off-page: indexacion, sitemaps, metadatos, enlaces internos, UX.
+      Capacidades:
+      - Mejoras tecnicas en propiedades web.
+      - Desarrollo de estrategia de contenidos para web y blog.
+      - Link building para autoridad de dominio.
+      - Soporte en migraciones SEO seguras (prevencion de perdida de trafico).
+      Resultados con clientes: ABANCA (+60 posiciones en Google), Milenio (+338% trafico de calidad),
+      Under Armour (+36% trafico organico, +43% keywords), Gocco (+83% clics, +87% visibilidad).
 
-  - title: "Clientes Marketing"
-    category: referencias
+  - title: "SEO + IA (GEO) - Optimizacion para IA"
+    category: servicio
     content: |
-      Marcas de retail, moda, deportes, alimentación, turismo y fintech.
-      Gestión de presupuestos publicitarios de hasta varios millones de euros anuales.
+      Servicio innovador que evoluciona el SEO tradicional para posicionar marcas como fuentes
+      de informacion autoritativas para Large Language Models (LLMs).
+      No sustituye al SEO: se construye sobre la base SEO existente anadiendo optimizacion para IA.
+      "Cuanto mas avanzada y consistente sea tu base SEO, mas ambiciosa puede ser la optimizacion SEO+IA-GEO."
+      Cuatro pilares:
+      1. Refuerzo de autoridad: enfasis en EEAT (Experience, Expertise, Authority, Trustworthiness).
+      2. Auditoria estrategica de enlaces: asegurar menciones en sitios de alta autoridad.
+      3. Schema markup avanzado: implementacion sofisticada de datos estructurados.
+      4. Future-proofing: adaptacion de contenido para plataformas de busqueda IA emergentes.
+      Beneficios: visibilidad en buscadores tradicionales Y sistemas de busqueda IA,
+      posicionamiento como lider sectorial, framework escalable segun madurez del proyecto.
 
-  - title: "Diferencial Marketing"
-    category: ventajas
+  - title: "ASO - App Store Optimization"
+    category: servicio
     content: |
-      - Certificaciones Google Premier Partner, Meta Business Partner.
-      - Equipo especializado por plataforma y vertical.
-      - Reporting integrado con Binnacle (BI) para atribución multicanal.
-      - Enfoque full-funnel: awareness → consideration → conversion → retention.
+      Consultoria de optimizacion de apps para mejorar visibilidad en App Store y Google Play.
+      Metodologia: consultoria completa de la app, estrategia ASO que mejore posicionamiento organico.
+      Areas de optimizacion:
+      - Seleccion de keywords para titulos y descripciones.
+      - Mejora de calidad de screenshots.
+      - Creacion de videos promocionales.
+      - Gestion de resenas y valoraciones.
+      Enfoque dual: maximizar visibilidad Y conversion (de navegacion a descarga).
+
+  - title: "Publicidad Online (SEM/Social Ads/Programatica)"
+    category: servicio
+    content: |
+      Certificaciones oficiales: Google Partner, Facebook Business Partner, Microsoft Partner.
+      Tipos de campana:
+      - SEM (Search Engine Marketing): campanas de busqueda y Google Ads con badge Google Partner.
+      - Social Media Advertising: social ads, publicidad en redes sociales, native video. Facebook Business Partner.
+      - Display y Programatica: publicidad display con tecnologia de compra programatica y RTB.
+      - E-commerce: Google Shopping, marketing de afiliacion.
+      Metodologia en tres fases:
+      1. Planificacion: entender objetivos y situacion actual del cliente.
+      2. Seleccion de media mix: identificar plataformas optimas para retorno de inversion.
+      3. Optimizacion continua: "la optimizacion constante es el secreto de la publicidad digital exitosa."
+      Clientes: ABANCA, McCain Foodservice, Adolfo Dominguez, Oney, Pescanova, Pedro Garcia, Gocco.
+      Resultado Adolfo Dominguez: 25,9M impresiones, +320% compras, +313K reproducciones de video.
+      Resultado Gocco: ROI del 6490%, +47% transacciones, +59% ingresos YoY.
+
+  - title: "Estrategia de Contenidos y Social Media"
+    category: servicio
+    content: |
+      Planificacion y generacion de contenido relevante para atraer y retener clientes.
+      Formatos: textos, imagenes, videos, animaciones, GIFs adaptados a cada plataforma.
+      Canales gestionados: X, Instagram, Facebook, Google Business Profile, LinkedIn,
+      YouTube, TikTok, Twitch.
+      Servicios clave:
+      - SMO (Social Media Optimization): contenido adaptado al lenguaje de cada red social.
+      - Gestion integral de redes sociales.
+      - Monitorizacion de marca: deteccion de problemas, oportunidades y dinamizadores sociales.
+      - Estrategia de amplificacion: influencers, creadores de contenido, paid social.
+      Objetivos adaptables: descargas de app, ventas e-commerce, generacion de leads, reputacion.
+
+  - title: "Email Marketing y Automatizacion"
+    category: servicio
+    content: |
+      Plataformas soportadas: Mailchimp, HubSpot, Klaviyo, ActiveCampaign, Connectif,
+      Salesforce Marketing Cloud. Seleccion personalizada segun modelo de negocio.
+      Servicios:
+      - Estrategia y consultoria: auditorias de flujos, segmentacion, entregabilidad, datos y errores.
+      - Integracion omnicanal: conexion con CRM, e-commerce, ERP, analitica, Paid Media.
+        Unificacion de datos fisicos y online en CDPs para vision 360 del cliente.
+      - Campanas y workflows: emails automatizados, newsletters, landing pages dinamicas,
+        workflows inteligentes basados en comportamiento, intereses y etapa del funnel.
+      - Personalizacion y lead scoring: huella digital del usuario (productos visitados,
+        frecuencia de compra, interacciones, senales de intencion) para cualificar leads.
+      - Diseno y engagement: emails responsive, copywriting persuasivo,
+        gamificacion (ruletas, quizzes, sorteos).
+      - Canales conversacionales: WhatsApp Business y chatbots integrados en flujos de automatizacion.
+
+  - title: "Gestion de Marketplaces"
+    category: servicio
+    content: |
+      Plataformas soportadas: Amazon, Mercado Libre, eBay, AliExpress.
+      Servicios:
+      - Consultoria estrategica: investigacion de viabilidad, identificacion de plataformas
+        optimas segun sector, paises objetivo y segmentos de cliente.
+      - Gestion de cuentas y catalogo: creacion de cuentas, carga de catalogos, gestion de
+        inventario y precios, seguimiento de ventas, monitorizacion de resenas, reporting.
+      - Integracion tecnica: conexion de plataformas e-commerce via APIs o modulos especializados,
+        centralizacion de subida de productos y gestion de pedidos.
+      - Optimizacion y publicidad: analisis de factores de posicionamiento, optimizacion de
+        listings, titulos y keywords. Gestion de campanas Amazon Advertising.
+      Enfoque: gestion completa de actividad en marketplaces con estrategia adaptada a cada plataforma.
+
+  - title: "Diseno Grafico y Produccion Audiovisual"
+    category: servicio
+    content: |
+      Servicios creativos completos:
+      - Branding e identidad: naming, logotipo, paleta de colores, tipografia, sistema visual.
+        Identidades cohesivas y reconocibles preparadas para evolucionar.
+      - Diseno de campanas: materiales para campanas online y offline, graficos para redes sociales,
+        banners, creatividades rich media optimizadas, newsletters responsive.
+      - Diseno editorial: revistas, informes corporativos, catalogos y materiales editoriales.
+      - Fotografia profesional: retratos, lifestyle, publicidad, fotografia de producto.
+      - Produccion de video: videos corporativos, spots publicitarios, contenido corto
+        para Instagram y TikTok, produccion de podcasts.
+      Modelo flexible: paquetes de horas de diseno para soporte creativo continuo
+      sin necesidad de recursos internos.
+      Integracion de IA en procesos creativos para acelerar produccion manteniendo consistencia de marca.

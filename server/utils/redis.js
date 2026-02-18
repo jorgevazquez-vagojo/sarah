@@ -28,13 +28,21 @@ const redis = {
 
   // Pub/Sub for real-time agent notifications
   publish: (channel, data) => client.publish(channel, typeof data === 'string' ? data : JSON.stringify(data)),
-  subscriber: null,
+  _subscriber: null,
+  _subscriberPromise: null,
   subscribe: async (channel, handler) => {
-    if (!redis.subscriber) {
-      redis.subscriber = client.duplicate();
-      await redis.subscriber.connect();
+    // Prevent race condition: only one subscriber creation at a time
+    if (!redis._subscriberPromise) {
+      redis._subscriberPromise = (async () => {
+        const sub = client.duplicate();
+        await sub.connect();
+        return sub;
+      })();
     }
-    await redis.subscriber.subscribe(channel, (msg) => {
+    if (!redis._subscriber) {
+      redis._subscriber = await redis._subscriberPromise;
+    }
+    await redis._subscriber.subscribe(channel, (msg) => {
       try { handler(JSON.parse(msg)); } catch { handler(msg); }
     });
   },

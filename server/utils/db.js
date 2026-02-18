@@ -14,6 +14,41 @@ const pool = new Pool({
 
 pool.on('error', (err) => logger.error('Unexpected DB pool error', err));
 
+// Allowlists for dynamic column updates (prevent SQL injection)
+const ALLOWED_FIELDS = {
+  conversations: new Set([
+    'language', 'business_line', 'state', 'agent_id', 'closed_at', 'updated_at', 'metadata',
+  ]),
+  leads: new Set([
+    'name', 'email', 'phone', 'company', 'business_line', 'language', 'status',
+    'quality_score', 'notes', 'metadata', 'updated_at',
+  ]),
+  calls: new Set([
+    'status', 'ended_at', 'duration', 'recording_url', 'metadata',
+  ]),
+};
+
+function buildSafeUpdate(table, id, fields) {
+  const allowed = ALLOWED_FIELDS[table];
+  if (!allowed) throw new Error(`No allowlist for table: ${table}`);
+  const sets = [];
+  const vals = [];
+  let i = 1;
+  for (const [k, v] of Object.entries(fields)) {
+    if (!allowed.has(k)) {
+      logger.warn(`Blocked disallowed column update: ${table}.${k}`);
+      continue;
+    }
+    sets.push(`"${k}" = $${i}`);
+    vals.push(v);
+    i++;
+  }
+  if (sets.length === 0) return null;
+  sets.push(`updated_at = NOW()`);
+  vals.push(id);
+  return { sql: `SET ${sets.join(', ')} WHERE id = $${i}`, vals };
+}
+
 const db = {
   connect: async () => { const c = await pool.connect(); c.release(); },
   query: (t, p) => pool.query(t, p),
@@ -44,20 +79,9 @@ const db = {
   },
 
   updateConversation: async (id, fields) => {
-    const sets = [];
-    const vals = [];
-    let i = 1;
-    for (const [k, v] of Object.entries(fields)) {
-      sets.push(`${k} = $${i}`);
-      vals.push(v);
-      i++;
-    }
-    sets.push(`updated_at = NOW()`);
-    vals.push(id);
-    const r = await pool.query(
-      `UPDATE conversations SET ${sets.join(', ')} WHERE id = $${i} RETURNING *`,
-      vals
-    );
+    const update = buildSafeUpdate('conversations', id, fields);
+    if (!update) return db.getConversation(id);
+    const r = await pool.query(`UPDATE conversations ${update.sql} RETURNING *`, update.vals);
     return r.rows[0];
   },
 
@@ -106,20 +130,9 @@ const db = {
   },
 
   updateLead: async (id, fields) => {
-    const sets = [];
-    const vals = [];
-    let i = 1;
-    for (const [k, v] of Object.entries(fields)) {
-      sets.push(`${k} = $${i}`);
-      vals.push(v);
-      i++;
-    }
-    sets.push(`updated_at = NOW()`);
-    vals.push(id);
-    const r = await pool.query(
-      `UPDATE leads SET ${sets.join(', ')} WHERE id = $${i} RETURNING *`,
-      vals
-    );
+    const update = buildSafeUpdate('leads', id, fields);
+    if (!update) return null;
+    const r = await pool.query(`UPDATE leads ${update.sql} RETURNING *`, update.vals);
     return r.rows[0];
   },
 
@@ -164,15 +177,18 @@ const db = {
 
   // ─── Knowledge ───
   searchKnowledge: async (query, businessLine, language, limit = 5) => {
+    // Map language codes to PostgreSQL text search configurations
+    const TS_CONFIGS = { es: 'spanish', en: 'english', pt: 'portuguese', fr: 'french', de: 'german', it: 'italian', nl: 'dutch' };
+    const tsConfig = TS_CONFIGS[language] || 'simple';
     const r = await pool.query(
       `SELECT id, business_line, category, title, content, tags
        FROM knowledge_entries
        WHERE ($2::text IS NULL OR business_line = $2)
          AND ($3::text IS NULL OR language = $3)
-         AND to_tsvector('spanish', title || ' ' || content) @@ plainto_tsquery('spanish', $1)
-       ORDER BY ts_rank(to_tsvector('spanish', title || ' ' || content), plainto_tsquery('spanish', $1)) DESC
+         AND to_tsvector($5::regconfig, title || ' ' || content) @@ plainto_tsquery($5::regconfig, $1)
+       ORDER BY ts_rank(to_tsvector($5::regconfig, title || ' ' || content), plainto_tsquery($5::regconfig, $1)) DESC
        LIMIT $4`,
-      [query, businessLine || null, language || null, limit]
+      [query, businessLine || null, language || null, limit, tsConfig]
     );
     return r.rows;
   },
@@ -197,16 +213,9 @@ const db = {
   },
 
   updateCall: async (id, fields) => {
-    const sets = [];
-    const vals = [];
-    let i = 1;
-    for (const [k, v] of Object.entries(fields)) {
-      sets.push(`${k} = $${i}`);
-      vals.push(v);
-      i++;
-    }
-    vals.push(id);
-    await pool.query(`UPDATE calls SET ${sets.join(', ')} WHERE id = $${i}`, vals);
+    const update = buildSafeUpdate('calls', id, fields);
+    if (!update) return;
+    await pool.query(`UPDATE calls ${update.sql}`, update.vals);
   },
 
   // ─── Analytics ───

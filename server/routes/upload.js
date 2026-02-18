@@ -4,8 +4,12 @@ const fs = require('fs');
 const crypto = require('crypto');
 const { db } = require('../utils/db');
 const { logger } = require('../utils/logger');
+const { requireApiKey } = require('../middleware/auth');
 
 const router = Router();
+
+// Require authentication on all upload routes
+router.use(requireApiKey);
 
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -53,18 +57,30 @@ router.post('/', async (req, res) => {
     const parsed = parseMultipart(body, boundary);
     if (!parsed) return res.status(400).json({ error: 'No file found in request' });
 
-    const { filename, mimeType, data } = parsed;
+    const { filename: rawFilename, mimeType, data } = parsed;
 
     // Validate mime type
     if (!ALLOWED_TYPES.has(mimeType)) {
       return res.status(400).json({ error: `File type ${mimeType} not allowed` });
     }
 
+    // Sanitize filename: strip path components and non-safe chars
+    const safeBasename = path.basename(rawFilename).replace(/[^a-zA-Z0-9._-]/g, '_');
+    const ext = path.extname(safeBasename) || '.bin';
+    // Validate extension doesn't contain path traversal
+    if (ext.includes('/') || ext.includes('\\') || ext.includes('..')) {
+      return res.status(400).json({ error: 'Invalid file extension' });
+    }
+
     // Generate unique filename
-    const ext = path.extname(filename) || '.bin';
     const hash = crypto.randomBytes(16).toString('hex');
     const storedName = `${hash}${ext}`;
     const filePath = path.join(UPLOAD_DIR, storedName);
+
+    // Final path traversal check: ensure resolved path is within UPLOAD_DIR
+    if (!path.resolve(filePath).startsWith(path.resolve(UPLOAD_DIR))) {
+      return res.status(400).json({ error: 'Invalid file path' });
+    }
 
     fs.writeFileSync(filePath, data);
 
@@ -72,18 +88,18 @@ router.post('/', async (req, res) => {
     const result = await db.query(
       `INSERT INTO file_uploads (original_name, stored_name, mime_type, size_bytes, conversation_id, uploaded_by)
        VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [filename, storedName, mimeType, data.length, req.query.conversationId || null, req.query.sender || 'visitor']
+      [safeBasename, storedName, mimeType, data.length, req.query.conversationId || null, req.query.sender || 'visitor']
     );
 
     const file = result.rows[0];
     const fileUrl = `/uploads/${storedName}`;
 
-    logger.info(`File uploaded: ${filename} (${data.length} bytes) -> ${storedName}`);
+    logger.info(`File uploaded: ${safeBasename} (${data.length} bytes) -> ${storedName}`);
 
     res.json({
       id: file.id,
       url: fileUrl,
-      name: filename,
+      name: safeBasename,
       mimeType,
       size: data.length,
     });

@@ -71,12 +71,20 @@ async function generateResponse({ message, language, businessLine, conversationH
 
 function isBusinessHours() {
   const tz = process.env.TIMEZONE || 'Europe/Madrid';
-  const now = new Date(new Date().toLocaleString('en-US', { timeZone: tz }));
-  const hour = now.getHours();
-  const day = now.getDay(); // 0=Sun, 6=Sat
+  // Use Intl.DateTimeFormat for reliable timezone conversion
+  const fmt = new Intl.DateTimeFormat('en-US', {
+    timeZone: tz,
+    hour: 'numeric',
+    hour12: false,
+    weekday: 'short',
+  });
+  const parts = fmt.formatToParts(new Date());
+  const hour = parseInt(parts.find((p) => p.type === 'hour').value);
+  const weekday = parts.find((p) => p.type === 'weekday').value;
+  const weekend = new Set(['Sat', 'Sun']);
   const start = parseInt(process.env.BUSINESS_HOURS_START || '9');
   const end = parseInt(process.env.BUSINESS_HOURS_END || '19');
-  return day >= 1 && day <= 5 && hour >= start && hour < end;
+  return !weekend.has(weekday) && hour >= start && hour < end;
 }
 
 module.exports = { generateResponse, detectBusinessLine, isBusinessHours, BUSINESS_LINES };

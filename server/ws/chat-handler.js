@@ -158,12 +158,23 @@ async function handleChat(ws, visitorId, msg) {
   });
 }
 
+const VALID_LANGUAGES = new Set(['es', 'en', 'pt', 'fr', 'de', 'it', 'nl', 'zh', 'ja', 'ko', 'ar', 'gl']);
+const VALID_LINES = new Set(['boostic', 'binnacle', 'marketing', 'tech']);
+
 async function handleSetLanguage(ws, visitorId, msg) {
+  if (!msg.language || !VALID_LANGUAGES.has(msg.language)) {
+    send(ws, 'error', { message: 'Invalid language' });
+    return;
+  }
   await sessionStore.update(visitorId, { language: msg.language });
   send(ws, 'language_set', { language: msg.language });
 }
 
 async function handleSetBusinessLine(ws, visitorId, msg) {
+  if (!msg.businessLine || !VALID_LINES.has(msg.businessLine)) {
+    send(ws, 'error', { message: 'Invalid business line' });
+    return;
+  }
   const conv = await db.getActiveConversation(visitorId);
   if (conv) {
     await db.updateConversation(conv.id, { business_line: msg.businessLine });
@@ -173,6 +184,16 @@ async function handleSetBusinessLine(ws, visitorId, msg) {
 }
 
 async function handleLeadSubmit(ws, visitorId, msg) {
+  // Basic validation
+  if (msg.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(msg.email)) {
+    send(ws, 'error', { message: 'Invalid email format' });
+    return;
+  }
+  if (!msg.name || msg.name.trim().length < 2) {
+    send(ws, 'error', { message: 'Name is required' });
+    return;
+  }
+
   const session = (await sessionStore.get(visitorId)) || {};
   const conv = await db.getActiveConversation(visitorId);
 

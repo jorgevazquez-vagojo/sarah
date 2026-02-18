@@ -1,32 +1,170 @@
 # General - Redegal
+# Sources:
+#   - https://www.redegal.com/es/
+#   - https://www.redegal.com/es/quienes-somos/
+#   - https://www.redegal.com/es/accionistas-e-inversores/
+#   - https://www.bmegrowth.es/esp/Ficha/REDEGAL_ES0105857009.aspx
+#   - https://www.redegal.com/es/contacto/
 entries:
   - title: "Sobre Redegal"
     category: empresa
     content: |
-      Redegal es una consultora digital española fundada en 2006 con sede en Vigo (Galicia).
-      Cuenta con más de 160 profesionales y oficinas en España, México, Portugal, Holanda e Italia.
-      Cotiza en BME Growth (ticker RDG) desde 2021, con una facturación superior a 16 millones de euros.
-      Redegal ofrece servicios integrales de transformación digital a través de cuatro líneas de negocio:
-      Boostic (SEO & Growth), Binnacle (Business Intelligence), Marketing Digital y Desarrollo Tecnológico.
+      Redegal es una consultora full digital espanola fundada en 2004 con sede central en Ourense (Galicia, Espana).
+      Nacio como empresa de ingenieria de servicios TI junto a la Escuela Superior de Ingenieria Informatica (ESEI)
+      de Ourense. En 2007 pionero en desarrollo movil tras el lanzamiento del iPhone. En 2010 se especializo en
+      e-commerce y en 2013 lanzo su unidad de marketing digital. Cuenta con mas de 20 anos de experiencia,
+      mas de 160 profesionales y mas de 200 clientes en diversos sectores.
+      Cotiza en BME Growth (ticker RDG, ISIN ES0105857009) desde julio de 2025, tras debutar en BME Scaleup
+      en enero de 2025. Fue la primera empresa en incorporarse a BME Growth ese ano.
+      Redegal ofrece servicios integrales de transformacion digital a traves de tres unidades de negocio:
+      Tech, Digital Business y Product (Boostic y Binnacle Data).
+      Proposito: "Acompanar a los clientes hacia el exito en su negocio digital."
+      Vision: "Acelerar el crecimiento del cliente en el entorno digital con el mejor equipo humano."
+
+  - title: "Historia y hitos"
+    category: empresa
+    content: |
+      2004 - Fundacion en Ourense como empresa de ingenieria de servicios TI.
+      2007 - Primeros proyectos de desarrollo movil tras lanzamiento del iPhone.
+      2008 - Traslado al Tecnopole (Parque Tecnologico de Galicia) con equipo de 9 personas.
+      2010 - Especializacion en desarrollo e-commerce.
+      2011 - Expansion internacional: apertura de oficina en Ciudad de Mexico.
+      2013 - Lanzamiento de la unidad de marketing digital.
+      2014 - Crecimiento del equipo de 20 a 50 personas. Expansion por Espana.
+      2015 - Apertura de sede central en Ourense con espacio colaborativo.
+      2018 - Consolidacion con casi 100 empleados y 6 millones de euros de facturacion.
+      2025 (enero) - Debut en BME Scaleup a 7,00 EUR/accion. Revalorizacion del 20% el primer dia.
+      2025 (julio) - Incorporacion a BME Growth a 8,80 EUR/accion (cap. bursatil: 19,16M EUR).
+      Ampliacion de capital de 3,8 millones de euros (superando objetivo de 3M).
+      Axon Partners se convierte en accionista de referencia junto a las familias Vazquez y De Prado.
+
+  - title: "Datos financieros y bursatiles"
+    category: empresa
+    content: |
+      Ticker: RDG (BME Growth).
+      ISIN: ES0105857009.
+      Acciones en circulacion: 2.177.740.
+      Valor nominal: 1 EUR por accion.
+      Tipo de contratacion: Fixing.
+      Proveedor de liquidez: Renta 4 Banco, S.A.
+      Asesor registrado: DCM Asesores, Direccion y Consultoria de Mercados.
+      Auditor: Kreston Iberaudit, IBAC S.L.P.
+      Facturacion 2024: ~13,8 millones de euros.
+      La empresa tiene prevision de crecimiento de doble digito y oportunidades de expansion M&A.
+      Contacto inversores: inversores@redegal.com / accionistas@redegal.com
 
   - title: "Oficinas y presencia internacional"
     category: empresa
     content: |
-      Sede central: Vigo (Galicia, España).
-      Oficinas: Madrid, Ciudad de México, Lisboa, Ámsterdam, Milán.
-      Clientes en más de 15 países de Europa y Latinoamérica.
+      Sede central: Avenida de Santiago 9 Bajo, 32001 Ourense, Espana.
+      Oficinas en Espana: Ourense, A Coruna, Madrid, Barcelona.
+      Oficina internacional: Ciudad de Mexico, Mexico.
+      Total: 5 oficinas en 2 paises.
+      Atienden clientes en mas de 15 paises de Europa y Latinoamerica.
+
+  - title: "Equipo directivo"
+    category: empresa
+    content: |
+      Consejo de administracion:
+      - Jorge Vazquez: Presidente y CEO.
+      - Javier Castineiras: Consejero Ejecutivo.
+      - Fernando Orteso: Consejero Independiente.
+      - Lola Castillo: Consejera Independiente.
+      - Domingo Garcia Coto: Consejero Independiente.
+      - Lino de Prado: Consejero Dominical (representante de accionistas).
+      Equipo de direccion: 8 directores que supervisan People/Cultura, Operaciones, Finanzas,
+      Digital Business, Producto, Asuntos Corporativos, Comunicacion y Tecnologia.
+
+  - title: "Valores de empresa"
+    category: empresa
+    content: |
+      Los seis valores fundamentales de Redegal:
+      1. Personas: atraccion y retencion de talento. El equipo humano es lo primero.
+      2. Cliente: alineacion con resultados del cliente y enfoque centrado en sus necesidades.
+      3. Compromiso: resolucion de problemas y dedicacion a cada proyecto.
+      4. Flexibilidad: adaptabilidad al cambio y capacidad de respuesta agil.
+      5. Honestidad: relaciones construidas sobre confianza y respeto.
+      6. Pasion por la innovacion: busqueda constante de mejora y aprendizaje.
 
   - title: "Modelo de trabajo"
     category: empresa
     content: |
-      Redegal combina equipos presenciales y remotos. Ofrece trabajo híbrido para la mayoría de posiciones.
-      Metodología ágil (Scrum/Kanban) con sprints de 2 semanas.
-      Stack tecnológico principal: React, Node.js, Python, AWS, GCP, BigQuery, Looker, Magento, Shopify.
+      Redegal combina equipos presenciales y remotos con modelo remote-first.
+      "El secreto de un gran equipo esta en las personas, no en un espacio concreto."
+      Ofrece trabajo hibrido para la mayoria de posiciones.
+      Beneficios: salarios competitivos, teletrabajo flexible, dias extra de vacaciones,
+      jornada intensiva los viernes, horario de verano ampliado, seguro medico.
+      Metodologia agil (Scrum/Kanban) con sprints de 2 semanas.
+      Stack tecnologico: React, Node.js, Python, Java, PHP, Angular, Vue.js, AWS, GCP,
+      BigQuery, Looker, Magento, Shopify, BigCommerce.
+
+  - title: "Certificaciones y partnerships tecnologicos"
+    category: empresa
+    content: |
+      - Google Premier Partner 2025.
+      - Adobe Solution Partner Bronze (Magento/Adobe Commerce).
+      - Shopify Partner oficial en Espana (6 certificaciones).
+      - BigCommerce Certified Partner (6 certificaciones).
+      - Salesforce Partner.
+      - Meta Business Partner (Facebook/Instagram).
+      - Microsoft Partner.
+      - Mailchimp Partner.
+      Plataformas propias: Boostic (boostic.cloud) y Binnacle Data (binnacledata.com).
+
+  - title: "Premios y reconocimientos"
+    category: empresa
+    content: |
+      Ardan (2018-2021): Empresa Gacela, Empresa Global, Empresa Innovadora, Empresa Igual.
+      Google (2015): Mejor agencia por retorno de inversion publicitaria.
+      eAwards Mexico (2016-2018): Multiples premios como agencia digital en adquisicion de trafico,
+      diseno web y social media.
+      Camara de Comercio / Banco Santander (2018, 2020): reconocimientos.
+      AJE Galicia (2015): reconocimiento.
+      Primera empresa en debutar en BME Scaleup (2025) y primera en saltar a BME Growth (2025).
+      Segunda empresa de Ourense y undecima de Galicia en cotizar en bolsa.
+
+  - title: "Asociaciones profesionales"
+    category: empresa
+    content: |
+      Miembro de IAB Spain (Interactive Advertising Bureau).
+      Miembro de AMVO (Asociacion Mexicana de Venta Online).
+      Miembro de clusters de comunicacion y tecnologia en Galicia.
+      Miembro de asociaciones de marketing profesional portuguesas.
+
+  - title: "Fondos publicos e I+D"
+    category: empresa
+    content: |
+      Redegal es beneficiaria de multiples programas de financiacion publica:
+      - Programa Investigo 2025: contratacion para I+D+i.
+      - Conecta Hubs (Plataforma APTC): plataforma de analitica de productos en punto de venta agroalimentario.
+      Financiado por FEDER a traves de la Axencia Galega de Innovacion.
+      - DataCHAIN (IDI-20210324): plataforma de analitica de cadena de suministro. CDTI + FEDER.
+      - PIMAM (IDI-20190754): mineria de datos y analitica predictiva en tiempo real para e-commerce. CDTI + FEDER.
+      - CloudBusinessPoint (TSI-100105-2017-30): desarrollo de plataforma SaaS. Ministerio + FEDER.
+      - Programas de internacionalizacion: Galicia Exporta Empresas, Plan Foexga.
 
   - title: "Contacto comercial"
     category: contacto
     content: |
-      Para consultas comerciales: comercial@redegal.com
-      Teléfono: +34 986 120 022
-      Web: https://redegal.com
-      LinkedIn: https://linkedin.com/company/redegal
+      Telefono Ourense/A Coruna: +34 988 54 98 58
+      Telefono Madrid: +34 910 800 966
+      Email comunicacion/prensa: comunicacion@redegal.com
+      Email inversores: inversores@redegal.com / accionistas@redegal.com
+      Web: https://www.redegal.com
+      Redes sociales: Facebook, Instagram, X (Twitter), LinkedIn, YouTube, TikTok (@agenciaredegal).
+
+  - title: "Sectores y clientes principales"
+    category: referencias
+    content: |
+      Redegal atiende clientes de multiples sectores:
+      - Banca y finanzas: ABANCA, Oney.
+      - Moda y lujo: Adolfo Dominguez, Pedro Garcia, Under Armour, Gocco.
+      - Alimentacion: Pescanova, McCain Foodservice, Coren.
+      - Salud: Laboratorio Medico del Chopo.
+      - Medios: Milenio (periodico mexicano).
+      - Telecomunicaciones: Euskatel.
+      - Retail: Supermercados Mas.
+      - Calzado infantil: Pablosky.
+      - Calzado mujer: Nine West.
+      - Alimentacion Mexico: Nutrisa.
+      Desde pymes hasta grandes corporaciones internacionales cotizadas en bolsa.

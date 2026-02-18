@@ -166,18 +166,21 @@ app.get('/widget/test.html', (_req, res) => {
 const PORT = process.env.PORT || 3000;
 
 async function start() {
-  try {
-    await redis.connect();
-    logger.info('Redis connected');
-  } catch (e) {
-    logger.error('Redis connection failed:', e.message);
-  }
-
+  // DB and Redis are required — fail fast if unavailable
   try {
     await db.connect();
     logger.info('PostgreSQL connected');
   } catch (e) {
-    logger.error('PostgreSQL connection failed:', e.message);
+    logger.error('PostgreSQL connection failed — aborting startup:', e.message);
+    process.exit(1);
+  }
+
+  try {
+    await redis.connect();
+    logger.info('Redis connected');
+  } catch (e) {
+    logger.error('Redis connection failed — aborting startup:', e.message);
+    process.exit(1);
   }
 
   loadLanguages();

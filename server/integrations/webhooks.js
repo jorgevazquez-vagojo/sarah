@@ -2,6 +2,23 @@ const crypto = require('crypto');
 const { db } = require('../utils/db');
 const { logger } = require('../utils/logger');
 
+// Block internal/private network URLs to prevent SSRF
+function isAllowedUrl(urlStr) {
+  try {
+    const u = new URL(urlStr);
+    if (!['http:', 'https:'].includes(u.protocol)) return false;
+    const host = u.hostname.toLowerCase();
+    // Block private/internal ranges
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
+    if (host === '0.0.0.0' || host.endsWith('.local') || host.endsWith('.internal')) return false;
+    if (/^10\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host) || /^192\.168\./.test(host)) return false;
+    if (host === '169.254.169.254') return false; // AWS metadata
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function triggerWebhooks(event, data) {
   const result = await db.query(
     `SELECT * FROM webhooks WHERE is_active = true AND $1 = ANY(events)`,
@@ -9,6 +26,10 @@ async function triggerWebhooks(event, data) {
   );
 
   for (const webhook of result.rows) {
+    if (!isAllowedUrl(webhook.url)) {
+      logger.warn(`Webhook ${webhook.id}: blocked SSRF attempt to ${webhook.url}`);
+      continue;
+    }
     fireWebhook(webhook, event, data).catch((e) => {
       logger.warn(`Webhook ${webhook.id} failed: ${e.message}`);
       db.query(
@@ -59,4 +80,4 @@ const EVENTS = [
   'csat.submitted',
 ];
 
-module.exports = { triggerWebhooks, EVENTS };
+module.exports = { triggerWebhooks, EVENTS, isAllowedUrl };

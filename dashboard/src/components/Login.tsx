@@ -10,6 +10,7 @@ export function Login({ onLogin }: Props) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPwd, setShowPwd] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,54 +27,96 @@ export function Login({ onLogin }: Props) {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-red-950 relative overflow-hidden">
-      {/* Background decoration */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-red-500/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl" />
+    <div className="min-h-screen flex items-center justify-center relative overflow-hidden"
+      style={{ background: 'linear-gradient(135deg, #0c0f1a 0%, #151929 40%, #1a0a0c 100%)' }}>
+      {/* Ambient glow */}
+      <div className="absolute inset-0 pointer-events-none" aria-hidden>
+        <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full opacity-20"
+          style={{ background: 'radial-gradient(circle, rgba(227,6,19,0.3), transparent 70%)' }} />
+        <div className="absolute bottom-1/4 right-1/3 w-[400px] h-[400px] rounded-full opacity-15"
+          style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.25), transparent 70%)' }} />
+        {/* Grid pattern */}
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{
+            backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
+            backgroundSize: '60px 60px',
+          }} />
       </div>
 
-      <div className="relative w-full max-w-md px-4 animate-fadeIn">
-        <div className="bg-white/10 backdrop-blur-2xl border border-white/10 rounded-3xl p-8 shadow-2xl">
+      <div className="relative w-full max-w-[420px] px-5 animate-fade-in">
+        {/* Card */}
+        <div className="bg-white/[0.06] backdrop-blur-2xl border border-white/[0.08] rounded-3xl p-8 shadow-2xl">
           {/* Logo */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-red-500 to-red-700 rounded-2xl mb-4 shadow-lg shadow-red-500/30">
-              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5 relative"
+              style={{ background: 'linear-gradient(135deg, #E30613, #B8050F)', boxShadow: '0 8px 32px rgba(227,6,19,0.3)' }}>
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
+              {/* Animated ring */}
+              <div className="absolute inset-0 rounded-2xl animate-ring" />
             </div>
-            <h1 className="text-2xl font-bold text-white">Redegal</h1>
-            <p className="text-sm text-white/50 mt-1">Panel de Agentes</p>
+            <h1 className="text-2xl font-bold text-white tracking-tight">Redegal</h1>
+            <p className="text-sm text-white/40 mt-1.5 font-medium">Panel de Agentes</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5 ml-1">Usuario</label>
-              <input
-                type="text"
-                value={username}
-                onChange={(e) => setUsername(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-400/40 transition-all"
-                placeholder="tu.usuario"
-                required
-                autoFocus
-              />
+              <label className="block text-xs font-medium text-white/50 mb-2 ml-0.5">Usuario</label>
+              <div className="relative">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+                </svg>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-400/30 transition-all"
+                  placeholder="tu.usuario"
+                  required
+                  autoFocus
+                  autoComplete="username"
+                />
+              </div>
             </div>
+
             <div>
-              <label className="block text-xs font-medium text-white/60 mb-1.5 ml-1">Contrasena</label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-sm text-white placeholder:text-white/30 focus:outline-none focus:ring-2 focus:ring-red-500/40 focus:border-red-400/40 transition-all"
-                placeholder="••••••••"
-                required
-              />
+              <label className="block text-xs font-medium text-white/50 mb-2 ml-0.5">Contrasena</label>
+              <div className="relative">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="absolute left-3.5 top-1/2 -translate-y-1/2">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2" /><path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                </svg>
+                <input
+                  type={showPwd ? 'text' : 'password'}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-11 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-400/30 transition-all"
+                  placeholder="••••••••"
+                  required
+                  autoComplete="current-password"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPwd(!showPwd)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 text-white/25 hover:text-white/50 transition-colors"
+                  tabIndex={-1}
+                >
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    {showPwd ? (
+                      <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></>
+                    ) : (
+                      <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94" /><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19" /><line x1="1" y1="1" x2="23" y2="23" /></>
+                    )}
+                  </svg>
+                </button>
+              </div>
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 px-3 py-2 bg-red-500/10 border border-red-500/20 rounded-xl">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+              <div className="flex items-center gap-2.5 px-4 py-3 bg-red-500/10 border border-red-500/15 rounded-xl animate-scale-in">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
                 <span className="text-sm text-red-400">{error}</span>
               </div>
             )}
@@ -81,7 +124,11 @@ export function Login({ onLogin }: Props) {
             <button
               type="submit"
               disabled={loading || !username || !password}
-              className="w-full py-3 bg-gradient-to-r from-red-500 to-red-600 text-white rounded-xl text-sm font-semibold hover:from-red-600 hover:to-red-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all shadow-lg shadow-red-500/20"
+              className="w-full py-3.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+              style={{
+                background: 'linear-gradient(135deg, #E30613, #B8050F)',
+                boxShadow: loading || !username || !password ? 'none' : '0 4px 20px rgba(227,6,19,0.3)',
+              }}
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -92,7 +139,9 @@ export function Login({ onLogin }: Props) {
             </button>
           </form>
 
-          <p className="text-center text-xs text-white/20 mt-6">Redegal Chatbot Agent Dashboard v2.0</p>
+          <p className="text-center text-[11px] text-white/15 mt-7 font-medium">
+            Redegal Agent Dashboard v3.0
+          </p>
         </div>
       </div>
     </div>

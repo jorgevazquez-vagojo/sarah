@@ -67,9 +67,13 @@ function detectLanguage(text) {
     scores[lang] = 0;
     for (const w of words) {
       const clean = w.replace(/[^\p{L}\p{N}]/gu, '');
-      if (!clean) continue;
-      if (strong.some((s) => clean.includes(s) || s.includes(clean))) scores[lang] += 3;
-      else if (langWords.some((lw) => clean.includes(lw) || lw.includes(clean))) scores[lang] += 1;
+      if (!clean || clean.length < 2) continue;
+      // Exact match for short words (< 4 chars), substring for longer
+      const match = clean.length < 4
+        ? (s) => clean === s || s === clean
+        : (s) => clean.includes(s) || s.includes(clean);
+      if (strong.some(match)) scores[lang] += 3;
+      else if (langWords.some(match)) scores[lang] += 1;
     }
   }
 

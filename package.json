@@ -13,6 +13,7 @@
     "dev:widget": "npm -w widget run dev",
     "dev:dashboard": "npm -w dashboard run dev",
     "build": "npm -w widget run build && npm -w dashboard run build",
-    "start": "npm -w server start"
+    "start": "npm -w server start",
+    "test": "npm -w server test"
   }
 }

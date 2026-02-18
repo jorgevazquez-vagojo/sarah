@@ -1,32 +1,64 @@
-# Boostic - SEO & Growth
+# Boostic - Plataforma de Optimizacion de Catalogo para E-commerce
+# Sources:
+#   - https://www.boostic.cloud/es/
+#   - https://www.redegal.com/es/servicios/
 entries:
-  - title: "Qué es Boostic"
-    category: servicio
+  - title: "Que es Boostic"
+    category: producto
     content: |
-      Boostic es la línea de negocio de Redegal especializada en SEO, Growth y Analytics para e-commerce.
-      Ayudamos a marcas y retailers a crecer orgánicamente combinando estrategia SEO técnica,
-      contenido optimizado y analítica avanzada.
+      Boostic (boostic.cloud) es una plataforma de analisis y optimizacion de catalogo de producto
+      desarrollada por Redegal, disenada especificamente para negocios e-commerce.
+      Es la unica solucion del mercado que analiza tu catalogo para indicarte donde esta el verdadero
+      potencial de ventas y optimiza automaticamente la inversion para incrementar el ROI entre un 15-30%.
+      Boostic combina analitica predictiva con inteligencia artificial para maximizar el rendimiento
+      de los catalogos de producto en campanas publicitarias.
 
-  - title: "Servicios Boostic"
-    category: servicio
+  - title: "Funcionalidades principales de Boostic"
+    category: producto
     content: |
-      - SEO Técnico: auditorías, crawl budget, Core Web Vitals, schema markup, migración segura.
-      - SEO de Contenido: estrategia editorial, keyword research, content clusters, optimización on-page.
-      - Growth Analytics: implementación GA4, dashboards de conversión, A/B testing, attribution modeling.
-      - CRO (Conversion Rate Optimization): análisis de embudo, UX audit, testing multivariante.
-      - Marketplace SEO: optimización para Amazon, eBay, y marketplaces verticales.
+      1. Optimizacion de ROI: reasigna automaticamente presupuesto publicitario de productos con bajo
+         rendimiento a los que mejor convierten. Incrementa el ROAS entre un 15-30%.
+      2. Automatizacion y ahorro de tiempo: automatiza reportes y analisis de catalogo, recuperando
+         aproximadamente 10+ horas semanales para los equipos.
+      3. Visibilidad e insights: centraliza datos de rendimiento de multiples fuentes en dashboards
+         unificados. Proporciona insights generados por IA para SKUs individuales.
+         Identifica productos con problemas, anomalias o potencial oculto.
+      4. Segmentacion inteligente: agrupa productos en clusters basados en ROI para optimizacion
+         automatica de campanas. Soporta segmentacion por tags, categorias, marcas y clusters.
 
-  - title: "Clientes Boostic"
-    category: referencias
+  - title: "Como funciona Boostic"
+    category: producto
     content: |
-      Boostic trabaja con marcas de retail, moda, alimentación y fintech.
-      Algunos sectores clave: e-commerce, retail omnicanal, marketplaces, marcas DTC.
-      Casos de éxito incluyen incrementos de tráfico orgánico superiores al 200% en 12 meses.
+      Boostic opera en cuatro pasos:
+      1. Conecta las fuentes de datos clave (Google Analytics 4, Google Ads, Meta Ads, SEO).
+      2. Analiza el rendimiento real de cada producto del catalogo.
+      3. Agrupa el catalogo en clusters inteligentes basados en ROI.
+      4. Exporta etiquetas a feeds para optimizacion automatica de campanas.
 
-  - title: "Diferencial Boostic"
+  - title: "Integraciones de Boostic"
+    category: producto
+    content: |
+      - Google Analytics 4 (GA4).
+      - Google Ads y Google Merchant Center / Shopping feeds.
+      - Meta Ads (Facebook/Instagram).
+      - Plataformas de display y retargeting: Criteo, RTB House.
+      - Herramientas SEO.
+      Soporta exportacion de datos y tags personalizados a feeds de producto.
+
+  - title: "Publico objetivo de Boostic"
+    category: producto
+    content: |
+      Negocios e-commerce que buscan optimizacion de catalogo basada en datos.
+      Empresas con catalogos extensos de producto que necesitan maximizar ROI publicitario.
+      Equipos de marketing digital y paid media que gestionan campanas de Shopping y feeds.
+      Retailers y marcas DTC (Direct-to-Consumer) con presencia online.
+
+  - title: "Diferencial de Boostic"
     category: ventajas
     content: |
-      - Enfoque data-driven con dashboards propietarios.
-      - Equipo certificado en Google Analytics, Screaming Frog, SEMrush.
-      - Experiencia en migraciones SEO de gran escala (+100K URLs).
-      - Integración con BI (Binnacle) para modelos de atribución avanzados.
+      - Unica solucion del mercado centrada en analisis y optimizacion automatica de catalogo.
+      - Enfoque data-driven con insights generados por IA a nivel de SKU individual.
+      - Integracion nativa con el ecosistema de servicios de Redegal (SEO, Paid Media, Analytics).
+      - Ahorro de tiempo significativo: automatiza tareas manuales de analisis de catalogo.
+      - Resultados medibles: incremento de ROAS del 15-30% demostrado.
+      - Deteccion automatica de anomalias y oportunidades ocultas en el catalogo.

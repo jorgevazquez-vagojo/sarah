@@ -38,25 +38,113 @@ const LANG_META: Record<string, { label: string; flag: string; native: string }>
   gl: { label: 'Galego', flag: '🏴', native: 'Galego' },
 };
 
-// ─── Icons ───
-const Icons = {
-  chat: (c = 'white') => <svg width="28" height="28" viewBox="0 0 24 24" fill={c}><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>,
-  close: (c = 'white') => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>,
-  send: (c = 'white') => <svg width="18" height="18" viewBox="0 0 24 24" fill={c}><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>,
-  phone: (c = 'currentColor') => <svg width="18" height="18" viewBox="0 0 24 24" fill={c}><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>,
-  agent: (c = 'currentColor') => <svg width="18" height="18" viewBox="0 0 24 24" fill={c}><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>,
-  attach: (c = 'currentColor') => <svg width="18" height="18" viewBox="0 0 24 24" fill={c}><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4S7 2.79 7 5v12.5c0 3.04 2.46 5.5 5.5 5.5s5.5-2.46 5.5-5.5V6h-1.5z"/></svg>,
-  sound: (c = 'currentColor') => <svg width="16" height="16" viewBox="0 0 24 24" fill={c}><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z"/></svg>,
-  mute: (c = 'currentColor') => <svg width="16" height="16" viewBox="0 0 24 24" fill={c}><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>,
-  star: (c = 'currentColor') => <svg width="24" height="24" viewBox="0 0 24 24" fill={c}><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>,
-  minimize: (c = 'currentColor') => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke={c} strokeWidth="2"><line x1="5" y1="12" x2="19" y2="12"/></svg>,
+// ─── SVG Icons (crisp, minimal) ───
+const I = {
+  chat: (
+    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+    </svg>
+  ),
+  close: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+      <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  ),
+  send: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+    </svg>
+  ),
+  phone: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+    </svg>
+  ),
+  agent: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+    </svg>
+  ),
+  attach: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21.44 11.05l-9.19 9.19a6 6 0 01-8.49-8.49l9.19-9.19a4 4 0 015.66 5.66l-9.2 9.19a2 2 0 01-2.83-2.83l8.49-8.48"/>
+    </svg>
+  ),
+  sound: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 010 14.14M15.54 8.46a5 5 0 010 7.07"/>
+    </svg>
+  ),
+  mute: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><line x1="23" y1="9" x2="17" y2="15"/><line x1="17" y1="9" x2="23" y2="15"/>
+    </svg>
+  ),
+  star: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+    </svg>
+  ),
+  starOutline: (
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+      <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+    </svg>
+  ),
+  minimize: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  ),
+  globe: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10 15.3 15.3 0 014-10z"/>
+    </svg>
+  ),
+  moon: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/>
+    </svg>
+  ),
+  sun: (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+  ),
+  home: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
+    </svg>
+  ),
+  messageCircle: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 11.5a8.38 8.38 0 01-.9 3.8 8.5 8.5 0 01-7.6 4.7 8.38 8.38 0 01-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 01-.9-3.8 8.5 8.5 0 014.7-7.6 8.38 8.38 0 013.8-.9h.5a8.48 8.48 0 018 8v.5z"/>
+    </svg>
+  ),
+  arrowRight: (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+    </svg>
+  ),
 };
 
+// ─── Line config ───
+const LINE_META: Record<string, { icon: string; gradient: string }> = {
+  boostic: { icon: '📈', gradient: 'linear-gradient(135deg, #3B82F6, #1D4ED8)' },
+  binnacle: { icon: '📊', gradient: 'linear-gradient(135deg, #8B5CF6, #6D28D9)' },
+  marketing: { icon: '📣', gradient: 'linear-gradient(135deg, #10B981, #059669)' },
+  tech: { icon: '💻', gradient: 'linear-gradient(135deg, #F59E0B, #D97706)' },
+};
+
+// ──────────────────────────────────────────────────────────
+// MAIN WIDGET
+// ──────────────────────────────────────────────────────────
 export function Widget(props: WidgetConfig) {
   const [theme, setTheme] = useState<ThemeConfig>(DEFAULT_THEME);
   const [isOpen, setIsOpen] = useState(false);
+  const [isClosing, setIsClosing] = useState(false);
   const [view, setView] = useState<WidgetView>('welcome');
   const [soundEnabled, setSoundEnabled] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
   const [unread, setUnread] = useState(0);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -86,7 +174,7 @@ export function Widget(props: WidgetConfig) {
     if (rootRef.current) applyTheme(theme, rootRef.current);
   }, [theme]);
 
-  // Sound on new messages when minimized
+  // Sound + unread on new messages
   useEffect(() => {
     if (chat.messages.length > prevMsgCountRef.current && !isOpen && soundEnabled) {
       const last = chat.messages[chat.messages.length - 1];
@@ -98,21 +186,31 @@ export function Widget(props: WidgetConfig) {
     prevMsgCountRef.current = chat.messages.length;
   }, [chat.messages.length, isOpen, soundEnabled]);
 
+  // Auto-navigate to chat when messages arrive
+  useEffect(() => {
+    if (chat.messages.length > 0 && view === 'welcome') setView('chat');
+  }, [chat.messages.length]);
+
   // Auto show offline form
   useEffect(() => {
     if (!chat.isBusinessHours && isOpen && view === 'welcome') setView('offline_form');
   }, [chat.isBusinessHours, isOpen, view]);
 
   const handleToggle = () => {
-    setIsOpen(prev => !prev);
-    if (!isOpen) setUnread(0);
+    if (isOpen) {
+      setIsClosing(true);
+      setTimeout(() => { setIsOpen(false); setIsClosing(false); }, 280);
+    } else {
+      setIsOpen(true);
+      setUnread(0);
+    }
   };
 
   // Expose API for external control
   useEffect(() => {
     (window as any).__redegalWidget = {
       open: () => { setIsOpen(true); setUnread(0); },
-      close: () => setIsOpen(false),
+      close: () => handleToggle(),
       updateConfig: (cfg: any) => {
         if (cfg.primaryColor) setTheme(prev => ({ ...prev, colors: { ...prev.colors, primary: cfg.primaryColor, gradientFrom: cfg.primaryColor, gradientTo: cfg.primaryColor } }));
         if (cfg.language) chat.setLanguage(cfg.language);
@@ -128,115 +226,155 @@ export function Widget(props: WidgetConfig) {
     : colors.primary;
 
   return (
-    <div ref={rootRef} style={{ fontFamily: theme.typography.fontFamily, fontSize: theme.typography.fontSize, color: colors.text }} dir={isRTL ? 'rtl' : 'ltr'}>
-      {/* ─── Floating Button ─── */}
+    <div
+      ref={rootRef}
+      data-theme={darkMode ? 'dark' : 'light'}
+      style={{ fontFamily: theme.typography.fontFamily, fontSize: theme.typography.fontSize, color: 'var(--rc-text)', lineHeight: 1.5 }}
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
+      {/* ─── Floating Launcher Button ─── */}
       <button
         onClick={handleToggle}
+        aria-label={isOpen ? 'Close chat' : 'Open chat support'}
+        aria-haspopup="dialog"
+        aria-expanded={isOpen}
+        className={!isOpen ? 'rc-launcher-pulse' : ''}
         style={{
           position: 'fixed',
           [isLeft ? 'left' : 'right']: layout.offsetX,
           bottom: layout.offsetY,
           width: layout.buttonSize,
           height: layout.buttonSize,
-          borderRadius: layout.buttonBorderRadius,
+          borderRadius: '50%',
           background: headerBg,
           border: 'none',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.2)',
+          boxShadow: '0 4px 16px rgba(0,0,0,0.18)',
           zIndex: layout.zIndex,
-          transition: 'transform 0.3s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.3s',
-          transform: isOpen ? 'scale(0.9) rotate(90deg)' : 'scale(1)',
+          transition: 'all 0.35s cubic-bezier(0.34,1.56,0.64,1)',
+          transform: isOpen ? 'scale(0.92)' : 'scale(1)',
+          color: colors.textOnPrimary,
         }}
-        onMouseEnter={e => (e.currentTarget.style.transform = isOpen ? 'scale(0.95) rotate(90deg)' : 'scale(1.1)')}
-        onMouseLeave={e => (e.currentTarget.style.transform = isOpen ? 'scale(0.9) rotate(90deg)' : 'scale(1)')}
+        onMouseEnter={e => { if (!isOpen) e.currentTarget.style.transform = 'scale(1.08)'; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = isOpen ? 'scale(0.92)' : 'scale(1)'; }}
       >
-        {isOpen ? Icons.close(colors.textOnPrimary) : Icons.chat(colors.textOnPrimary)}
+        <span className="rc-icon-morph" key={isOpen ? 'close' : 'chat'} style={{ display: 'flex' }}>
+          {isOpen ? I.close : I.chat}
+        </span>
         {unread > 0 && !isOpen && (
-          <span style={{
-            position: 'absolute', top: -4, right: -4,
-            background: colors.error, color: 'white',
-            fontSize: 11, fontWeight: 700, minWidth: 20, height: 20,
-            borderRadius: 10, display: 'flex', alignItems: 'center', justifyContent: 'center',
-            padding: '0 5px',
-          }}>{unread}</span>
+          <span className="rc-badge">{unread > 9 ? '9+' : unread}</span>
         )}
       </button>
 
       {/* ─── Panel ─── */}
       {isOpen && (
         <div
-          className="rc-widget-panel rc-animate-fade-in"
+          className={`rc-widget-panel ${isClosing ? 'rc-panel-exit' : 'rc-panel-enter'}`}
+          role="dialog"
+          aria-label="Chat with Redegal"
           style={{
             position: 'fixed',
             [isLeft ? 'left' : 'right']: layout.offsetX,
-            bottom: layout.offsetY + layout.buttonSize + 12,
+            bottom: layout.offsetY + layout.buttonSize + 16,
             width: layout.width,
             maxHeight: layout.maxHeight,
-            background: colors.background,
+            background: 'var(--rc-bg)',
             borderRadius: layout.borderRadius,
-            boxShadow: '0 8px 60px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.08)',
+            boxShadow: 'var(--rc-shadow-xl)',
             display: 'flex',
             flexDirection: 'column',
             overflow: 'hidden',
-            border: `1px solid ${colors.border}`,
+            border: '1px solid var(--rc-border)',
             zIndex: layout.zIndex,
           }}
         >
           {/* ─── Header ─── */}
           <div style={{
             background: headerBg,
-            padding: '14px 16px',
+            padding: '16px 18px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             minHeight: layout.headerHeight,
+            position: 'relative',
+            overflow: 'hidden',
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {branding.logoUrl && (
-                <img src={branding.logoUrl} alt="" style={{ height: 28, width: 'auto', borderRadius: 4 }} />
+            <div className="rc-header-pattern" />
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, position: 'relative', zIndex: 1 }}>
+              {branding.logoUrl ? (
+                <img src={branding.logoUrl} alt="" style={{ height: 30, width: 'auto', borderRadius: 6 }} />
+              ) : (
+                <div style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', backdropFilter: 'blur(8px)' }}>
+                  <span style={{ fontSize: 18, fontWeight: 800, color: colors.textOnPrimary }}>R</span>
+                </div>
               )}
               <div>
-                <div style={{ color: colors.textOnPrimary, fontWeight: 700, fontSize: theme.typography.headerFontSize }}>{branding.companyName}</div>
-                <div style={{ color: colors.textOnPrimary, opacity: 0.75, fontSize: 11, marginTop: 1 }}>
+                <div style={{ color: colors.textOnPrimary, fontWeight: 700, fontSize: 15, letterSpacing: '-0.01em' }}>{branding.companyName}</div>
+                <div style={{ color: colors.textOnPrimary, opacity: 0.8, fontSize: 11, marginTop: 1, display: 'flex', alignItems: 'center', gap: 5 }}>
+                  <span style={{
+                    width: 7, height: 7, borderRadius: '50%',
+                    background: chat.isConnected ? (chat.isBusinessHours ? '#34D399' : '#94A3B8') : '#F59E0B',
+                    display: 'inline-block',
+                    boxShadow: chat.isConnected && chat.isBusinessHours ? '0 0 6px #34D399' : 'none',
+                  }} />
                   {chat.isConnected
-                    ? (chat.isBusinessHours ? '● Online' : t('offline_title'))
+                    ? (chat.isBusinessHours ? 'Online' : t('offline_title'))
                     : t('reconnecting')}
                 </div>
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+            <div style={{ display: 'flex', gap: 4, alignItems: 'center', position: 'relative', zIndex: 1 }}>
+              {features.enableDarkMode && (
+                <HeaderBtn onClick={() => setDarkMode(!darkMode)} color={colors.textOnPrimary}>
+                  {darkMode ? I.sun : I.moon}
+                </HeaderBtn>
+              )}
               {features.enableSoundNotifications && (
-                <button onClick={() => setSoundEnabled(!soundEnabled)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '4px 6px', cursor: 'pointer', display: 'flex', color: colors.textOnPrimary }}>
-                  {soundEnabled ? Icons.sound(colors.textOnPrimary) : Icons.mute(colors.textOnPrimary)}
-                </button>
+                <HeaderBtn onClick={() => setSoundEnabled(!soundEnabled)} color={colors.textOnPrimary}>
+                  {soundEnabled ? I.sound : I.mute}
+                </HeaderBtn>
               )}
               {features.enableLanguageSelector && (
-                <button onClick={() => setShowLangPicker(!showLangPicker)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '4px 8px', cursor: 'pointer', fontSize: 12, color: colors.textOnPrimary, fontWeight: 600 }}>
-                  {LANG_META[chat.language]?.flag || '🌐'} {chat.language.toUpperCase()}
-                </button>
+                <HeaderBtn onClick={() => setShowLangPicker(!showLangPicker)} color={colors.textOnPrimary}>
+                  <span style={{ fontSize: 11, fontWeight: 600 }}>{LANG_META[chat.language]?.flag || '🌐'}</span>
+                </HeaderBtn>
               )}
-              <button onClick={handleToggle} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', borderRadius: 8, padding: '4px 6px', cursor: 'pointer', display: 'flex' }}>
-                {Icons.minimize(colors.textOnPrimary)}
-              </button>
+              <HeaderBtn onClick={handleToggle} color={colors.textOnPrimary}>
+                {I.minimize}
+              </HeaderBtn>
             </div>
           </div>
 
+          {/* ─── Connection Status ─── */}
+          {!chat.isConnected && (
+            <div className="rc-connection-bar reconnecting">
+              <span style={{ animation: 'rc-spin 1s linear infinite', display: 'inline-block', marginRight: 6 }}>⟳</span>
+              {t('reconnecting')}
+            </div>
+          )}
+
           {/* ─── Language Picker (overlay) ─── */}
           {showLangPicker && (
-            <div style={{ background: colors.surface, borderBottom: `1px solid ${colors.border}`, padding: '8px 12px', display: 'flex', flexWrap: 'wrap', gap: 4, maxHeight: 140, overflowY: 'auto' }}>
+            <div className="rc-fade-in" style={{
+              background: 'var(--rc-surface)', borderBottom: '1px solid var(--rc-border)',
+              padding: '10px 14px', display: 'flex', flexWrap: 'wrap', gap: 6,
+              maxHeight: 140, overflowY: 'auto',
+            }}>
               {theme.i18n.availableLanguages.map(l => {
                 const meta = LANG_META[l];
                 if (!meta) return null;
+                const active = chat.language === l;
                 return (
                   <button key={l} onClick={() => { chat.setLanguage(l); setShowLangPicker(false); }}
                     style={{
-                      padding: '4px 10px', fontSize: 12, borderRadius: 8, cursor: 'pointer',
-                      border: chat.language === l ? `2px solid ${colors.primary}` : `1px solid ${colors.border}`,
-                      background: chat.language === l ? colors.primaryLight : colors.background,
-                      fontWeight: chat.language === l ? 600 : 400, color: colors.text,
+                      padding: '5px 12px', fontSize: 12, borderRadius: 'var(--rc-radius-pill)',
+                      cursor: 'pointer', transition: 'all 0.2s',
+                      border: active ? '1.5px solid var(--rc-primary)' : '1px solid var(--rc-border)',
+                      background: active ? 'var(--rc-primary-light)' : 'var(--rc-bg)',
+                      fontWeight: active ? 600 : 400, color: 'var(--rc-text)',
                     }}
                   >
                     {meta.flag} {meta.native}
@@ -249,11 +387,15 @@ export function Widget(props: WidgetConfig) {
           {/* ─── Body ─── */}
           <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
             {view === 'welcome' && chat.messages.length === 0 ? (
-              <WelcomeView theme={theme} t={t} onStartChat={() => setView('chat')} onSelectLine={(l) => { chat.setBusinessLine(l); setView('chat'); }} />
+              <WelcomeView theme={theme} t={t} darkMode={darkMode}
+                onStartChat={() => setView('chat')}
+                onSelectLine={(l) => { chat.setBusinessLine(l); setView('chat'); }} />
             ) : view === 'offline_form' ? (
-              <OfflineFormView theme={theme} t={t} onSubmit={(data) => { chat.submitOfflineForm({ ...data, language: chat.language }); }} />
+              <OfflineFormView theme={theme} t={t}
+                onSubmit={(data) => { chat.submitOfflineForm({ ...data, language: chat.language }); }} />
             ) : view === 'csat' ? (
-              <CsatView theme={theme} t={t} onSubmit={(r, c) => { chat.submitCsat(r, c); setView('chat'); }} />
+              <CsatView theme={theme} t={t}
+                onSubmit={(r, c) => { chat.submitCsat(r, c); setView('chat'); }} />
             ) : view === 'call' ? (
               <CallView theme={theme} t={t} sip={sip} onBack={() => setView('chat')} />
             ) : (
@@ -269,7 +411,13 @@ export function Widget(props: WidgetConfig) {
 
           {/* ─── Footer ─── */}
           {branding.showPoweredBy && (
-            <div style={{ textAlign: 'center', padding: '6px 0', fontSize: 10, color: colors.textSecondary, borderTop: `1px solid ${colors.border}`, background: colors.surface }}>
+            <div style={{
+              textAlign: 'center', padding: '7px 0', fontSize: 10, fontWeight: 500,
+              color: 'var(--rc-text-tertiary)',
+              borderTop: '1px solid var(--rc-border)',
+              background: 'var(--rc-surface)',
+              letterSpacing: '0.02em',
+            }}>
               {branding.poweredByText}
             </div>
           )}
@@ -279,68 +427,93 @@ export function Widget(props: WidgetConfig) {
   );
 }
 
-// ─────────────────────────────────────────────────
-// Sub-views
-// ─────────────────────────────────────────────────
-
-function WelcomeView({ theme, t, onStartChat, onSelectLine }: { theme: ThemeConfig; t: (k: string) => string; onStartChat: () => void; onSelectLine: (l: string) => void }) {
-  const { colors, businessLines } = theme;
-
-  const LINE_ICONS: Record<string, string> = { boostic: '📈', binnacle: '📊', marketing: '📣', tech: '💻' };
-
+// ─── Header icon button ───
+function HeaderBtn({ onClick, children, color }: { onClick: () => void; children: React.ReactNode; color: string }) {
   return (
-    <div style={{ padding: 24, textAlign: 'center' }}>
-      <div style={{ width: 56, height: 56, borderRadius: 28, background: `linear-gradient(135deg, ${colors.gradientFrom}, ${colors.gradientTo})`, display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-        {Icons.chat('white')}
-      </div>
-      <h3 style={{ fontSize: 18, fontWeight: 700, margin: '0 0 6px', color: colors.text }}>{t('welcome_title')}</h3>
-      <p style={{ fontSize: 13, color: colors.textSecondary, margin: '0 0 24px' }}>{t('welcome_subtitle')}</p>
+    <button onClick={onClick} style={{
+      background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 8,
+      width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      color, transition: 'background 0.15s',
+    }}
+      onMouseEnter={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.22)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'rgba(255,255,255,0.12)')}
+    >
+      {children}
+    </button>
+  );
+}
 
+// ──────────────────────────────────────────────────────────
+// WELCOME VIEW (Intercom-style home screen)
+// ──────────────────────────────────────────────────────────
+function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine }: {
+  theme: ThemeConfig; t: (k: string) => string; darkMode: boolean;
+  onStartChat: () => void; onSelectLine: (l: string) => void;
+}) {
+  return (
+    <div className="rc-slide-up" style={{ padding: '28px 20px 20px', overflowY: 'auto' }}>
+      {/* Hero */}
+      <div className="rc-welcome-icon" style={{
+        background: `linear-gradient(135deg, ${theme.colors.gradientFrom}18, ${theme.colors.gradientTo}18)`,
+      }}>
+        <span style={{ fontSize: 28 }}>💬</span>
+      </div>
+      <h3 style={{ fontSize: 20, fontWeight: 800, margin: '0 0 6px', color: 'var(--rc-text)', textAlign: 'center', letterSpacing: '-0.02em' }}>
+        {t('welcome_title')}
+      </h3>
+      <p style={{ fontSize: 13, color: 'var(--rc-text-secondary)', margin: '0 0 24px', textAlign: 'center', lineHeight: 1.5 }}>
+        {t('welcome_subtitle')}
+      </p>
+
+      {/* Business Lines */}
       {theme.features.enableBusinessLines && (
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginBottom: 16 }}>
-          {businessLines.map(line => (
-            <button
-              key={line.id}
-              onClick={() => onSelectLine(line.id)}
-              style={{
-                padding: '12px 8px', borderRadius: 12, border: `1px solid ${colors.border}`, background: colors.background,
-                cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
-                transition: 'all 0.2s', fontSize: 12, color: colors.text,
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = line.color; e.currentTarget.style.background = line.color + '08'; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = colors.border; e.currentTarget.style.background = colors.background; }}
-            >
-              <span style={{ fontSize: 20 }}>{LINE_ICONS[line.id] || '🔹'}</span>
-              <span style={{ fontWeight: 600 }}>{t(line.id)}</span>
-            </button>
-          ))}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 20 }}>
+          {theme.businessLines.map(line => {
+            const meta = LINE_META[line.id];
+            return (
+              <button
+                key={line.id}
+                className="rc-line-chip"
+                onClick={() => onSelectLine(line.id)}
+                style={{ '--line-color': line.color } as React.CSSProperties}
+              >
+                <span style={{
+                  width: 36, height: 36, borderRadius: 10,
+                  background: meta?.gradient || `${line.color}15`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 18,
+                }}>
+                  {meta?.icon || '🔹'}
+                </span>
+                <span style={{ fontWeight: 600, fontSize: 12, color: 'var(--rc-text)' }}>
+                  {t(line.id)}
+                </span>
+              </button>
+            );
+          })}
         </div>
       )}
 
-      <button
-        onClick={onStartChat}
-        style={{
-          width: '100%', padding: '12px 24px', borderRadius: 12, border: 'none',
-          background: `linear-gradient(135deg, ${colors.gradientFrom}, ${colors.gradientTo})`,
-          color: colors.textOnPrimary, fontWeight: 600, fontSize: 14, cursor: 'pointer',
-          transition: 'opacity 0.2s',
-        }}
-        onMouseEnter={e => (e.currentTarget.style.opacity = '0.9')}
-        onMouseLeave={e => (e.currentTarget.style.opacity = '1')}
-      >
-        {t('greeting').split('!')[0] || t('new_conversation')} →
+      {/* CTA Button */}
+      <button onClick={onStartChat} className="rc-btn-primary" style={{ width: '100%' }}>
+        {t('greeting').split('!')[0] || t('new_conversation')}
+        <span style={{ display: 'flex' }}>{I.arrowRight}</span>
       </button>
     </div>
   );
 }
 
+// ──────────────────────────────────────────────────────────
+// CHAT VIEW
+// ──────────────────────────────────────────────────────────
 function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, onCsat, isBusinessHours }: {
   theme: ThemeConfig; t: (k: string) => string; messages: ChatMessage[]; isTyping: boolean;
   onSend: (m: string) => void; onEscalate: () => void; onCall: () => void; onCsat: () => void; isBusinessHours: boolean;
 }) {
-  const { colors, features } = theme;
+  const { features } = theme;
   const [input, setInput] = useState('');
   const endRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isTyping]);
 
@@ -349,138 +522,207 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
     if (!input.trim()) return;
     onSend(input.trim());
     setInput('');
+    inputRef.current?.focus();
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 300 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 280 }}>
       {/* Messages */}
-      <div className="rc-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '12px 16px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <div className="rc-scrollbar" role="log" aria-live="polite" style={{
+        flex: 1, overflowY: 'auto', padding: '16px 16px 8px', display: 'flex', flexDirection: 'column', gap: 4,
+      }}>
         {messages.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '24px 0', color: colors.textSecondary, fontSize: 13 }}>
-            {t('greeting')}
+          <div className="rc-slide-up" style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--rc-text-secondary)' }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 14, margin: '0 auto 12px',
+              background: 'var(--rc-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ fontSize: 22 }}>👋</span>
+            </div>
+            <p style={{ fontSize: 14, fontWeight: 500 }}>{t('greeting')}</p>
           </div>
         )}
-        {messages.map((msg, i) => (
-          <MessageBubble key={i} message={msg} colors={colors} />
-        ))}
+        {messages.map((msg, i) => {
+          const prev = i > 0 ? messages[i - 1] : null;
+          const isGrouped = prev && prev.sender === msg.sender && (new Date(msg.timestamp).getTime() - new Date(prev.timestamp).getTime() < 60000);
+          return <MessageBubble key={i} message={msg} isGrouped={!!isGrouped} />;
+        })}
         {isTyping && features.enableTypingIndicator && (
-          <div style={{ display: 'flex', gap: 3, padding: '8px 16px', background: colors.surface, borderRadius: 16, width: 'fit-content' }}>
-            <span className="rc-typing-dot" style={{ width: 6, height: 6, borderRadius: 3, background: colors.textSecondary }} />
-            <span className="rc-typing-dot" style={{ width: 6, height: 6, borderRadius: 3, background: colors.textSecondary }} />
-            <span className="rc-typing-dot" style={{ width: 6, height: 6, borderRadius: 3, background: colors.textSecondary }} />
+          <div className="rc-msg-enter" style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingTop: 4 }}>
+            <div className="rc-avatar" style={{ background: `linear-gradient(135deg, ${theme.colors.gradientFrom}, ${theme.colors.gradientTo})`, width: 28, height: 28, fontSize: 11 }}>
+              <span>🤖</span>
+            </div>
+            <div style={{
+              display: 'flex', gap: 5, padding: '12px 18px',
+              background: 'var(--rc-bubble-bot)', borderRadius: 'var(--rc-radius-bubble)',
+              borderBottomLeftRadius: 6,
+            }}>
+              <span className="rc-typing-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
+              <span className="rc-typing-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
+              <span className="rc-typing-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
+            </div>
           </div>
         )}
         <div ref={endRef} />
       </div>
 
-      {/* Action buttons */}
-      <div style={{ display: 'flex', gap: 6, padding: '6px 16px', borderTop: `1px solid ${colors.border}`, flexWrap: 'wrap' }}>
-        <ActionChip label={t('escalate')} icon={Icons.agent(colors.primary)} onClick={onEscalate} colors={colors} />
+      {/* Action chips */}
+      <div style={{ display: 'flex', gap: 6, padding: '6px 14px', borderTop: '1px solid var(--rc-border-subtle)', flexWrap: 'wrap' }}>
+        <button className="rc-btn-ghost" onClick={onEscalate}>
+          {I.agent} {t('escalate')}
+        </button>
         {isBusinessHours && features.enableVoip && (
-          <ActionChip label={t('call')} icon={Icons.phone(colors.primary)} onClick={onCall} colors={colors} />
+          <button className="rc-btn-ghost" onClick={onCall}>
+            {I.phone} {t('call')}
+          </button>
         )}
         {features.enableCsat && messages.length > 2 && (
-          <ActionChip label={t('rate_experience')} icon={Icons.star(colors.accent)} onClick={onCsat} colors={colors} />
+          <button className="rc-btn-ghost" onClick={onCsat} style={{ marginLeft: 'auto' }}>
+            ⭐ {t('rate_experience')}
+          </button>
         )}
       </div>
 
-      {/* Input */}
-      <form onSubmit={submit} style={{ display: 'flex', gap: 8, padding: '10px 12px', borderTop: `1px solid ${colors.border}`, alignItems: 'center' }}>
+      {/* Input Area */}
+      <form onSubmit={submit} style={{
+        display: 'flex', gap: 8, padding: '10px 14px',
+        borderTop: '1px solid var(--rc-border)', alignItems: 'center',
+        background: 'var(--rc-bg)',
+      }}>
         {features.enableAttachments && (
-          <button type="button" style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, color: colors.textSecondary, display: 'flex' }}>
-            {Icons.attach(colors.textSecondary)}
+          <button type="button" style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            color: 'var(--rc-text-tertiary)', display: 'flex', transition: 'color 0.15s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
+          >
+            {I.attach}
           </button>
         )}
         <input
+          ref={inputRef}
           type="text" value={input} onChange={e => setInput(e.target.value)}
           placeholder={t('placeholder')}
+          aria-label={t('placeholder')}
+          className="rc-input-focus"
           style={{
-            flex: 1, padding: '10px 16px', border: `1.5px solid ${colors.border}`, borderRadius: 24,
-            fontSize: 14, outline: 'none', background: colors.surface, color: colors.text,
-            transition: 'border-color 0.2s',
+            flex: 1, padding: '11px 18px', border: '1.5px solid var(--rc-border)',
+            borderRadius: 'var(--rc-radius-pill)', fontSize: 14, outline: 'none',
+            background: 'var(--rc-surface)', color: 'var(--rc-text)',
+            transition: 'all 0.2s',
           }}
-          onFocus={e => (e.target.style.borderColor = colors.primary)}
-          onBlur={e => (e.target.style.borderColor = colors.border)}
         />
-        <button type="submit" disabled={!input.trim()} style={{
-          width: 40, height: 40, borderRadius: 20, border: 'none',
-          background: input.trim() ? `linear-gradient(135deg, ${colors.gradientFrom}, ${colors.gradientTo})` : colors.surface,
-          color: input.trim() ? colors.textOnPrimary : colors.textSecondary,
+        <button type="submit" disabled={!input.trim()} aria-label={t('send')} style={{
+          width: 42, height: 42, borderRadius: 21, border: 'none',
+          background: input.trim()
+            ? `linear-gradient(135deg, ${theme.colors.gradientFrom}, ${theme.colors.gradientTo})`
+            : 'var(--rc-surface)',
+          color: input.trim() ? theme.colors.textOnPrimary : 'var(--rc-text-tertiary)',
           cursor: input.trim() ? 'pointer' : 'default',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          transition: 'all 0.2s',
+          transition: 'all 0.25s var(--rc-ease-standard)',
+          boxShadow: input.trim() ? '0 2px 10px rgba(227,6,19,0.25)' : 'none',
+          transform: input.trim() ? 'scale(1)' : 'scale(0.92)',
         }}>
-          {Icons.send(input.trim() ? colors.textOnPrimary : colors.textSecondary)}
+          {I.send}
         </button>
       </form>
     </div>
   );
 }
 
-function MessageBubble({ message: msg, colors }: { message: ChatMessage; colors: ThemeConfig['colors'] }) {
+// ──────────────────────────────────────────────────────────
+// MESSAGE BUBBLE
+// ──────────────────────────────────────────────────────────
+function MessageBubble({ message: msg, isGrouped }: { message: ChatMessage; isGrouped: boolean }) {
   const isVisitor = msg.sender === 'visitor';
   const isSystem = msg.sender === 'system';
 
   if (isSystem) {
     return (
-      <div style={{ textAlign: 'center', padding: '4px 0' }}>
-        <span style={{ fontSize: 11, color: colors.textSecondary, background: colors.surface, padding: '4px 12px', borderRadius: 12, fontStyle: 'italic' }}>
-          {msg.content}
+      <div className="rc-msg-enter" style={{ textAlign: 'center', padding: '6px 0' }}>
+        <span style={{
+          fontSize: 11, color: 'var(--rc-text-tertiary)', background: 'var(--rc-surface)',
+          padding: '5px 14px', borderRadius: 'var(--rc-radius-pill)', fontWeight: 500,
+          display: 'inline-flex', alignItems: 'center', gap: 4,
+        }}>
+          <span style={{ opacity: 0.7 }}>ℹ</span> {msg.content}
         </span>
       </div>
     );
   }
 
   return (
-    <div style={{ display: 'flex', justifyContent: isVisitor ? 'flex-end' : 'flex-start' }} className="rc-animate-slide-up">
-      {!isVisitor && (
-        <div style={{ width: 28, height: 28, borderRadius: 14, background: msg.sender === 'agent' ? colors.success : `linear-gradient(135deg, ${colors.gradientFrom}, ${colors.gradientTo})`, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: 2, marginRight: 8 }}>
+    <div className="rc-msg-enter" style={{
+      display: 'flex', justifyContent: isVisitor ? 'flex-end' : 'flex-start',
+      marginTop: isGrouped ? 2 : 10,
+      alignItems: 'flex-end',
+      gap: 8,
+    }}>
+      {/* Avatar (bot/agent) — only show on first of group */}
+      {!isVisitor && !isGrouped && (
+        <div className="rc-avatar" style={{
+          background: msg.sender === 'agent'
+            ? 'linear-gradient(135deg, #10B981, #059669)'
+            : 'linear-gradient(135deg, var(--rc-primary), var(--rc-primary-hover, #B8050F))',
+          width: 30, height: 30, fontSize: 12,
+        }}>
           {msg.sender === 'agent'
-            ? <span style={{ color: 'white', fontSize: 12, fontWeight: 700 }}>{(msg.agentName || 'A')[0]}</span>
-            : <span style={{ color: 'white', fontSize: 14 }}>🤖</span>}
+            ? (msg.agentName || 'A')[0].toUpperCase()
+            : <span style={{ fontSize: 14 }}>✦</span>}
         </div>
       )}
+      {!isVisitor && isGrouped && <div style={{ width: 30, flexShrink: 0 }} />}
+
       <div style={{ maxWidth: '78%' }}>
-        {msg.agentName && !isVisitor && (
-          <div style={{ fontSize: 11, color: colors.primary, fontWeight: 600, marginBottom: 2, paddingLeft: 4 }}>{msg.agentName}</div>
+        {/* Agent name */}
+        {msg.agentName && !isVisitor && !isGrouped && (
+          <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--rc-primary)', marginBottom: 3, paddingLeft: 2 }}>
+            {msg.agentName}
+          </div>
         )}
+        {/* Bubble */}
         <div
-          className={isVisitor ? 'rc-bubble-visitor' : 'rc-bubble-other'}
+          className={isVisitor
+            ? `rc-bubble-user ${isGrouped ? 'rc-grouped' : ''}`
+            : `rc-bubble-bot ${isGrouped ? 'rc-grouped' : ''}`}
           style={{
-            padding: '10px 14px', borderRadius: 16, fontSize: 14, lineHeight: 1.5,
+            padding: '10px 16px', fontSize: 14, lineHeight: 1.55,
             whiteSpace: 'pre-wrap', wordBreak: 'break-word',
             ...(isVisitor
-              ? { background: `linear-gradient(135deg, ${colors.gradientFrom}, ${colors.gradientTo})`, color: colors.textOnPrimary }
-              : { background: colors.surface, color: colors.text, border: `1px solid ${colors.border}` }),
+              ? {
+                  background: `linear-gradient(135deg, var(--rc-primary), var(--rc-primary-hover, #B8050F))`,
+                  color: 'var(--rc-on-primary)',
+                  boxShadow: '0 1px 4px rgba(227,6,19,0.15)',
+                }
+              : {
+                  background: 'var(--rc-bubble-bot)',
+                  color: 'var(--rc-bubble-bot-text)',
+                  border: '1px solid var(--rc-border-subtle)',
+                }),
           }}
         >
           {msg.content}
         </div>
-        <div style={{ fontSize: 10, color: colors.textSecondary, marginTop: 2, padding: '0 4px', textAlign: isVisitor ? 'right' : 'left' }}>
-          {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-        </div>
+        {/* Timestamp */}
+        {!isGrouped && (
+          <div style={{
+            fontSize: 10, color: 'var(--rc-text-tertiary)', marginTop: 3,
+            padding: '0 4px', textAlign: isVisitor ? 'right' : 'left',
+          }}>
+            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function ActionChip({ label, icon, onClick, colors }: { label: string; icon: React.ReactNode; onClick: () => void; colors: ThemeConfig['colors'] }) {
-  return (
-    <button onClick={onClick} style={{
-      display: 'flex', alignItems: 'center', gap: 4, padding: '5px 10px',
-      fontSize: 11, borderRadius: 8, border: `1px solid ${colors.border}`, background: colors.background,
-      cursor: 'pointer', color: colors.text, transition: 'all 0.2s', fontWeight: 500,
-    }}
-      onMouseEnter={e => { e.currentTarget.style.background = colors.primaryLight; e.currentTarget.style.borderColor = colors.primary; }}
-      onMouseLeave={e => { e.currentTarget.style.background = colors.background; e.currentTarget.style.borderColor = colors.border; }}
-    >
-      {icon} {label}
-    </button>
-  );
-}
-
+// ──────────────────────────────────────────────────────────
+// OFFLINE FORM
+// ──────────────────────────────────────────────────────────
 function OfflineFormView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string) => string; onSubmit: (d: any) => void }) {
-  const { colors } = theme;
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
 
@@ -493,38 +735,50 @@ function OfflineFormView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: st
 
   if (submitted) {
     return (
-      <div style={{ padding: 32, textAlign: 'center' }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>✓</div>
-        <p style={{ fontSize: 14, color: colors.text, fontWeight: 600 }}>{t('offline_form_thanks')}</p>
+      <div className="rc-slide-up" style={{ padding: 40, textAlign: 'center' }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: 16, margin: '0 auto 16px',
+          background: 'linear-gradient(135deg, #10B981, #059669)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>{t('offline_form_thanks')}</p>
+        <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)' }}>Te responderemos lo antes posible</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 20 }}>
-      <h4 style={{ fontSize: 15, fontWeight: 700, color: colors.text, marginBottom: 4 }}>{t('offline_title')}</h4>
-      <p style={{ fontSize: 12, color: colors.textSecondary, marginBottom: 16 }}>{t('offline_message')}</p>
+    <div className="rc-slide-up" style={{ padding: '22px 20px' }}>
+      <div style={{
+        width: 44, height: 44, borderRadius: 12, marginBottom: 14,
+        background: 'var(--rc-surface)', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        <span style={{ fontSize: 22 }}>✉️</span>
+      </div>
+      <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4, letterSpacing: '-0.01em' }}>{t('offline_title')}</h4>
+      <p style={{ fontSize: 13, color: 'var(--rc-text-secondary)', marginBottom: 18, lineHeight: 1.4 }}>{t('offline_message')}</p>
       <form onSubmit={handle} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         {[
           { key: 'name', type: 'text', label: t('offline_form_name'), required: true },
           { key: 'email', type: 'email', label: t('offline_form_email'), required: true },
           { key: 'phone', type: 'tel', label: t('offline_form_phone'), required: false },
-          { key: 'message', type: 'text', label: t('offline_form_message'), required: false },
         ].map(f => (
-          <input
-            key={f.key} type={f.type} required={f.required} placeholder={f.label}
+          <input key={f.key} type={f.type} required={f.required} placeholder={f.label}
+            className="rc-input rc-input-focus"
             value={(form as any)[f.key]} onChange={e => setForm({ ...form, [f.key]: e.target.value })}
-            style={{
-              padding: '10px 14px', border: `1.5px solid ${colors.border}`, borderRadius: 10,
-              fontSize: 13, outline: 'none', background: colors.surface, color: colors.text,
-            }}
           />
         ))}
-        <button type="submit" style={{
-          padding: '12px', borderRadius: 10, border: 'none',
-          background: `linear-gradient(135deg, ${colors.gradientFrom}, ${colors.gradientTo})`,
-          color: colors.textOnPrimary, fontWeight: 600, fontSize: 14, cursor: 'pointer',
-        }}>
+        <textarea
+          placeholder={t('offline_form_message')} rows={3}
+          className="rc-input rc-input-focus"
+          style={{ resize: 'none', fontFamily: 'inherit' }}
+          value={form.message} onChange={e => setForm({ ...form, message: e.target.value })}
+        />
+        <button type="submit" className="rc-btn-primary" style={{ width: '100%', marginTop: 4 }}>
           {t('offline_form_submit')}
         </button>
       </form>
@@ -532,45 +786,52 @@ function OfflineFormView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: st
   );
 }
 
+// ──────────────────────────────────────────────────────────
+// CSAT VIEW
+// ──────────────────────────────────────────────────────────
 function CsatView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string) => string; onSubmit: (rating: number, comment?: string) => void }) {
-  const { colors } = theme;
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [submitted, setSubmitted] = useState(false);
 
   const labels = [t('rating_terrible'), t('rating_bad'), t('rating_okay'), t('rating_good'), t('rating_excellent')];
+  const emojis = ['😠', '😕', '😐', '🙂', '🤩'];
 
   if (submitted) {
     return (
-      <div style={{ padding: 32, textAlign: 'center' }}>
+      <div className="rc-slide-up" style={{ padding: 40, textAlign: 'center' }}>
         <div style={{ fontSize: 48, marginBottom: 12 }}>🎉</div>
-        <p style={{ fontSize: 14, color: colors.text, fontWeight: 600 }}>{t('csat_thanks')}</p>
+        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)' }}>{t('csat_thanks')}</p>
       </div>
     );
   }
 
   return (
-    <div style={{ padding: 24, textAlign: 'center' }}>
-      <h4 style={{ fontSize: 15, fontWeight: 700, color: colors.text, marginBottom: 16 }}>{t('csat_question')}</h4>
-      <div style={{ display: 'flex', justifyContent: 'center', gap: 8, marginBottom: 8 }}>
+    <div className="rc-slide-up" style={{ padding: '32px 24px', textAlign: 'center' }}>
+      <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 24, letterSpacing: '-0.01em' }}>{t('csat_question')}</h4>
+      <div style={{ display: 'flex', justifyContent: 'center', gap: 10, marginBottom: 12 }}>
         {[1, 2, 3, 4, 5].map(n => (
           <button key={n} onClick={() => setRating(n)} onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(0)}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, transition: 'transform 0.2s', transform: (hover >= n || rating >= n) ? 'scale(1.2)' : 'scale(1)' }}>
-            <svg width="32" height="32" viewBox="0 0 24 24" fill={(hover >= n || rating >= n) ? colors.accent : colors.border}>
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
+            className={rating === n ? 'rc-star-pop' : ''}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: 6,
+              transition: 'transform 0.2s var(--rc-ease-spring)',
+              transform: (hover >= n || rating >= n) ? 'scale(1.15)' : 'scale(1)',
+              opacity: (hover >= n || rating >= n) ? 1 : 0.4,
+              fontSize: 28,
+            }}>
+            {emojis[n - 1]}
           </button>
         ))}
       </div>
       {(hover || rating) > 0 && (
-        <p style={{ fontSize: 13, color: colors.textSecondary, marginBottom: 16 }}>{labels[(hover || rating) - 1]}</p>
+        <p className="rc-fade-in" style={{ fontSize: 13, color: 'var(--rc-text-secondary)', marginBottom: 20, fontWeight: 500 }}>
+          {labels[(hover || rating) - 1]}
+        </p>
       )}
       {rating > 0 && (
-        <button onClick={() => { onSubmit(rating); setSubmitted(true); }} style={{
-          padding: '10px 24px', borderRadius: 10, border: 'none',
-          background: `linear-gradient(135deg, ${colors.gradientFrom}, ${colors.gradientTo})`,
-          color: colors.textOnPrimary, fontWeight: 600, fontSize: 14, cursor: 'pointer',
-        }}>
+        <button onClick={() => { onSubmit(rating); setSubmitted(true); }}
+          className="rc-btn-primary rc-fade-in" style={{ padding: '10px 32px' }}>
           {t('send')}
         </button>
       )}
@@ -578,29 +839,66 @@ function CsatView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string) =
   );
 }
 
+// ──────────────────────────────────────────────────────────
+// CALL VIEW
+// ──────────────────────────────────────────────────────────
 function CallView({ theme, t, sip, onBack }: { theme: ThemeConfig; t: (k: string) => string; sip: ReturnType<typeof useSIP>; onBack: () => void }) {
-  const { colors } = theme;
+  const isActive = sip.callState === 'active';
+
   return (
-    <div style={{ padding: 32, textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+    <div className="rc-slide-up" style={{ padding: '40px 32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
       <div style={{
-        width: 80, height: 80, borderRadius: 40,
-        background: `linear-gradient(135deg, ${colors.gradientFrom}20, ${colors.gradientTo}20)`,
+        width: 88, height: 88, borderRadius: 44, position: 'relative',
+        background: `linear-gradient(135deg, ${theme.colors.gradientFrom}15, ${theme.colors.gradientTo}15)`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        ...(sip.callState === 'active' ? { animation: 'rc-pulse-ring 2s infinite' } : {}),
+        color: 'var(--rc-primary)',
       }}>
-        {Icons.phone(colors.primary)}
+        {isActive && (
+          <div style={{
+            position: 'absolute', inset: -10, borderRadius: '50%',
+            border: '2px solid var(--rc-primary)',
+            animation: 'rc-pulse-ring 2s ease-out infinite', opacity: 0.4,
+          }} />
+        )}
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+        </svg>
       </div>
-      <p style={{ fontSize: 14, color: colors.textSecondary }}>{t(sip.callState === 'active' ? 'call' : 'call_connecting')}</p>
-      <div style={{ display: 'flex', gap: 12 }}>
-        <button onClick={sip.toggleMute} style={{ width: 48, height: 48, borderRadius: 24, border: `1px solid ${colors.border}`, background: sip.isMuted ? colors.error + '20' : colors.surface, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {sip.isMuted ? Icons.mute(colors.error) : Icons.sound(colors.textSecondary)}
+      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--rc-text)' }}>
+        {t(isActive ? 'call' : 'call_connecting')}
+      </p>
+      {isActive && (
+        <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)' }}>En llamada...</p>
+      )}
+      <div style={{ display: 'flex', gap: 16 }}>
+        <button onClick={sip.toggleMute} style={{
+          width: 52, height: 52, borderRadius: 26,
+          border: '1.5px solid var(--rc-border)',
+          background: sip.isMuted ? 'rgba(239,68,68,0.1)' : 'var(--rc-surface)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: sip.isMuted ? 'var(--rc-error)' : 'var(--rc-text-secondary)',
+          transition: 'all 0.2s',
+        }}>
+          {sip.isMuted ? I.mute : I.sound}
         </button>
-        <button onClick={() => { sip.hangup(); onBack(); }} style={{ width: 48, height: 48, borderRadius: 24, border: 'none', background: colors.error, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white' }}>
-          {Icons.phone('white')}
+        <button onClick={() => { sip.hangup(); onBack(); }} style={{
+          width: 52, height: 52, borderRadius: 26, border: 'none',
+          background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+          color: 'white', boxShadow: '0 4px 12px rgba(239,68,68,0.3)',
+          transition: 'all 0.2s',
+        }}>
+          {I.phone}
         </button>
       </div>
-      <button onClick={onBack} style={{ fontSize: 12, color: colors.textSecondary, background: 'none', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}>
-        {t('back_to_chat')}
+      <button onClick={onBack} style={{
+        fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
+        border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
+      }}
+        onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
+        onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
+      >
+        ← {t('back_to_chat')}
       </button>
     </div>
   );

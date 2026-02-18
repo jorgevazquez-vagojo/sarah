@@ -32,7 +32,7 @@ function initAgentHandler(wss) {
     // Send initial queue
     db.getWaitingConversations().then((convs) => {
       send(ws, 'queue', { conversations: convs });
-    });
+    }).catch((e) => logger.warn('Failed to load queue:', e.message));
 
     ws.on('message', async (raw) => {
       try {
@@ -79,13 +79,24 @@ function initAgentHandler(wss) {
 async function handleAgentMessage(ws, agent, msg) {
   switch (msg.type) {
     case 'accept_conversation': {
-      const conv = await db.getConversation(msg.conversationId);
-      if (!conv || conv.state !== 'chat_waiting_agent') {
-        send(ws, 'error', { message: 'Conversation not available' });
+      if (!msg.conversationId) {
+        send(ws, 'error', { message: 'conversationId required' });
         return;
       }
 
-      await db.updateConversation(conv.id, { agent_id: agent.id });
+      // Atomic claim: only succeeds if still waiting for agent (prevents race condition)
+      const claimed = await db.query(
+        `UPDATE conversations SET agent_id = $2, updated_at = NOW()
+         WHERE id = $1 AND state = 'chat_waiting_agent' AND agent_id IS NULL
+         RETURNING *`,
+        [msg.conversationId, agent.id]
+      );
+      if (!claimed.rows[0]) {
+        send(ws, 'error', { message: 'Conversation not available' });
+        return;
+      }
+      const conv = claimed.rows[0];
+
       await transition(conv.id, 'agent_accept');
       await db.updateAgentStatus(agent.id, 'busy');
 
@@ -129,6 +140,11 @@ async function handleAgentMessage(ws, agent, msg) {
     }
 
     case 'send_message': {
+      if (!msg.conversationId || !msg.content) {
+        send(ws, 'error', { message: 'conversationId and content required' });
+        return;
+      }
+
       let content = msg.content;
 
       // Expand canned responses: if message starts with / look up shortcut
@@ -142,22 +158,27 @@ async function handleAgentMessage(ws, agent, msg) {
         if (canned.rows[0]) content = canned.rows[0].content;
       }
 
+      const conv = await db.getConversation(msg.conversationId);
+      if (!conv) {
+        send(ws, 'error', { message: 'Conversation not found' });
+        return;
+      }
+
       // Agent sends message to visitor
       await db.saveMessage({
-        conversationId: msg.conversationId,
+        conversationId: conv.id,
         sender: 'agent',
         content,
         metadata: { agentId: agent.id, agentName: agent.displayName },
       });
 
-      const conv = await db.getConversation(msg.conversationId);
       await redis.publish('agent:message', {
         visitorId: conv.visitor_id,
         content,
         agentName: agent.displayName,
         timestamp: new Date().toISOString(),
       });
-      triggerWebhooks('message.sent', { conversationId: msg.conversationId, sender: 'agent', agentId: agent.id, content }).catch(() => {});
+      triggerWebhooks('message.sent', { conversationId: conv.id, sender: 'agent', agentId: agent.id, content }).catch(() => {});
       break;
     }
 
@@ -176,16 +197,36 @@ async function handleAgentMessage(ws, agent, msg) {
     }
 
     case 'close_conversation': {
-      await transition(msg.conversationId, 'close');
-      await db.updateAgentStatus(agent.id, 'online');
+      if (!msg.conversationId) {
+        send(ws, 'error', { message: 'conversationId required' });
+        return;
+      }
 
       const conv = await db.getConversation(msg.conversationId);
-      await redis.publish('agent:message', {
-        visitorId: conv.visitor_id,
-        content: 'La conversación ha sido cerrada por el agente.',
-        agentName: null,
-        timestamp: new Date().toISOString(),
-      });
+      if (!conv || conv.state === 'closed') {
+        send(ws, 'error', { message: 'Conversation not found or already closed' });
+        return;
+      }
+
+      await transition(msg.conversationId, 'close');
+
+      // Only set online if agent has no other active conversations
+      const otherActive = await db.query(
+        `SELECT 1 FROM conversations WHERE agent_id = $1 AND state != 'closed' AND closed_at IS NULL AND id != $2 LIMIT 1`,
+        [agent.id, msg.conversationId]
+      );
+      if (otherActive.rows.length === 0) {
+        await db.updateAgentStatus(agent.id, 'online');
+      }
+
+      if (conv.visitor_id) {
+        await redis.publish('agent:message', {
+          visitorId: conv.visitor_id,
+          content: 'La conversación ha sido cerrada por el agente.',
+          agentName: null,
+          timestamp: new Date().toISOString(),
+        });
+      }
 
       db.trackEvent({ eventType: 'conversation_closed', conversationId: msg.conversationId, agentId: agent.id }).catch(() => {});
       triggerWebhooks('conversation.closed', { conversationId: msg.conversationId, agentId: agent.id }).catch(() => {});

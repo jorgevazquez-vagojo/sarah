@@ -2,65 +2,566 @@
 @tailwind components;
 @tailwind utilities;
 
-:host {
-  all: initial;
+:host { all: initial; }
+
+/* ─────────────────────────────────────────────
+   DESIGN SYSTEM - Premium Chatbot Widget
+   Inspired by Intercom, Crisp, Drift
+   ───────────────────────────────────────────── */
+
+:root {
+  --rc-primary: #E30613;
+  --rc-primary-hover: #CC0511;
+  --rc-primary-light: #FEF2F2;
+  --rc-on-primary: #FFFFFF;
+  --rc-bg: #FFFFFF;
+  --rc-surface: #F8FAFC;
+  --rc-surface-hover: #F1F5F9;
+  --rc-surface-elevated: #FFFFFF;
+  --rc-text: #0F172A;
+  --rc-text-secondary: #64748B;
+  --rc-text-tertiary: #94A3B8;
+  --rc-border: #E2E8F0;
+  --rc-border-subtle: #F1F5F9;
+  --rc-success: #10B981;
+  --rc-warning: #F59E0B;
+  --rc-error: #EF4444;
+  --rc-info: #3B82F6;
+  --rc-accent: #F59E0B;
+  --rc-bubble-user: var(--rc-primary);
+  --rc-bubble-user-text: #FFFFFF;
+  --rc-bubble-bot: #F1F5F9;
+  --rc-bubble-bot-text: #0F172A;
+  --rc-shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --rc-shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+  --rc-shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
+  --rc-shadow-xl: 0 20px 60px rgba(0,0,0,0.16), 0 2px 8px rgba(0,0,0,0.06);
+  --rc-glass: rgba(255,255,255,0.92);
+  --rc-glass-blur: blur(24px) saturate(180%);
+  --rc-ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --rc-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --rc-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --rc-radius-sm: 8px;
+  --rc-radius-md: 12px;
+  --rc-radius-lg: 16px;
+  --rc-radius-xl: 20px;
+  --rc-radius-bubble: 20px;
+  --rc-radius-pill: 9999px;
 }
 
-/* ─── Premium animations ─── */
-@keyframes rc-fade-in { from { opacity: 0; transform: translateY(16px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
-@keyframes rc-fade-out { from { opacity: 1; transform: translateY(0) scale(1); } to { opacity: 0; transform: translateY(16px) scale(0.95); } }
-@keyframes rc-slide-up { from { opacity: 0; transform: translateY(100%); } to { opacity: 1; transform: translateY(0); } }
-@keyframes rc-pulse-ring { 0% { transform: scale(0.8); opacity: 0.5; } 50% { transform: scale(1.2); opacity: 0; } 100% { transform: scale(0.8); opacity: 0; } }
-@keyframes rc-bounce-in { 0% { transform: scale(0); } 50% { transform: scale(1.15); } 100% { transform: scale(1); } }
-@keyframes rc-typing-dot { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
-@keyframes rc-shimmer { 0% { background-position: -200% 0; } 100% { background-position: 200% 0; } }
-@keyframes rc-spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+/* ─── Dark Mode ─── */
+[data-theme="dark"] {
+  --rc-bg: #0F172A;
+  --rc-surface: #1E293B;
+  --rc-surface-hover: #334155;
+  --rc-surface-elevated: #1E293B;
+  --rc-text: #F1F5F9;
+  --rc-text-secondary: #94A3B8;
+  --rc-text-tertiary: #64748B;
+  --rc-border: #334155;
+  --rc-border-subtle: #1E293B;
+  --rc-bubble-bot: #1E293B;
+  --rc-bubble-bot-text: #F1F5F9;
+  --rc-glass: rgba(15,23,42,0.92);
+  --rc-shadow-md: 0 4px 12px rgba(0,0,0,0.25);
+  --rc-shadow-lg: 0 8px 30px rgba(0,0,0,0.35);
+  --rc-shadow-xl: 0 20px 60px rgba(0,0,0,0.4), 0 2px 8px rgba(0,0,0,0.2);
+  --rc-primary-light: rgba(227,6,19,0.15);
+}
 
-.rc-animate-fade-in { animation: rc-fade-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.rc-animate-slide-up { animation: rc-slide-up 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
-.rc-animate-bounce-in { animation: rc-bounce-in 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+/* ─── Keyframe Animations ─── */
 
-.rc-typing-dot { animation: rc-typing-dot 1.4s ease-in-out infinite; }
-.rc-typing-dot:nth-child(2) { animation-delay: 0.2s; }
-.rc-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+/* Panel open — scale + translate from bottom-right */
+@keyframes rc-panel-open {
+  0% { opacity: 0; transform: translateY(24px) scale(0.92); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes rc-panel-close {
+  0% { opacity: 1; transform: translateY(0) scale(1); }
+  100% { opacity: 0; transform: translateY(24px) scale(0.92); }
+}
 
-/* ─── Scrollbar ─── */
-.rc-scrollbar::-webkit-scrollbar { width: 4px; }
-.rc-scrollbar::-webkit-scrollbar-track { background: transparent; }
-.rc-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 2px; }
-.rc-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+/* Message slide in */
+@keyframes rc-msg-in {
+  0% { opacity: 0; transform: translateY(12px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
 
-/* ─── Glass morphism ─── */
-.rc-glass { background: rgba(255,255,255,0.85); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); }
-.rc-glass-dark { background: rgba(15,23,42,0.85); backdrop-filter: blur(20px) saturate(180%); -webkit-backdrop-filter: blur(20px) saturate(180%); }
+/* Launcher bounce */
+@keyframes rc-bounce-in {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
 
-/* ─── RTL support ─── */
-[dir="rtl"] .rc-message-visitor { margin-left: 0; margin-right: auto; }
-[dir="rtl"] .rc-message-other { margin-right: 0; margin-left: auto; }
-[dir="rtl"] .rc-input-area { direction: rtl; }
+/* Pulse ring — attention on launcher */
+@keyframes rc-pulse-ring {
+  0% { transform: scale(0.85); opacity: 0.5; }
+  100% { transform: scale(1.45); opacity: 0; }
+}
 
-/* ─── Shimmer loading ─── */
+/* Typing dots — smooth bounce */
+@keyframes rc-typing-bounce {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30% { transform: translateY(-8px); opacity: 1; }
+}
+
+/* Shimmer — AI thinking skeleton */
+@keyframes rc-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Spin — loading */
+@keyframes rc-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Fade in generic */
+@keyframes rc-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Slide up for views */
+@keyframes rc-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Icon morph — chat to X */
+@keyframes rc-icon-rotate-in {
+  from { transform: rotate(-90deg) scale(0.5); opacity: 0; }
+  to { transform: rotate(0deg) scale(1); opacity: 1; }
+}
+
+/* Star pop for CSAT */
+@keyframes rc-star-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+  100% { transform: scale(1); }
+}
+
+/* ─── Animation Classes ─── */
+.rc-panel-enter {
+  animation: rc-panel-open 0.4s var(--rc-ease-out-expo) forwards;
+  transform-origin: bottom right;
+}
+.rc-panel-exit {
+  animation: rc-panel-close 0.28s var(--rc-ease-standard) forwards;
+  transform-origin: bottom right;
+}
+.rc-msg-enter { animation: rc-msg-in 0.35s var(--rc-ease-out-expo) forwards; }
+.rc-launcher-enter { animation: rc-bounce-in 0.55s var(--rc-ease-spring) forwards; }
+.rc-fade-in { animation: rc-fade-in 0.3s ease forwards; }
+.rc-slide-up { animation: rc-slide-up 0.4s var(--rc-ease-out-expo) forwards; }
+.rc-icon-morph { animation: rc-icon-rotate-in 0.3s var(--rc-ease-spring) forwards; }
+.rc-star-pop { animation: rc-star-pop 0.3s var(--rc-ease-spring); }
+
+/* ─── Typing Indicator ─── */
+.rc-typing-dot {
+  animation: rc-typing-bounce 1.4s ease-in-out infinite;
+}
+.rc-typing-dot:nth-child(2) { animation-delay: 0.16s; }
+.rc-typing-dot:nth-child(3) { animation-delay: 0.32s; }
+
+/* ─── Shimmer ─── */
 .rc-shimmer {
-  background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+  background: linear-gradient(90deg, var(--rc-surface) 25%, var(--rc-border) 50%, var(--rc-surface) 75%);
   background-size: 200% 100%;
-  animation: rc-shimmer 1.5s infinite;
+  animation: rc-shimmer 1.5s ease-in-out infinite;
+  border-radius: var(--rc-radius-bubble);
+  height: 44px;
+  width: 180px;
 }
 
-/* ─── Message bubble tail ─── */
-.rc-bubble-visitor { border-bottom-right-radius: 4px; }
-.rc-bubble-other { border-bottom-left-radius: 4px; }
-[dir="rtl"] .rc-bubble-visitor { border-bottom-right-radius: 16px; border-bottom-left-radius: 4px; }
-[dir="rtl"] .rc-bubble-other { border-bottom-left-radius: 16px; border-bottom-right-radius: 4px; }
+/* ─── Pulse Ring on Launcher ─── */
+.rc-launcher-pulse::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border-radius: 50%;
+  background: rgba(227,6,19,0.25);
+  animation: rc-pulse-ring 2.2s ease-out infinite;
+  pointer-events: none;
+}
 
-/* ─── Mobile fullscreen ─── */
+/* ─── Glassmorphism ─── */
+.rc-glass {
+  background: var(--rc-glass);
+  backdrop-filter: var(--rc-glass-blur);
+  -webkit-backdrop-filter: var(--rc-glass-blur);
+}
+
+/* ─── Scrollbar (thin, elegant) ─── */
+.rc-scrollbar::-webkit-scrollbar { width: 5px; }
+.rc-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.rc-scrollbar::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.12); border-radius: 3px; }
+.rc-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.22); }
+[data-theme="dark"] .rc-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.12); }
+[data-theme="dark"] .rc-scrollbar::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
+
+/* ─── Message Bubble Tails ─── */
+.rc-bubble-user {
+  border-radius: var(--rc-radius-bubble) var(--rc-radius-bubble) 6px var(--rc-radius-bubble);
+}
+.rc-bubble-bot {
+  border-radius: var(--rc-radius-bubble) var(--rc-radius-bubble) var(--rc-radius-bubble) 6px;
+}
+/* Grouped messages (same sender consecutive) */
+.rc-bubble-user.rc-grouped { border-radius: var(--rc-radius-bubble); }
+.rc-bubble-bot.rc-grouped { border-radius: var(--rc-radius-bubble); }
+
+/* ─── RTL Support ─── */
+[dir="rtl"] .rc-bubble-user {
+  border-radius: var(--rc-radius-bubble) var(--rc-radius-bubble) var(--rc-radius-bubble) 6px;
+}
+[dir="rtl"] .rc-bubble-bot {
+  border-radius: var(--rc-radius-bubble) var(--rc-radius-bubble) 6px var(--rc-radius-bubble);
+}
+
+/* ─── Quick Reply Buttons ─── */
+.rc-quick-reply {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 16px;
+  border-radius: var(--rc-radius-pill);
+  border: 1.5px solid var(--rc-primary);
+  background: transparent;
+  color: var(--rc-primary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--rc-ease-standard);
+  white-space: nowrap;
+}
+.rc-quick-reply:hover {
+  background: var(--rc-primary);
+  color: var(--rc-on-primary);
+  transform: translateY(-1px);
+  box-shadow: var(--rc-shadow-sm);
+}
+
+/* ─── Input Focus Ring ─── */
+.rc-input-focus:focus {
+  outline: none;
+  border-color: var(--rc-primary) !important;
+  box-shadow: 0 0 0 3px rgba(227,6,19,0.12);
+}
+
+/* ─── Card Component ─── */
+.rc-card {
+  border-radius: var(--rc-radius-md);
+  border: 1px solid var(--rc-border);
+  background: var(--rc-surface-elevated);
+  overflow: hidden;
+  transition: all 0.2s var(--rc-ease-standard);
+}
+.rc-card:hover {
+  box-shadow: var(--rc-shadow-md);
+  transform: translateY(-2px);
+}
+.rc-card-image {
+  width: 100%;
+  height: 140px;
+  object-fit: cover;
+}
+.rc-card-body {
+  padding: 12px 14px;
+}
+
+/* ─── Badge ─── */
+.rc-badge {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  background: var(--rc-error);
+  color: white;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 6px;
+  border: 2.5px solid var(--rc-bg);
+  box-shadow: 0 2px 6px rgba(239,68,68,0.3);
+  animation: rc-bounce-in 0.4s var(--rc-ease-spring) forwards;
+}
+
+/* ─── Header Gradient Overlay ─── */
+.rc-header-pattern {
+  position: absolute;
+  inset: 0;
+  opacity: 0.06;
+  background-image: radial-gradient(circle at 20% 50%, white 1px, transparent 1px),
+                    radial-gradient(circle at 80% 20%, white 1px, transparent 1px),
+                    radial-gradient(circle at 50% 80%, white 1px, transparent 1px);
+  background-size: 40px 40px, 60px 60px, 45px 45px;
+  pointer-events: none;
+}
+
+/* ─── Business Line Chips ─── */
+.rc-line-chip {
+  padding: 14px 12px;
+  border-radius: var(--rc-radius-md);
+  border: 1.5px solid var(--rc-border);
+  background: var(--rc-bg);
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.25s var(--rc-ease-standard);
+  position: relative;
+  overflow: hidden;
+}
+.rc-line-chip::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--line-color, var(--rc-primary));
+  transform: scaleX(0);
+  transition: transform 0.25s var(--rc-ease-out-expo);
+}
+.rc-line-chip:hover {
+  border-color: var(--line-color, var(--rc-primary));
+  transform: translateY(-2px);
+  box-shadow: var(--rc-shadow-md);
+}
+.rc-line-chip:hover::before {
+  transform: scaleX(1);
+}
+
+/* ─── Tabs (Intercom-style bottom nav) ─── */
+.rc-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 8px 0;
+  flex: 1;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: var(--rc-text-tertiary);
+  font-size: 10px;
+  font-weight: 500;
+  transition: color 0.2s;
+  position: relative;
+}
+.rc-tab.active {
+  color: var(--rc-primary);
+}
+.rc-tab.active::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 25%;
+  right: 25%;
+  height: 2px;
+  background: var(--rc-primary);
+  border-radius: 1px;
+}
+
+/* ─── Avatar ─── */
+.rc-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 13px;
+  font-weight: 700;
+  color: white;
+}
+
+/* ─── Status Dot ─── */
+.rc-status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  border: 2px solid var(--rc-bg);
+  position: absolute;
+  bottom: -1px;
+  right: -1px;
+}
+.rc-status-dot.online { background: var(--rc-success); }
+.rc-status-dot.offline { background: var(--rc-text-tertiary); }
+.rc-status-dot.busy { background: var(--rc-warning); }
+
+/* ─── Button Styles ─── */
+.rc-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: var(--rc-radius-md);
+  border: none;
+  background: linear-gradient(135deg, var(--rc-primary), var(--rc-primary-hover));
+  color: var(--rc-on-primary);
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.25s var(--rc-ease-standard);
+  box-shadow: 0 2px 8px rgba(227,6,19,0.25);
+  position: relative;
+  overflow: hidden;
+}
+.rc-btn-primary:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px rgba(227,6,19,0.35);
+}
+.rc-btn-primary:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 4px rgba(227,6,19,0.2);
+}
+.rc-btn-primary::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(rgba(255,255,255,0), rgba(255,255,255,0.12));
+  pointer-events: none;
+}
+
+.rc-btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  border-radius: var(--rc-radius-sm);
+  border: 1.5px solid var(--rc-border);
+  background: var(--rc-bg);
+  color: var(--rc-text);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s var(--rc-ease-standard);
+}
+.rc-btn-ghost:hover {
+  background: var(--rc-surface-hover);
+  border-color: var(--rc-text-tertiary);
+}
+
+/* ─── Input Field ─── */
+.rc-input {
+  width: 100%;
+  padding: 11px 16px;
+  border: 1.5px solid var(--rc-border);
+  border-radius: var(--rc-radius-sm);
+  font-size: 14px;
+  color: var(--rc-text);
+  background: var(--rc-bg);
+  outline: none;
+  transition: all 0.2s var(--rc-ease-standard);
+}
+.rc-input::placeholder {
+  color: var(--rc-text-tertiary);
+}
+.rc-input:focus {
+  border-color: var(--rc-primary);
+  box-shadow: 0 0 0 3px rgba(227,6,19,0.08);
+}
+
+/* ─── Mobile Fullscreen ─── */
 @media (max-width: 480px) {
   .rc-widget-panel {
     width: 100vw !important;
-    height: 100vh !important;
-    max-height: 100vh !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
     bottom: 0 !important;
     right: 0 !important;
     left: 0 !important;
     border-radius: 0 !important;
+    border: none !important;
   }
+}
+
+/* ─── Reduced Motion ─── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.1ms !important;
+  }
+  .rc-panel-enter { opacity: 1; transform: none; }
+  .rc-msg-enter { opacity: 1; transform: none; }
+}
+
+/* ─── Carousel Scroll ─── */
+.rc-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 4px 2px 8px;
+  scrollbar-width: none;
+}
+.rc-carousel::-webkit-scrollbar { display: none; }
+.rc-carousel > * { scroll-snap-align: start; flex-shrink: 0; width: 240px; }
+
+/* ─── Tooltip ─── */
+.rc-tooltip {
+  position: absolute;
+  bottom: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 6px 12px;
+  background: var(--rc-text);
+  color: var(--rc-bg);
+  font-size: 11px;
+  font-weight: 500;
+  border-radius: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+*:hover > .rc-tooltip { opacity: 1; }
+
+/* ─── Welcome Illustration ─── */
+.rc-welcome-icon {
+  width: 64px;
+  height: 64px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  position: relative;
+}
+.rc-welcome-icon::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border-radius: 24px;
+  border: 2px dashed var(--rc-border);
+  animation: rc-spin 25s linear infinite;
+}
+
+/* ─── Connection Status Bar ─── */
+.rc-connection-bar {
+  padding: 6px 12px;
+  font-size: 11px;
+  font-weight: 500;
+  text-align: center;
+  animation: rc-fade-in 0.3s ease;
+}
+.rc-connection-bar.disconnected {
+  background: var(--rc-warning);
+  color: #7C2D12;
+}
+.rc-connection-bar.reconnecting {
+  background: var(--rc-info);
+  color: white;
 }

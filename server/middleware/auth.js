@@ -1,18 +1,22 @@
 const jwt = require('jsonwebtoken');
 const { logger } = require('../utils/logger');
 
-const JWT_SECRET = process.env.JWT_SECRET || 'dev-secret';
+const JWT_SECRET = process.env.JWT_SECRET;
+if (!JWT_SECRET && process.env.NODE_ENV === 'production') {
+  throw new Error('JWT_SECRET environment variable is required in production');
+}
+const secret = JWT_SECRET || 'dev-secret-' + require('crypto').randomBytes(16).toString('hex');
 
 function generateToken(agent) {
   return jwt.sign(
     { id: agent.id, username: agent.username, displayName: agent.display_name },
-    JWT_SECRET,
+    secret,
     { expiresIn: '12h' }
   );
 }
 
 function verifyToken(token) {
-  return jwt.verify(token, JWT_SECRET);
+  return jwt.verify(token, secret);
 }
 
 // Middleware: require JWT for agent endpoints
@@ -41,4 +45,4 @@ function requireApiKey(req, res, next) {
   next();
 }
 
-module.exports = { generateToken, verifyToken, requireAgent, requireApiKey, JWT_SECRET };
+module.exports = { generateToken, verifyToken, requireAgent, requireApiKey };

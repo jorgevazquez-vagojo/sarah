@@ -1,31 +1,83 @@
-# Binnacle - Business Intelligence
+# Binnacle Data - Plataforma de Analitica Web y Business Intelligence
+# Sources:
+#   - https://www.binnacledata.com/es/
+#   - https://www.redegal.com/es/servicios/analitica-digital/
 entries:
-  - title: "Qué es Binnacle"
+  - title: "Que es Binnacle Data"
+    category: producto
+    content: |
+      Binnacle Data (binnacledata.com) es una plataforma de analitica web y business intelligence
+      desarrollada por Redegal que consolida datos de multiples fuentes en un dashboard unificado.
+      Transforma informacion en conocimiento para impulsar el exito del negocio.
+      Ofrece acceso a mas de 100 metricas de multiples fuentes en un solo lugar,
+      conectando datos de comportamiento, conversiones, ventas e inversion publicitaria.
+
+  - title: "Funcionalidades principales de Binnacle Data"
+    category: producto
+    content: |
+      1. Integracion de datos: acceso a +100 metricas de multiples fuentes en un solo lugar.
+         Conecta datos de comportamiento, conversiones, ventas e inversion publicitaria.
+      2. Monitorizacion con IA: analisis automatico de +30 metricas en 10 tipos de elementos.
+         Detecta anomalias y genera notificaciones con insights y recomendaciones.
+         Monitoriza productos, categorias, campanas, landing pages, fuentes de trafico,
+         rankings SEO y compras.
+      3. Insights de e-commerce: rendimiento de producto y calidad de cliente.
+         Recuperacion y fidelizacion de clientes.
+      4. Dashboards y reporting: datos ordenados y accionables en dashboards personalizados.
+         Interpretacion clara de datos para toma de decisiones.
+
+  - title: "Integraciones de Binnacle Data"
+    category: producto
+    content: |
+      - Google Ads.
+      - Meta Ads (Facebook/Instagram).
+      - Microsoft Ads.
+      - Google Analytics.
+      - Plataformas e-commerce y fuentes de datos de ventas.
+      Permite la centralizacion de multiples fuentes de datos publicitarios y de negocio.
+
+  - title: "Precio de Binnacle Data"
+    category: producto
+    content: |
+      Binnacle Data tiene un precio de entrada desde 99 EUR/mes con funcionalidad escalonada
+      segun el plan contratado.
+
+  - title: "Resultados demostrados de Binnacle Data"
+    category: producto
+    content: |
+      - Recupera hasta el 80% del tiempo dedicado a consultar multiples fuentes de datos.
+      - Usuarios reportan +30% de incremento en ventas en contextos e-commerce.
+      - Monitorizacion automatica de +30 metricas.
+
+  - title: "Servicio de Analitica Digital de Redegal"
     category: servicio
     content: |
-      Binnacle es la división de Business Intelligence de Redegal. Transforma datos en decisiones
-      accionables mediante dashboards, data warehouses y modelos analíticos avanzados.
+      Ademas de la plataforma Binnacle Data, Redegal ofrece servicios de analitica digital
+      con consultoria personalizada:
+      Herramientas: Google Analytics (GA4), Looker Studio, herramientas de verificacion de datos.
+      Capacidades de medicion:
+      - Trafico por tipo de dispositivo, tasa de rebote, tasas de conversion.
+      - Valor medio de vida del cliente (LTV), coste de adquisicion de cliente (CAC).
+      - ROAS (retorno de inversion publicitaria).
+      - Rendimiento de redes sociales y analisis competitivo.
+      Entregables: dashboards personalizados en Looker Studio, reportes accionables,
+      interpretacion de datos para toma de decisiones estrategicas.
+      Lema: "Mide todo lo que sucede en tu web, e-commerce o campanas digitales."
 
-  - title: "Servicios Binnacle"
-    category: servicio
+  - title: "Publico objetivo de Binnacle Data"
+    category: producto
     content: |
-      - Data Strategy: definición de KPIs, modelo de datos, gobernanza.
-      - Data Warehouse / Data Lake: diseño e implementación en BigQuery, Snowflake, Redshift.
-      - Dashboards & Reporting: Looker, Looker Studio, Power BI, Tableau.
-      - ETL / ELT: pipelines de datos con Dataflow, dbt, Fivetran, Airbyte.
-      - Advanced Analytics: modelos predictivos, segmentación, RFM, churn prediction.
-      - CDP (Customer Data Platform): unificación de datos de cliente, audiencias.
+      - Negocios digitales y operaciones e-commerce.
+      - Empresas que gestionan multiples canales publicitarios.
+      - Organizaciones que buscan analitica centralizada.
+      - Equipos de marketing que necesitan datos unificados y accionables.
 
-  - title: "Clientes Binnacle"
-    category: referencias
-    content: |
-      Binnacle trabaja con empresas de retail, e-commerce, fintech, logística y telecomunicaciones.
-      Proyectos de referencia incluyen unificación de datos de +50 fuentes y dashboards en tiempo real.
-
-  - title: "Diferencial Binnacle"
+  - title: "Diferencial de Binnacle Data"
     category: ventajas
     content: |
-      - Partner certificado de Google Cloud y Looker.
-      - Equipo con perfiles de data engineering, analytics engineering y data science.
-      - Metodología DataOps para entregas incrementales.
-      - Integración nativa con las líneas de marketing y SEO de Redegal.
+      - Plataforma propia de Redegal con integracion nativa con Boostic y servicios de marketing.
+      - IA integrada para deteccion automatica de anomalias y generacion de recomendaciones.
+      - Centralizacion de +100 metricas en un unico dashboard.
+      - Ahorro de hasta 80% del tiempo de consulta de datos.
+      - Precio accesible desde 99 EUR/mes.
+      - Monitorizacion proactiva: no hay que buscar los problemas, Binnacle los encuentra.
