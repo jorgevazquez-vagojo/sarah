@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redegal Chatbot + WebPhone - Demo Interactiva</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#E30613;--red-dark:#B8050F;--slate:#0F172A;--slate-2:#1E293B;
+  --gray:#64748B;--light:#F8FAFC;--white:#FFF;--border:#E2E8F0;
+  --green:#10B981;--blue:#3B82F6;--purple:#8B5CF6;--orange:#F59E0B;
+  --font:'Inter',system-ui,sans-serif;
+}
+html,body{height:100%;font-family:var(--font);background:#000;color:#fff;overflow:hidden}
+
+/* ── Presentation Container ── */
+#app{height:100%;display:flex;flex-direction:column}
+#stage{flex:1;position:relative;overflow:hidden}
+
+/* ── Slides ── */
+.slide{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(0.95);transition:all 0.6s cubic-bezier(0.4,0,0.2,1);
+  pointer-events:none;padding:40px;
+}
+.slide.active{opacity:1;transform:scale(1);pointer-events:auto}
+.slide.exit{opacity:0;transform:scale(1.05)}
+
+/* ── Slide Layouts ── */
+.slide-center{flex-direction:column;text-align:center;gap:28px}
+.slide-split{display:flex;gap:48px;align-items:center;max-width:1200px}
+.slide-split .text-side{flex:1;text-align:left}
+.slide-split .visual-side{flex:1;display:flex;justify-content:center;align-items:center}
+
+/* ── Typography ── */
+h1{font-size:56px;font-weight:900;letter-spacing:-0.03em;line-height:1.1}
+h2{font-size:42px;font-weight:800;letter-spacing:-0.02em;line-height:1.15}
+h3{font-size:28px;font-weight:700;letter-spacing:-0.01em}
+.subtitle{font-size:20px;color:#94A3B8;font-weight:400;line-height:1.6;max-width:600px}
+.gradient-text{background:linear-gradient(135deg,var(--red),#FF6B6B);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--red);margin-bottom:8px}
+
+/* ── Feature cards ── */
+.features-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;max-width:900px;margin:0 auto}
+.feat-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:24px;text-align:left;
+  transition:transform 0.3s,border-color 0.3s;
+}
+.feat-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.15)}
+.feat-card .icon{font-size:28px;margin-bottom:12px}
+.feat-card h4{font-size:15px;font-weight:700;margin-bottom:6px}
+.feat-card p{font-size:13px;color:#94A3B8;line-height:1.5}
+
+/* ── Widget Mockup ── */
+.widget-mock{
+  width:380px;border-radius:20px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:var(--white);
+  transform:perspective(1000px) rotateY(-5deg) rotateX(2deg);
+  transition:transform 0.5s;
+}
+.widget-mock:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg)}
+.wm-header{
+  background:linear-gradient(135deg,var(--red),var(--red-dark));
+  padding:16px 18px;display:flex;align-items:center;gap:12px;
+  position:relative;overflow:hidden;
+}
+.wm-header::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 20%,rgba(255,255,255,0.12),transparent 60%);
+}
+.wm-header .logo{
+  width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;
+  position:relative;z-index:1;
+}
+.wm-header .info{position:relative;z-index:1}
+.wm-header .name{font-weight:700;font-size:14px}
+.wm-header .status{font-size:11px;opacity:0.8;display:flex;align-items:center;gap:5px}
+.wm-header .dot{width:7px;height:7px;border-radius:50%;background:#34D399;box-shadow:0 0 6px #34D399}
+.wm-body{padding:16px;min-height:300px;display:flex;flex-direction:column;gap:10px;background:var(--light)}
+.wm-input{
+  padding:12px 16px;display:flex;gap:8px;border-top:1px solid var(--border);background:var(--white);
+  align-items:center;
+}
+.wm-input input{
+  flex:1;padding:10px 16px;border:1.5px solid var(--border);border-radius:24px;
+  font-size:13px;font-family:var(--font);outline:none;background:var(--light);
+}
+.wm-input .send-btn{
+  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--red),var(--red-dark));
+  display:flex;align-items:center;justify-content:center;color:white;
+}
+
+/* ── Chat Bubbles ── */
+.bubble{max-width:80%;padding:10px 16px;border-radius:18px;font-size:13px;line-height:1.5;animation:bubbleIn 0.4s ease-out}
+.bubble-bot{
+  background:var(--white);color:var(--slate);border:1px solid var(--border);
+  border-bottom-left-radius:6px;align-self:flex-start;
+}
+.bubble-user{
+  background:linear-gradient(135deg,var(--red),var(--red-dark));color:white;
+  border-bottom-right-radius:6px;align-self:flex-end;
+  box-shadow:0 2px 8px rgba(227,6,19,0.2);
+}
+.bubble-system{
+  font-size:11px;color:var(--gray);background:var(--white);
+  padding:5px 14px;border-radius:24px;align-self:center;
+}
+.bubble-time{font-size:9px;color:#94A3B8;margin-top:3px}
+.bubble-checks{display:inline-flex;align-items:center;margin-left:4px}
+
+@keyframes bubbleIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Dashboard Mockup ── */
+.dash-mock{
+  width:580px;border-radius:16px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:#0B1120;
+  transform:perspective(1000px) rotateY(5deg) rotateX(2deg);
+  transition:transform 0.5s;
+}
+.dash-mock:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg)}
+.dm-sidebar{width:60px;background:#0F172A;position:absolute;left:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;padding:16px 0;gap:16px;border-right:1px solid rgba(255,255,255,0.06)}
+.dm-sidebar .dm-nav{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s}
+.dm-sidebar .dm-nav:hover,.dm-sidebar .dm-nav.active{background:rgba(227,6,19,0.15)}
+.dm-sidebar .dm-nav.active::before{content:'';position:absolute;left:0;width:3px;height:24px;border-radius:0 4px 4px 0;background:var(--red)}
+.dm-main{margin-left:60px;min-height:380px}
+.dm-topbar{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center}
+.dm-topbar h3{font-size:15px;font-weight:700;color:#F1F5F9}
+.dm-topbar .dm-status{font-size:11px;color:#94A3B8;display:flex;align-items:center;gap:6px}
+.dm-topbar .dm-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.dm-content{padding:16px 20px}
+
+/* Queue cards */
+.q-card{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
+  transition:border-color 0.2s;
+}
+.q-card:hover{border-color:rgba(255,255,255,0.12)}
+.q-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.q-info{flex:1}
+.q-info .q-id{font-size:12px;font-weight:600;color:#E2E8F0}
+.q-info .q-msg{font-size:11px;color:#64748B;margin-top:2px}
+.q-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px}
+.q-time{font-size:10px;color:#64748B}
+.q-accept{
+  font-size:11px;font-weight:600;padding:6px 14px;border-radius:8px;border:none;
+  background:var(--green);color:white;cursor:pointer;
+}
+
+/* ── KPI Card ── */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.kpi{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:12px;padding:14px 16px}
+.kpi .kpi-label{font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:0.08em}
+.kpi .kpi-value{font-size:24px;font-weight:800;color:#F1F5F9;margin-top:4px}
+
+/* ── Stat Bars ── */
+.stat-bar{display:flex;align-items:center;gap:10px;margin-bottom:10px}
+.stat-bar .label{font-size:11px;color:#94A3B8;width:80px}
+.stat-bar .bar{flex:1;height:8px;border-radius:4px;background:rgba(255,255,255,0.06);overflow:hidden}
+.stat-bar .fill{height:100%;border-radius:4px;transition:width 1s ease-out}
+
+/* ── Team Grid ── */
+.team-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:16px;max-width:800px}
+.team-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:20px;text-align:center;
+  transition:transform 0.3s,border-color 0.3s;
+}
+.team-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.15)}
+.team-avatar{width:56px;height:56px;border-radius:16px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800}
+.team-name{font-size:13px;font-weight:700}
+.team-role{font-size:11px;font-weight:600;padding:3px 10px;border-radius:6px;display:inline-block;margin-top:6px}
+
+/* ── Stack Grid ── */
+.stack-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:900px}
+.stack-item{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:16px;text-align:center;
+}
+.stack-item .stack-icon{font-size:32px;margin-bottom:8px}
+.stack-item h4{font-size:13px;font-weight:700;margin-bottom:4px}
+.stack-item p{font-size:11px;color:#94A3B8}
+
+/* ── Controls ── */
+#controls{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  padding:16px 24px;background:rgba(255,255,255,0.03);
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.ctrl-btn{
+  padding:8px 24px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.05);color:#E2E8F0;cursor:pointer;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  transition:all 0.2s;display:flex;align-items:center;gap:6px;
+}
+.ctrl-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2)}
+.ctrl-btn.primary{background:var(--red);border-color:var(--red);color:white}
+.ctrl-btn.primary:hover{background:var(--red-dark)}
+.ctrl-btn:disabled{opacity:0.3;cursor:default}
+#progress{flex:1;max-width:400px;height:4px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden}
+#progress-bar{height:100%;background:var(--red);border-radius:2px;transition:width 0.4s}
+#slide-counter{font-size:12px;color:#64748B;font-weight:500;min-width:60px;text-align:center}
+#voice-status{font-size:11px;color:#64748B;position:absolute;right:24px}
+
+/* ── Animations ── */
+.animate-in{animation:fadeInUp 0.6s ease-out both}
+.animate-in-d1{animation-delay:0.1s}
+.animate-in-d2{animation-delay:0.2s}
+.animate-in-d3{animation-delay:0.3s}
+.animate-in-d4{animation-delay:0.4s}
+.animate-in-d5{animation-delay:0.5s}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Quick Reply chips ── */
+.qr-row{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0}
+.qr-chip{
+  font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;
+  border:1.5px solid var(--red);color:var(--red);background:rgba(227,6,19,0.05);
+  cursor:pointer;transition:all 0.2s;font-family:var(--font);
+}
+.qr-chip:hover{background:var(--red);color:white}
+
+/* ── File attachment ── */
+.file-attach{
+  display:flex;align-items:center;gap:10px;padding:10px 14px;
+  background:var(--white);border:1px solid var(--border);border-radius:12px;
+  max-width:260px;
+}
+.file-icon{width:36px;height:36px;border-radius:8px;background:#DBEAFE;display:flex;align-items:center;justify-content:center;color:var(--blue);font-size:16px;font-weight:700}
+.file-info .file-name{font-size:12px;font-weight:600;color:var(--slate)}
+.file-info .file-size{font-size:10px;color:var(--gray)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  h1{font-size:36px}h2{font-size:28px}
+  .slide{padding:20px}
+  .slide-split{flex-direction:column;gap:24px}
+  .widget-mock,.dash-mock{width:100%;max-width:340px;transform:none}
+  .features-grid{grid-template-columns:1fr 1fr}
+  .team-grid{grid-template-columns:repeat(3,1fr)}
+  .stack-grid{grid-template-columns:repeat(2,1fr)}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+
+    <!-- SLIDE 0: Title -->
+    <div class="slide slide-center active" data-narration="Bienvenidos a la demo del Chatbot y WebPhone de Redegal. Esta plataforma combina inteligencia artificial, comunicaciones en tiempo real y un dashboard profesional para agentes humanos. Vamos a recorrer juntos todas las funcionalidades en los proximos diez minutos.">
+      <div class="animate-in">
+        <div class="tag">Demo Interactiva</div>
+        <h1><span class="gradient-text">Redegal</span> Chatbot<br>+ WebPhone</h1>
+        <p class="subtitle">Widget embebible con IA conversacional, VoIP WebRTC y dashboard de agentes. Multi-idioma, multi-tenant, parametrizable al completo.</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:16px">
+          <span style="font-size:13px;padding:8px 18px;border-radius:10px;background:rgba(227,6,19,0.1);color:var(--red);font-weight:600">v2.0 Premium</span>
+          <span style="font-size:13px;padding:8px 18px;border-radius:10px;background:rgba(16,185,129,0.1);color:var(--green);font-weight:600">111 Tests</span>
+          <span style="font-size:13px;padding:8px 18px;border-radius:10px;background:rgba(59,130,246,0.1);color:var(--blue);font-weight:600">12 Idiomas</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 1: Architecture -->
+    <div class="slide slide-center" data-narration="La arquitectura se divide en tres capas principales. El widget embebible, construido con React y TypeScript, se inyecta en cualquier web mediante Shadow DOM para evitar conflictos de estilos. El servidor en Node.js gestiona tres rutas WebSocket independientes: una para visitantes, otra para agentes, y otra para senalizacion VoIP. Todo respaldado por PostgreSQL con pgvector y Redis para sesiones y pubsub en tiempo real.">
+      <div class="animate-in">
+        <div class="tag">Arquitectura</div>
+        <h2>Stack Tecnologico</h2>
+      </div>
+      <div class="stack-grid animate-in animate-in-d1">
+        <div class="stack-item"><div class="stack-icon">&#x269B;</div><h4>React 19 + TS</h4><p>Widget IIFE + Dashboard SPA</p></div>
+        <div class="stack-item"><div class="stack-icon">&#x1F4E1;</div><h4>Node.js 20</h4><p>Express + 3 WebSocket paths</p></div>
+        <div class="stack-item"><div class="stack-icon">&#x1F9E0;</div><h4>IA Multi-provider</h4><p>Claude + Gemini + OpenAI</p></div>
+        <div class="stack-item"><div class="stack-icon">&#x1F4DE;</div><h4>SIP.js + Asterisk</h4><p>VoIP WebRTC en navegador</p></div>
+        <div class="stack-item"><div class="stack-icon">&#x1F418;</div><h4>PostgreSQL 16</h4><p>pgvector + Full-text search</p></div>
+        <div class="stack-item"><div class="stack-icon">&#x26A1;</div><h4>Redis 7</h4><p>Sessions + Pub/Sub + Cache</p></div>
+        <div class="stack-item"><div class="stack-icon">&#x1F310;</div><h4>12 Idiomas</h4><p>Auto-deteccion + YAML i18n</p></div>
+        <div class="stack-item"><div class="stack-icon">&#x1F433;</div><h4>Docker Compose</h4><p>Deploy con un solo comando</p></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Widget Welcome -->
+    <div class="slide slide-split" data-narration="El widget se integra en cualquier pagina web con solo dos lineas de codigo. El visitante ve un boton flotante con un pulso de atencion. Al hacer clic, se abre una pantalla de bienvenida estilo Intercom con las cuatro lineas de negocio de Redegal. El visitante puede seleccionar directamente el area que le interesa, o simplemente iniciar un chat general.">
+      <div class="text-side">
+        <div class="tag animate-in">Widget Embebible</div>
+        <h2 class="animate-in animate-in-d1">Pantalla de<br><span class="gradient-text">Bienvenida</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Integracion con 2 lineas de codigo. Shadow DOM evita conflictos de CSS. Boton flotante con pulso animado.</p>
+        <div class="animate-in animate-in-d3" style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+          <span style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(59,130,246,0.15);color:var(--blue);font-weight:600">Boostic</span>
+          <span style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(139,92,246,0.15);color:var(--purple);font-weight:600">Binnacle</span>
+          <span style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(16,185,129,0.15);color:var(--green);font-weight:600">Marketing</span>
+          <span style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(245,158,11,0.15);color:var(--orange);font-weight:600">Tech</span>
+        </div>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="widget-mock">
+          <div class="wm-header">
+            <div class="logo">R</div>
+            <div class="info">
+              <div class="name">Redegal</div>
+              <div class="status"><span class="dot"></span> Online</div>
+            </div>
+          </div>
+          <div class="wm-body" style="align-items:center;padding:28px 20px;gap:16px">
+            <div style="width:56px;height:56px;border-radius:16px;background:rgba(227,6,19,0.08);display:flex;align-items:center;justify-content:center;font-size:28px">&#x1F4AC;</div>
+            <div style="font-size:18px;font-weight:800;color:var(--slate)">Hola, bienvenido</div>
+            <div style="font-size:13px;color:var(--gray);text-align:center">Como podemos ayudarte hoy?</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%">
+              <div style="padding:14px;border-radius:12px;border:1.5px solid var(--border);text-align:center;cursor:pointer;transition:border-color 0.2s">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4C8;</div>
+                <div style="font-size:12px;font-weight:600;color:var(--slate)">Boostic</div>
+              </div>
+              <div style="padding:14px;border-radius:12px;border:1.5px solid var(--border);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4CA;</div>
+                <div style="font-size:12px;font-weight:600;color:var(--slate)">Binnacle</div>
+              </div>
+              <div style="padding:14px;border-radius:12px;border:1.5px solid var(--border);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4E3;</div>
+                <div style="font-size:12px;font-weight:600;color:var(--slate)">Marketing</div>
+              </div>
+              <div style="padding:14px;border-radius:12px;border:1.5px solid var(--border);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4BB;</div>
+                <div style="font-size:12px;font-weight:600;color:var(--slate)">Tech</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Widget Chat -->
+    <div class="slide slide-split" data-narration="Una vez iniciada la conversacion, el bot responde usando inteligencia artificial con conocimiento especifico de cada linea de negocio. El sistema detecta automaticamente el idioma del visitante y adapta sus respuestas. Las burbujas se agrupan por remitente para una lectura mas limpia. Los ticks de lectura muestran el estado de cada mensaje: enviado, entregado, o leido.">
+      <div class="text-side">
+        <div class="tag animate-in">Chat con IA</div>
+        <h2 class="animate-in animate-in-d1">Conversacion<br><span class="gradient-text">Inteligente</span></h2>
+        <p class="subtitle animate-in animate-in-d2">IA multi-proveedor con fallback automatico. Knowledge base por linea de negocio. Deteccion de idioma. Read receipts.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="widget-mock">
+          <div class="wm-header">
+            <div class="logo">R</div>
+            <div class="info"><div class="name">Redegal</div><div class="status"><span class="dot"></span> Online</div></div>
+          </div>
+          <div class="wm-body">
+            <div class="bubble bubble-user">Hola, me interesa mejorar el SEO de mi tienda online</div>
+            <div class="bubble-time" style="text-align:right">14:32 <span class="bubble-checks" style="color:var(--green)">&#x2713;&#x2713;</span></div>
+            <div style="display:flex;gap:8px;align-items:flex-end">
+              <div style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;color:white;font-size:12px;flex-shrink:0">&#x2726;</div>
+              <div>
+                <div class="bubble bubble-bot">Hola! Perfecto, nuestro equipo de <strong>Boostic</strong> es experto en SEO y growth para e-commerce. Podemos ayudarte con:<br><br>&#x2022; Auditoria tecnica SEO<br>&#x2022; Estrategia de contenidos<br>&#x2022; Optimizacion de conversion (CRO)</div>
+                <div class="bubble-time">14:32</div>
+              </div>
+            </div>
+            <div class="qr-row">
+              <span class="qr-chip">Quiero una auditoria</span>
+              <span class="qr-chip">Hablar con un experto</span>
+            </div>
+          </div>
+          <div class="wm-input">
+            <input type="text" placeholder="Escribe tu mensaje..." disabled>
+            <div class="send-btn">&#x2191;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Rich Messages + File Upload -->
+    <div class="slide slide-split" data-narration="El sistema soporta mensajes enriquecidos: tarjetas con imagenes y botones, carruseles, respuestas rapidas y adjuntos de archivos. Los visitantes pueden enviar documentos, imagenes y PDFs directamente en el chat. El servidor valida tipos MIME, sanitiza nombres de archivo y almacena todo de forma segura. Todo esto se configura desde el panel de administracion.">
+      <div class="visual-side animate-in">
+        <div class="widget-mock">
+          <div class="wm-header">
+            <div class="logo">R</div>
+            <div class="info"><div class="name">Redegal</div><div class="status"><span class="dot"></span> Online</div></div>
+          </div>
+          <div class="wm-body" style="gap:12px">
+            <div class="bubble bubble-bot">Aqui tienes nuestro caso de exito mas reciente:</div>
+            <!-- Card -->
+            <div style="max-width:280px;border-radius:14px;overflow:hidden;border:1px solid var(--border);background:white">
+              <div style="height:120px;background:linear-gradient(135deg,#3B82F6,#1D4ED8);display:flex;align-items:center;justify-content:center;color:white;font-size:32px">&#x1F4C8;</div>
+              <div style="padding:12px 14px">
+                <div style="font-size:14px;font-weight:700;color:var(--slate)">Caso de Exito: Mango</div>
+                <div style="font-size:12px;color:var(--gray);margin:4px 0 10px">+340% trafico organico en 6 meses</div>
+                <div style="display:flex;gap:6px">
+                  <span class="qr-chip" style="font-size:11px;padding:5px 12px">Ver detalles</span>
+                  <span class="qr-chip" style="font-size:11px;padding:5px 12px">Contactar</span>
+                </div>
+              </div>
+            </div>
+            <!-- File -->
+            <div class="file-attach">
+              <div class="file-icon">PDF</div>
+              <div class="file-info">
+                <div class="file-name">propuesta-seo.pdf</div>
+                <div class="file-size">2.4 MB</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="tag animate-in">Rich Messages</div>
+        <h2 class="animate-in animate-in-d1">Mensajes<br><span class="gradient-text">Enriquecidos</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Tarjetas, carruseles, botones, quick replies y adjuntos de archivos. Upload seguro con validacion de MIME y sanitizacion.</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Multi-language -->
+    <div class="slide slide-center" data-narration="El chatbot soporta doce idiomas de forma nativa. El sistema detecta automaticamente el idioma del visitante desde su primer mensaje, pero tambien ofrece un selector manual con banderas. Todos los strings de la interfaz, prompts de la IA y base de conocimiento se adaptan al idioma seleccionado. Esto incluye espanol, gallego, ingles, portugues, frances, aleman, italiano, holandes, chino, japones, coreano y arabe con soporte RTL.">
+      <div class="animate-in">
+        <div class="tag">Internacionalizacion</div>
+        <h2>12 Idiomas <span class="gradient-text">Nativos</span></h2>
+      </div>
+      <div class="animate-in animate-in-d1" style="display:flex;flex-wrap:wrap;gap:12px;justify-content:center;max-width:700px;margin:0 auto">
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(227,6,19,0.1);border:1px solid rgba(227,6,19,0.2);font-size:14px;font-weight:600">&#x1F1EA;&#x1F1F8; Espanol</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F3F4; Galego</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1EC;&#x1F1E7; English</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1F5;&#x1F1F9; Portugues</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1EB;&#x1F1F7; Francais</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1E9;&#x1F1EA; Deutsch</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1EE;&#x1F1F9; Italiano</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1F3;&#x1F1F1; Nederlands</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1E8;&#x1F1F3; Zhongwen</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1EF;&#x1F1F5; Nihongo</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1F0;&#x1F1F7; Hangugeo</span>
+        <span style="padding:10px 20px;border-radius:12px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-size:14px;font-weight:600">&#x1F1F8;&#x1F1E6; Arabiya</span>
+      </div>
+      <p class="subtitle animate-in animate-in-d2" style="margin:0 auto">Auto-deteccion desde el primer mensaje. Selector manual con banderas. Soporte RTL para arabe.</p>
+    </div>
+
+    <!-- SLIDE 6: Dashboard Login + Queue -->
+    <div class="slide slide-split" data-narration="El dashboard de agentes es una aplicacion profesional con modo oscuro, paleta de comandos con control mas K, y estado de conexion en tiempo real. Los agentes ven una cola de conversaciones en espera con un temporizador de urgencia que cambia de color. Verde si la espera es corta, ambar si supera el minuto, rojo si pasa de dos minutos. El agente puede aceptar con un solo clic.">
+      <div class="text-side">
+        <div class="tag animate-in">Dashboard</div>
+        <h2 class="animate-in animate-in-d1">Panel de<br><span class="gradient-text">Agentes</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Cola en tiempo real, temporizador de urgencia, paleta de comandos (Cmd+K), modo oscuro, sidebar colapsable.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="dash-mock" style="position:relative;min-height:380px">
+          <div class="dm-sidebar">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+              <span style="font-size:12px">&#x1F4AC;</span>
+            </div>
+            <div class="dm-nav active" style="position:relative;color:#F1F5F9;font-size:14px">&#x1F4AC;</div>
+            <div class="dm-nav" style="color:#64748B;font-size:14px">&#x1F465;</div>
+            <div class="dm-nav" style="color:#64748B;font-size:14px">&#x1F4CA;</div>
+            <div class="dm-nav" style="color:#64748B;font-size:14px">&#x2699;</div>
+          </div>
+          <div class="dm-main">
+            <div class="dm-topbar">
+              <div>
+                <h3>Conversaciones</h3>
+                <span style="font-size:10px;color:#64748B">3 en cola</span>
+              </div>
+              <div class="dm-status"><span class="dm-dot"></span> Conectado</div>
+            </div>
+            <div class="dm-content">
+              <div class="q-card">
+                <div class="q-avatar" style="background:linear-gradient(135deg,#3B82F6,#1D4ED8);color:white">V1</div>
+                <div class="q-info">
+                  <div class="q-id">Visitante a3f8...</div>
+                  <div class="q-msg">Necesito ayuda con SEO</div>
+                </div>
+                <div class="q-badge" style="background:rgba(59,130,246,0.15);color:var(--blue)">Boostic</div>
+                <div class="q-time" style="color:var(--green)">0:45</div>
+                <button class="q-accept">Aceptar</button>
+              </div>
+              <div class="q-card">
+                <div class="q-avatar" style="background:linear-gradient(135deg,var(--purple),#6D28D9);color:white">V2</div>
+                <div class="q-info">
+                  <div class="q-id">Visitante 7bc2...</div>
+                  <div class="q-msg">Quiero un dashboard de KPIs</div>
+                </div>
+                <div class="q-badge" style="background:rgba(139,92,246,0.15);color:var(--purple)">Binnacle</div>
+                <div class="q-time" style="color:var(--orange)">1:30</div>
+                <button class="q-accept">Aceptar</button>
+              </div>
+              <div class="q-card">
+                <div class="q-avatar" style="background:linear-gradient(135deg,var(--green),#059669);color:white">V3</div>
+                <div class="q-info">
+                  <div class="q-id">Visitante f1d9...</div>
+                  <div class="q-msg">Campana en Google Ads</div>
+                </div>
+                <div class="q-badge" style="background:rgba(16,185,129,0.15);color:var(--green)">Marketing</div>
+                <div class="q-time" style="color:var(--red)">3:15</div>
+                <button class="q-accept">Aceptar</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Agent Conversation -->
+    <div class="slide slide-split" data-narration="Cuando el agente acepta una conversacion, recibe un resumen generado por inteligencia artificial con los puntos clave: que necesita el visitante, que linea de negocio le interesa y si dejo datos de contacto. Tambien ve el contexto de navegacion del visitante: en que pagina esta y de donde vino. Las notas internas permiten a los agentes compartir informacion sin que el visitante las vea, con un estilo visual amarillo diferenciado.">
+      <div class="visual-side animate-in">
+        <div class="dash-mock" style="position:relative;min-height:380px">
+          <div class="dm-main" style="margin-left:0">
+            <div class="dm-topbar" style="padding:10px 16px">
+              <div style="display:flex;align-items:center;gap:10px">
+                <div style="width:32px;height:32px;border-radius:10px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;color:#94A3B8;font-size:12px">&#x1F464;</div>
+                <div>
+                  <div style="font-size:12px;font-weight:600;color:#E2E8F0">Visitante a3f8...</div>
+                  <div style="display:flex;gap:4px"><span class="q-badge" style="font-size:9px;background:rgba(59,130,246,0.15);color:var(--blue)">ES</span><span class="q-badge" style="font-size:9px;background:rgba(59,130,246,0.15);color:var(--blue)">Boostic</span></div>
+                </div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <span style="font-size:10px;padding:5px 10px;border-radius:6px;background:rgba(59,130,246,0.1);color:var(--blue);cursor:pointer">Info</span>
+                <span style="font-size:10px;padding:5px 10px;border-radius:6px;background:rgba(255,255,255,0.04);color:#94A3B8;cursor:pointer">Cerrar</span>
+              </div>
+            </div>
+            <!-- AI Summary -->
+            <div style="padding:10px 16px;background:rgba(139,92,246,0.05);border-bottom:1px solid rgba(255,255,255,0.06);display:flex;gap:8px">
+              <div style="width:24px;height:24px;border-radius:6px;background:linear-gradient(135deg,var(--purple),#6D28D9);display:flex;align-items:center;justify-content:center;color:white;font-size:10px;flex-shrink:0">&#x2605;</div>
+              <div>
+                <div style="font-size:9px;font-weight:700;color:var(--purple);text-transform:uppercase;letter-spacing:0.08em">Resumen IA</div>
+                <div style="font-size:11px;color:#94A3B8;line-height:1.5;margin-top:2px">&#x2022; Visitante interesado en SEO para e-commerce<br>&#x2022; Linea: Boostic (posicionamiento organico)<br>&#x2022; No ha dejado datos de contacto aun</div>
+              </div>
+            </div>
+            <!-- Messages -->
+            <div style="padding:12px 16px;display:flex;flex-direction:column;gap:6px;background:rgba(0,0,0,0.2);min-height:140px">
+              <div style="font-size:11px;color:#94A3B8;display:flex;gap:6px;align-items:center">
+                <span style="width:20px;height:20px;border-radius:6px;background:rgba(255,255,255,0.06);display:flex;align-items:center;justify-content:center;font-size:8px">V</span>
+                <div style="background:rgba(255,255,255,0.06);padding:8px 12px;border-radius:12px;font-size:12px;color:#E2E8F0">Necesito ayuda con SEO para mi tienda</div>
+              </div>
+              <div style="font-size:11px;color:#94A3B8;display:flex;gap:6px;align-items:center;flex-direction:row-reverse">
+                <div style="background:var(--red);padding:8px 12px;border-radius:12px;font-size:12px;color:white">Hola! Soy Ana del equipo Boostic. Encantada de ayudarte.</div>
+              </div>
+              <!-- Internal note -->
+              <div style="text-align:center">
+                <span style="font-size:10px;padding:4px 12px;border-radius:8px;background:rgba(245,158,11,0.15);color:var(--orange);border:1px solid rgba(245,158,11,0.2)">&#x1F4DD; Ana: Lead potencial, revisar historial</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="tag animate-in">Agente</div>
+        <h2 class="animate-in animate-in-d1">Resumen IA +<br><span class="gradient-text">Notas Internas</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Al aceptar, el agente recibe un resumen automatico. Notas internas amarillas visibles solo entre agentes. Contexto del visitante en sidebar.</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Leads + Analytics -->
+    <div class="slide slide-split" data-narration="El dashboard incluye un pipeline de leads con tarjetas de KPIs en tiempo real: total de leads, nuevos, cualificados y puntuacion media. Cada lead tiene un modal de detalle con historial completo y botones de cambio de estado. La seccion de analiticas muestra graficos de dona para distribucion de conversaciones, barras horizontales para rendimiento por agente, y evaluacion de satisfaccion con emoticonos. Todo con esqueletos de carga animados.">
+      <div class="text-side">
+        <div class="tag animate-in">Datos</div>
+        <h2 class="animate-in animate-in-d1">Leads +<br><span class="gradient-text">Analytics</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Pipeline de leads con KPIs, scoring automatico, integracion CRM (Salesforce, HubSpot, Zoho, Pipedrive). Graficos SVG en tiempo real.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="dash-mock" style="position:relative;min-height:340px">
+          <div class="dm-main" style="margin-left:0">
+            <div class="dm-topbar" style="padding:10px 16px"><h3>Analytics</h3></div>
+            <div class="dm-content">
+              <div class="kpi-row">
+                <div class="kpi"><div class="kpi-label">Conversaciones</div><div class="kpi-value">247</div></div>
+                <div class="kpi"><div class="kpi-label">Leads</div><div class="kpi-value" style="color:var(--green)">63</div></div>
+                <div class="kpi"><div class="kpi-label">CSAT</div><div class="kpi-value" style="color:var(--orange)">4.6</div></div>
+                <div class="kpi"><div class="kpi-label">Resolucion</div><div class="kpi-value" style="color:var(--blue)">89%</div></div>
+              </div>
+              <div style="font-size:11px;font-weight:600;color:#94A3B8;margin-bottom:8px">Por linea de negocio</div>
+              <div class="stat-bar"><span class="label">Boostic</span><div class="bar"><div class="fill" style="width:72%;background:var(--blue)"></div></div><span style="font-size:11px;color:#E2E8F0;width:30px;text-align:right">72%</span></div>
+              <div class="stat-bar"><span class="label">Marketing</span><div class="bar"><div class="fill" style="width:58%;background:var(--green)"></div></div><span style="font-size:11px;color:#E2E8F0;width:30px;text-align:right">58%</span></div>
+              <div class="stat-bar"><span class="label">Tech</span><div class="bar"><div class="fill" style="width:45%;background:var(--orange)"></div></div><span style="font-size:11px;color:#E2E8F0;width:30px;text-align:right">45%</span></div>
+              <div class="stat-bar"><span class="label">Binnacle</span><div class="bar"><div class="fill" style="width:31%;background:var(--purple)"></div></div><span style="font-size:11px;color:#E2E8F0;width:30px;text-align:right">31%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: Team Roles -->
+    <div class="slide slide-center" data-narration="El sistema soporta roles diferenciados para el equipo. Tenemos un arquitecto que supervisa la estructura global, tres desarrolladores asignados a diferentes lineas de negocio, y un profesional de QA que cubre todas las lineas. Cada rol tiene un badge visual distintivo con color propio. El middleware de autorizacion controla el acceso por rol a las diferentes funcionalidades del sistema.">
+      <div class="animate-in">
+        <div class="tag">Equipo</div>
+        <h2>Roles del <span class="gradient-text">Equipo</span></h2>
+      </div>
+      <div class="team-grid animate-in animate-in-d1">
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#DBEAFE,#93C5FD);color:#1D4ED8">C</div>
+          <div class="team-name">Carlos</div>
+          <div class="team-role" style="background:#DBEAFE;color:#2563EB">Arquitecto</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#D1FAE5,#6EE7B7);color:#059669">A</div>
+          <div class="team-name">Ana</div>
+          <div class="team-role" style="background:#D1FAE5;color:#059669">Developer</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#D1FAE5,#6EE7B7);color:#059669">P</div>
+          <div class="team-name">Pablo</div>
+          <div class="team-role" style="background:#D1FAE5;color:#059669">Developer</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#D1FAE5,#6EE7B7);color:#059669">L</div>
+          <div class="team-name">Laura</div>
+          <div class="team-role" style="background:#D1FAE5;color:#059669">Developer</div>
+        </div>
+        <div class="team-card">
+          <div class="team-avatar" style="background:linear-gradient(135deg,#FEF3C7,#FCD34D);color:#B45309">M</div>
+          <div class="team-name">Marta</div>
+          <div class="team-role" style="background:#FEF3C7;color:#D97706">QA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10: Integrations -->
+    <div class="slide slide-center" data-narration="La plataforma se integra con los principales CRMs del mercado: Salesforce, HubSpot, Zoho y Pipedrive. Los webhooks con firma HMAC permiten conectar con cualquier sistema externo. Disponemos de plugins listos para WordPress, Shopify y Magento. El sistema de theming permite personalizar completamente colores, tipografia, posicion, funcionalidades activas e incluso sonidos. Todo configurable desde el dashboard.">
+      <div class="animate-in">
+        <div class="tag">Integraciones</div>
+        <h2>Ecosistema <span class="gradient-text">Conectado</span></h2>
+      </div>
+      <div class="features-grid animate-in animate-in-d1">
+        <div class="feat-card"><div class="icon">&#x1F517;</div><h4>CRM</h4><p>Salesforce, HubSpot, Zoho, Pipedrive con dispatch automatico</p></div>
+        <div class="feat-card"><div class="icon">&#x1F514;</div><h4>Webhooks</h4><p>HMAC-signed, 10 eventos, circuit breaker automatico</p></div>
+        <div class="feat-card"><div class="icon">&#x1F50C;</div><h4>Plugins</h4><p>WordPress, Shopify, Magento listos para instalar</p></div>
+        <div class="feat-card"><div class="icon">&#x1F3A8;</div><h4>Theming</h4><p>Colores, tipografia, layout, features, sonidos parametrizables</p></div>
+        <div class="feat-card"><div class="icon">&#x1F512;</div><h4>Seguridad</h4><p>JWT, API keys, rate limiting, SSRF protection, CORS</p></div>
+        <div class="feat-card"><div class="icon">&#x1F4DE;</div><h4>VoIP</h4><p>SIP.js + Asterisk, colas por skill, WebRTC encriptado</p></div>
+      </div>
+    </div>
+
+    <!-- SLIDE 11: Summary -->
+    <div class="slide slide-center" data-narration="En resumen, el chatbot de Redegal es una plataforma completa de comunicacion con clientes. Chatbot con inteligencia artificial, webphone VoIP, dashboard profesional para agentes, doce idiomas, cuatro lineas de negocio, integracion con CRMs, webhooks, plugins para las principales plataformas e-commerce, y un sistema de theming totalmente parametrizable. Ciento once tests automatizados garantizan la calidad. Todo desplegable con Docker Compose en un solo comando. Gracias por vuestra atencion.">
+      <div class="animate-in">
+        <div class="tag">Resumen</div>
+        <h1><span class="gradient-text">Listo para</span><br>produccion</h1>
+        <p class="subtitle" style="margin:0 auto">Plataforma completa de comunicacion con clientes. Chat IA + VoIP + Dashboard + CRM + Analytics.</p>
+      </div>
+      <div class="features-grid animate-in animate-in-d2" style="grid-template-columns:repeat(4,1fr);max-width:800px">
+        <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--red)">111</div><div style="font-size:12px;color:#94A3B8">Tests</div></div>
+        <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--blue)">12</div><div style="font-size:12px;color:#94A3B8">Idiomas</div></div>
+        <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--green)">4</div><div style="font-size:12px;color:#94A3B8">CRMs</div></div>
+        <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--purple)">3</div><div style="font-size:12px;color:#94A3B8">Providers IA</div></div>
+      </div>
+      <div class="animate-in animate-in-d3" style="margin-top:24px">
+        <span style="font-size:13px;padding:10px 28px;border-radius:12px;background:var(--red);color:white;font-weight:700">docker compose up --build</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-prev" disabled>&#x2190; Anterior</button>
+    <div id="progress"><div id="progress-bar" style="width:0%"></div></div>
+    <span id="slide-counter">1 / 12</span>
+    <button class="ctrl-btn primary" id="btn-next">Siguiente &#x2192;</button>
+    <button class="ctrl-btn" id="btn-auto">&#x25B6; Auto (10 min)</button>
+    <span id="voice-status"></span>
+  </div>
+</div>
+
+<script>
+// ── Presentation Engine ──
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+let current = 0;
+let autoTimer = null;
+let speaking = false;
+
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+const btnAuto = document.getElementById('btn-auto');
+const progressBar = document.getElementById('progress-bar');
+const counter = document.getElementById('slide-counter');
+const voiceStatus = document.getElementById('voice-status');
+
+function updateUI() {
+  slides.forEach((s, i) => {
+    s.classList.remove('active', 'exit');
+    if (i === current) s.classList.add('active');
+  });
+  btnPrev.disabled = current === 0;
+  btnNext.disabled = current === totalSlides - 1;
+  counter.textContent = `${current + 1} / ${totalSlides}`;
+  progressBar.style.width = `${((current + 1) / totalSlides) * 100}%`;
+}
+
+function goTo(n) {
+  if (n < 0 || n >= totalSlides) return;
+  window.speechSynthesis.cancel();
+  speaking = false;
+  const prev = current;
+  current = n;
+  slides[prev]?.classList.add('exit');
+  updateUI();
+}
+
+function next() { goTo(current + 1); }
+function prev() { goTo(current - 1); }
+
+btnPrev.addEventListener('click', () => { stopAuto(); prev(); });
+btnNext.addEventListener('click', () => { stopAuto(); next(); });
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); stopAuto(); next(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); stopAuto(); prev(); }
+});
+
+// ── Microsoft TTS (Web Speech API) ──
+function getMicrosoftVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  // Prefer Microsoft Spanish voices
+  const prefs = [
+    'Microsoft Helena',   // es-ES
+    'Microsoft Laura',    // es-ES
+    'Microsoft Pablo',    // es-ES
+    'Microsoft Elvira',   // es-ES
+    'Microsoft Sabina',   // es-MX
+    'Helena',
+    'Laura',
+    'Pablo',
+  ];
+  for (const pref of prefs) {
+    const v = voices.find(v => v.name.includes(pref) && v.lang.startsWith('es'));
+    if (v) return v;
+  }
+  // Fallback: any Spanish voice
+  const esVoice = voices.find(v => v.lang.startsWith('es'));
+  if (esVoice) return esVoice;
+  // Last resort: any voice
+  return voices[0] || null;
+}
+
+function speak(text, onEnd) {
+  if (!window.speechSynthesis) { onEnd?.(); return; }
+  window.speechSynthesis.cancel();
+
+  const utter = new SpeechSynthesisUtterance(text);
+  const voice = getMicrosoftVoice();
+  if (voice) {
+    utter.voice = voice;
+    voiceStatus.textContent = `Voz: ${voice.name}`;
+  }
+  utter.lang = 'es-ES';
+  utter.rate = 0.92;
+  utter.pitch = 1;
+  utter.volume = 1;
+
+  speaking = true;
+  utter.onend = () => { speaking = false; onEnd?.(); };
+  utter.onerror = () => { speaking = false; onEnd?.(); };
+
+  // Chrome bug: long utterances get cut off. Split if needed.
+  window.speechSynthesis.speak(utter);
+}
+
+// ── Auto Mode ──
+let autoRunning = false;
+
+function startAuto() {
+  autoRunning = true;
+  btnAuto.textContent = '&#x23F8; Pausar';
+  btnAuto.innerHTML = '&#x23F8; Pausar';
+  autoStep();
+}
+
+function stopAuto() {
+  autoRunning = false;
+  window.speechSynthesis.cancel();
+  speaking = false;
+  if (autoTimer) clearTimeout(autoTimer);
+  autoTimer = null;
+  btnAuto.innerHTML = '&#x25B6; Auto (10 min)';
+}
+
+function autoStep() {
+  if (!autoRunning) return;
+  const slide = slides[current];
+  const narration = slide?.getAttribute('data-narration');
+
+  if (narration) {
+    speak(narration, () => {
+      if (!autoRunning) return;
+      // Small pause between slides
+      autoTimer = setTimeout(() => {
+        if (current < totalSlides - 1) {
+          next();
+          autoStep();
+        } else {
+          stopAuto();
+        }
+      }, 1500);
+    });
+  } else {
+    autoTimer = setTimeout(() => {
+      if (current < totalSlides - 1) {
+        next();
+        autoStep();
+      } else {
+        stopAuto();
+      }
+    }, 5000);
+  }
+}
+
+btnAuto.addEventListener('click', () => {
+  if (autoRunning) {
+    stopAuto();
+  } else {
+    startAuto();
+  }
+});
+
+// Load voices (Chrome loads them async)
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    const v = getMicrosoftVoice();
+    if (v) voiceStatus.textContent = `Voz: ${v.name}`;
+  };
+  // Trigger initial load
+  window.speechSynthesis.getVoices();
+}
+
+// Init
+updateUI();
+</script>
+</body>
+</html>
