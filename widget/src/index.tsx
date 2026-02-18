@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom/client';
 import { Widget } from './Widget';
 import './styles.css';
 
-// For IIFE build: expose init function globally
+// IIFE: global init function for Shadow DOM mounting
 (window as any).__redegalWidgetInit = function (mountEl: HTMLElement, config: any) {
   const root = ReactDOM.createRoot(mountEl);
   root.render(
@@ -11,16 +11,17 @@ import './styles.css';
       <Widget
         baseUrl={config.baseUrl}
         apiUrl={config.apiUrl}
+        configUrl={config.configUrl}
         language={config.language}
         primaryColor={config.primaryColor}
+        theme={config.theme}
       />
     </React.StrictMode>
   );
 };
 
-// Auto-init if mount point already exists (dev mode)
-const existing = document.getElementById('redegal-chatbot-root');
-if (existing) {
-  const config = (window as any).RedegalChatbot || {};
-  (window as any).__redegalWidgetInit(existing, config);
+// Auto-init if dev mode
+const el = document.getElementById('redegal-chatbot-root');
+if (el) {
+  (window as any).__redegalWidgetInit(el, (window as any).RedegalChatbot || {});
 }

@@ -1,0 +1,68 @@
+[
+  {
+    "name": "Redegal Chatbot",
+    "settings": [
+      {
+        "type": "checkbox",
+        "id": "redegal_chatbot_enabled",
+        "label": "Enable Chatbot Widget",
+        "default": false
+      },
+      {
+        "type": "text",
+        "id": "redegal_chatbot_server_url",
+        "label": "Chatbot Server URL",
+        "default": "https://chatbot.redegal.com",
+        "info": "URL of your Redegal Chatbot server"
+      },
+      {
+        "type": "text",
+        "id": "redegal_chatbot_api_key",
+        "label": "API Key",
+        "info": "Your widget API key"
+      },
+      {
+        "type": "color",
+        "id": "redegal_chatbot_primary_color",
+        "label": "Primary Color",
+        "default": "#E30613"
+      },
+      {
+        "type": "image_picker",
+        "id": "redegal_chatbot_logo",
+        "label": "Chat Logo"
+      },
+      {
+        "type": "select",
+        "id": "redegal_chatbot_language",
+        "label": "Default Language",
+        "default": "auto",
+        "options": [
+          { "value": "auto", "label": "Auto-detect" },
+          { "value": "es", "label": "Español" },
+          { "value": "en", "label": "English" },
+          { "value": "pt", "label": "Português" },
+          { "value": "fr", "label": "Français" },
+          { "value": "de", "label": "Deutsch" },
+          { "value": "it", "label": "Italiano" },
+          { "value": "nl", "label": "Nederlands" },
+          { "value": "zh", "label": "中文" },
+          { "value": "ja", "label": "日本語" },
+          { "value": "ko", "label": "한국어" },
+          { "value": "ar", "label": "العربية" },
+          { "value": "gl", "label": "Galego" }
+        ]
+      },
+      {
+        "type": "select",
+        "id": "redegal_chatbot_position",
+        "label": "Widget Position",
+        "default": "bottom-right",
+        "options": [
+          { "value": "bottom-right", "label": "Bottom Right" },
+          { "value": "bottom-left", "label": "Bottom Left" }
+        ]
+      }
+    ]
+  }
+]

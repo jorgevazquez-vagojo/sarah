@@ -3,6 +3,8 @@ const { db } = require('../utils/db');
 const { redis } = require('../utils/redis');
 const { verifyToken } = require('../middleware/auth');
 const { transition } = require('../state/conversation-fsm');
+const { triggerWebhooks } = require('../integrations/webhooks');
+const { dispatchToCRM } = require('../integrations/crm');
 
 // Map of agentId -> ws
 const agents = new Map();
@@ -113,8 +115,9 @@ async function handleAgentMessage(ws, agent, msg) {
         })),
       });
 
-      // Track
+      // Track + webhook
       db.trackEvent({ eventType: 'agent_accepted', conversationId: conv.id, agentId: agent.id }).catch(() => {});
+      triggerWebhooks('agent.assigned', { conversationId: conv.id, agentId: agent.id, agentName: agent.displayName }).catch(() => {});
 
       // Notify other agents to remove from queue
       for (const [otherId, otherWs] of agents) {
@@ -126,21 +129,49 @@ async function handleAgentMessage(ws, agent, msg) {
     }
 
     case 'send_message': {
+      let content = msg.content;
+
+      // Expand canned responses: if message starts with / look up shortcut
+      if (content.startsWith('/')) {
+        const shortcut = content.slice(1).trim();
+        const canned = await db.query(
+          `UPDATE canned_responses SET usage_count = usage_count + 1
+           WHERE shortcut = $1 RETURNING content`,
+          [shortcut]
+        );
+        if (canned.rows[0]) content = canned.rows[0].content;
+      }
+
       // Agent sends message to visitor
       await db.saveMessage({
         conversationId: msg.conversationId,
         sender: 'agent',
-        content: msg.content,
+        content,
         metadata: { agentId: agent.id, agentName: agent.displayName },
       });
 
       const conv = await db.getConversation(msg.conversationId);
       await redis.publish('agent:message', {
         visitorId: conv.visitor_id,
-        content: msg.content,
+        content,
         agentName: agent.displayName,
         timestamp: new Date().toISOString(),
       });
+      triggerWebhooks('message.sent', { conversationId: msg.conversationId, sender: 'agent', agentId: agent.id, content }).catch(() => {});
+      break;
+    }
+
+    case 'list_canned': {
+      // Agent requests available canned responses
+      const conv = msg.conversationId ? await db.getConversation(msg.conversationId) : null;
+      const canned = await db.query(
+        `SELECT shortcut, title, content, category FROM canned_responses
+         WHERE (language = $1 OR language IS NULL)
+         AND (business_line = $2 OR business_line IS NULL)
+         ORDER BY usage_count DESC LIMIT 50`,
+        [conv?.language || 'es', conv?.business_line]
+      );
+      send(ws, 'canned_responses', { responses: canned.rows });
       break;
     }
 
@@ -157,6 +188,8 @@ async function handleAgentMessage(ws, agent, msg) {
       });
 
       db.trackEvent({ eventType: 'conversation_closed', conversationId: msg.conversationId, agentId: agent.id }).catch(() => {});
+      triggerWebhooks('conversation.closed', { conversationId: msg.conversationId, agentId: agent.id }).catch(() => {});
+      dispatchToCRM('conversation_closed', { conversationId: msg.conversationId, agentId: agent.id }).catch(() => {});
       break;
     }
 

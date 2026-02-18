@@ -1,0 +1,52 @@
+<?php
+/**
+ * Redegal Chatbot - Magento 2 Template
+ *
+ * Installation:
+ * 1. Create module: app/code/Redegal/Chatbot/
+ * 2. Add this template to default.xml layout:
+ *    <referenceContainer name="before.body.end">
+ *        <block class="Magento\Framework\View\Element\Template"
+ *               template="Redegal_Chatbot::chatbot.phtml" />
+ *    </referenceContainer>
+ * 3. Configure via Stores > Configuration > Redegal > Chatbot
+ */
+
+$helper = $this->helper(\Magento\Framework\App\Helper\AbstractHelper::class);
+$storeManager = $this->helper(\Magento\Store\Model\StoreManagerInterface::class);
+$scopeConfig = $this->helper(\Magento\Framework\App\Config\ScopeConfigInterface::class);
+
+$enabled = $scopeConfig->getValue('redegal_chatbot/general/enabled', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+$serverUrl = $scopeConfig->getValue('redegal_chatbot/general/server_url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) ?: 'https://chatbot.redegal.com';
+$apiKey = $scopeConfig->getValue('redegal_chatbot/general/api_key', \Magento\Store\Model\ScopeInterface::SCOPE_STORE);
+$language = $scopeConfig->getValue('redegal_chatbot/general/language', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) ?: 'auto';
+$primaryColor = $scopeConfig->getValue('redegal_chatbot/appearance/primary_color', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) ?: '#E30613';
+$position = $scopeConfig->getValue('redegal_chatbot/appearance/position', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) ?: 'bottom-right';
+$logoUrl = $scopeConfig->getValue('redegal_chatbot/appearance/logo_url', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) ?: '';
+$companyName = $scopeConfig->getValue('redegal_chatbot/appearance/company_name', \Magento\Store\Model\ScopeInterface::SCOPE_STORE) ?: 'Redegal';
+
+if (!$enabled) return;
+
+$serverUrl = rtrim($serverUrl, '/');
+$wsUrl = str_replace(['https://', 'http://'], ['wss://', 'ws://'], $serverUrl);
+?>
+
+<script>
+window.RedegalChatbot = {
+    baseUrl: <?= json_encode($serverUrl . '/widget') ?>,
+    apiUrl: <?= json_encode($wsUrl . '/ws/chat') ?>,
+    configUrl: <?= json_encode($serverUrl . '/api/config/widget') ?>,
+    language: <?= json_encode($language) ?>,
+    primaryColor: <?= json_encode($primaryColor) ?>,
+    theme: {
+        branding: {
+            companyName: <?= json_encode($companyName) ?>,
+            logoUrl: <?= json_encode($logoUrl) ?>
+        },
+        layout: {
+            position: <?= json_encode($position) ?>
+        }
+    }
+};
+</script>
+<script src="<?= $this->escapeUrl($serverUrl . '/widget/loader.js') ?>" async></script>

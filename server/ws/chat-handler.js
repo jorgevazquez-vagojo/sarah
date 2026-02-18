@@ -7,6 +7,9 @@ const { sessionStore } = require('../state/session-store');
 const { transition } = require('../state/conversation-fsm');
 const { detectLanguage } = require('../services/language-detector');
 const { generateResponse, detectBusinessLine, isBusinessHours } = require('../services/router');
+const { scoreLead } = require('../services/lead-capture');
+const { triggerWebhooks } = require('../integrations/webhooks');
+const { dispatchToCRM } = require('../integrations/crm');
 
 // Map of visitorId -> ws
 const visitors = new Map();
@@ -98,8 +101,9 @@ async function handleChat(ws, visitorId, msg) {
     await transition(conv.id, 'start');
     conv.state = 'chat_active';
 
-    // Track event
+    // Track event + webhook
     db.trackEvent({ eventType: 'conversation_started', conversationId: conv.id, visitorId, language, businessLine: detectedLine }).catch(() => {});
+    triggerWebhooks('conversation.started', { conversationId: conv.id, visitorId, language, businessLine: detectedLine }).catch(() => {});
   }
 
   // Detect and update business line if not set
@@ -111,8 +115,9 @@ async function handleChat(ws, visitorId, msg) {
     }
   }
 
-  // Save visitor message
+  // Save visitor message + webhook
   await db.saveMessage({ conversationId: conv.id, sender: 'visitor', content: msg.content });
+  triggerWebhooks('message.received', { conversationId: conv.id, visitorId, content: msg.content }).catch(() => {});
 
   // If agent is assigned, relay to agent via Redis
   if (conv.agent_id && conv.state === 'chat_active') {
@@ -141,8 +146,9 @@ async function handleChat(ws, visitorId, msg) {
     await db.updateConversation(conv.id, { business_line: detectedLine });
   }
 
-  // Save bot message
+  // Save bot message + webhook
   await db.saveMessage({ conversationId: conv.id, sender: 'bot', content: response });
+  triggerWebhooks('message.sent', { conversationId: conv.id, sender: 'bot', content: response }).catch(() => {});
 
   send(ws, 'typing', { isTyping: false });
   send(ws, 'message', {
@@ -180,6 +186,11 @@ async function handleLeadSubmit(ws, visitorId, msg) {
     language: session.language || 'es',
   });
 
+  // Score lead + dispatch to CRM + trigger webhooks
+  scoreLead(lead.id).catch(() => {});
+  dispatchToCRM('lead_created', { lead, conversation: conv }).catch((e) => logger.warn('CRM dispatch error:', e.message));
+  triggerWebhooks('lead.created', { lead, visitorId, businessLine: conv?.business_line }).catch(() => {});
+
   db.trackEvent({ eventType: 'lead_captured', conversationId: conv?.id, visitorId, businessLine: conv?.business_line, data: { leadId: lead.id } }).catch(() => {});
 
   const lang = session.language || 'es';
@@ -202,6 +213,11 @@ async function handleOfflineForm(ws, visitorId, msg) {
   if (msg.message) {
     await db.updateLead(lead.id, { notes: msg.message, metadata: { source: 'offline_form' } });
   }
+
+  // Score lead + dispatch to CRM + trigger webhooks
+  scoreLead(lead.id).catch(() => {});
+  dispatchToCRM('lead_created', { lead, conversation: null }).catch((e) => logger.warn('CRM dispatch error:', e.message));
+  triggerWebhooks('lead.created', { lead, visitorId, source: 'offline_form' }).catch(() => {});
 
   db.trackEvent({ eventType: 'offline_form', visitorId, data: { leadId: lead.id } }).catch(() => {});
 
@@ -280,6 +296,7 @@ async function handleCsat(ws, visitorId, msg) {
     visitorId,
     data: { rating: msg.rating, comment: msg.comment },
   }).catch(() => {});
+  triggerWebhooks('csat.submitted', { conversationId: conv?.id, visitorId, rating: msg.rating, comment: msg.comment }).catch(() => {});
 
   send(ws, 'message', {
     sender: 'system',

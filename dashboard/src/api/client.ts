@@ -24,28 +24,52 @@ async function request(path: string, options: RequestInit = {}) {
 }
 
 export const api = {
+  // Auth
   login: (username: string, password: string) =>
     request('/agents/login', { method: 'POST', body: JSON.stringify({ username, password }) }),
-
   getMe: () => request('/agents/me'),
 
+  // Agent
   setStatus: (status: string) =>
     request('/agents/status', { method: 'PATCH', body: JSON.stringify({ status }) }),
-
   getQueue: () => request('/agents/queue'),
 
+  // Leads
   getLeads: (params?: Record<string, string>) => {
     const qs = params ? '?' + new URLSearchParams(params).toString() : '';
     return request(`/leads${qs}`);
   },
-
   updateLead: (id: string, data: Record<string, any>) =>
     request(`/leads/${id}`, { method: 'PATCH', body: JSON.stringify(data) }),
 
+  // Analytics
   getAnalytics: (params?: Record<string, string>) => {
     const qs = params ? '?' + new URLSearchParams(params).toString() : '';
     return request(`/analytics${qs}`);
   },
+
+  // Config / Theme
+  getThemes: () => request('/config/theme'),
+  updateTheme: (id: string, config: any) =>
+    request(`/config/theme/${id}`, { method: 'PUT', body: JSON.stringify({ config }) }),
+
+  // Canned Responses
+  getCannedResponses: (params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/config/canned${qs}`);
+  },
+  createCannedResponse: (data: any) =>
+    request('/config/canned', { method: 'POST', body: JSON.stringify(data) }),
+  deleteCannedResponse: (id: string) =>
+    request(`/config/canned/${id}`, { method: 'DELETE' }),
+
+  // Webhooks
+  getWebhooks: () => request('/config/webhooks'),
+  createWebhook: (data: any) =>
+    request('/config/webhooks', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Health
+  getHealth: () => request('/health'),
 };
 
 export function createAgentWS(token: string): WebSocket {
