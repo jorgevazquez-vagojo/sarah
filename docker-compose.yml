@@ -1,0 +1,60 @@
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-redegal_chatbot}
+      POSTGRES_USER: ${POSTGRES_USER:-redegal}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/config/init.sql:/docker-entrypoint-initdb.d/01-init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-redegal}"]
+      interval: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD} --appendonly yes
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 5s
+      retries: 5
+
+  server:
+    build: ./server
+    ports:
+      - "3000:3000"
+    env_file: .env
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    volumes:
+      - widget_dist:/app/public/widget
+      - dashboard_dist:/app/public/dashboard
+
+  widget-build:
+    build: ./widget
+    volumes:
+      - widget_dist:/app/dist
+    command: npm run build
+
+  dashboard-build:
+    build: ./dashboard
+    volumes:
+      - dashboard_dist:/app/dist
+    command: npm run build
+
+volumes:
+  pgdata:
+  redisdata:
+  widget_dist:
+  dashboard_dist:

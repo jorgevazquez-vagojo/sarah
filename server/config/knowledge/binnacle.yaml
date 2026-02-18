@@ -1,0 +1,31 @@
+# Binnacle - Business Intelligence
+entries:
+  - title: "Qué es Binnacle"
+    category: servicio
+    content: |
+      Binnacle es la división de Business Intelligence de Redegal. Transforma datos en decisiones
+      accionables mediante dashboards, data warehouses y modelos analíticos avanzados.
+
+  - title: "Servicios Binnacle"
+    category: servicio
+    content: |
+      - Data Strategy: definición de KPIs, modelo de datos, gobernanza.
+      - Data Warehouse / Data Lake: diseño e implementación en BigQuery, Snowflake, Redshift.
+      - Dashboards & Reporting: Looker, Looker Studio, Power BI, Tableau.
+      - ETL / ELT: pipelines de datos con Dataflow, dbt, Fivetran, Airbyte.
+      - Advanced Analytics: modelos predictivos, segmentación, RFM, churn prediction.
+      - CDP (Customer Data Platform): unificación de datos de cliente, audiencias.
+
+  - title: "Clientes Binnacle"
+    category: referencias
+    content: |
+      Binnacle trabaja con empresas de retail, e-commerce, fintech, logística y telecomunicaciones.
+      Proyectos de referencia incluyen unificación de datos de +50 fuentes y dashboards en tiempo real.
+
+  - title: "Diferencial Binnacle"
+    category: ventajas
+    content: |
+      - Partner certificado de Google Cloud y Looker.
+      - Equipo con perfiles de data engineering, analytics engineering y data science.
+      - Metodología DataOps para entregas incrementales.
+      - Integración nativa con las líneas de marketing y SEO de Redegal.

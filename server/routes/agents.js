@@ -1,0 +1,64 @@
+const { Router } = require('express');
+const bcrypt = require('bcryptjs');
+const { db } = require('../utils/db');
+const { generateToken, requireAgent } = require('../middleware/auth');
+
+const router = Router();
+
+// Agent login
+router.post('/login', async (req, res) => {
+  const { username, password } = req.body;
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password required' });
+  }
+
+  const agent = await db.getAgentByUsername(username);
+  if (!agent || !await bcrypt.compare(password, agent.password_hash)) {
+    return res.status(401).json({ error: 'Invalid credentials' });
+  }
+
+  await db.updateAgentStatus(agent.id, 'online');
+  const token = generateToken(agent);
+  res.json({
+    token,
+    agent: {
+      id: agent.id,
+      username: agent.username,
+      displayName: agent.display_name,
+      languages: agent.languages,
+      businessLines: agent.business_lines,
+    },
+  });
+});
+
+// Get current agent profile
+router.get('/me', requireAgent, async (req, res) => {
+  const agent = await db.getAgent(req.agent.id);
+  if (!agent) return res.status(404).json({ error: 'Agent not found' });
+  const { password_hash, ...safe } = agent;
+  res.json(safe);
+});
+
+// Update status
+router.patch('/status', requireAgent, async (req, res) => {
+  const { status } = req.body;
+  if (!['online', 'busy', 'away', 'offline'].includes(status)) {
+    return res.status(400).json({ error: 'Invalid status' });
+  }
+  await db.updateAgentStatus(req.agent.id, status);
+  res.json({ status });
+});
+
+// List online agents (agent-only)
+router.get('/', requireAgent, async (req, res) => {
+  const agents = await db.getAvailableAgents();
+  res.json(agents.map(({ password_hash, ...a }) => a));
+});
+
+// Queue: waiting conversations
+router.get('/queue', requireAgent, async (req, res) => {
+  const conversations = await db.getWaitingConversations();
+  res.json(conversations);
+});
+
+module.exports = router;

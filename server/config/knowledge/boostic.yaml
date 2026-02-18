@@ -1,0 +1,32 @@
+# Boostic - SEO & Growth
+entries:
+  - title: "Qué es Boostic"
+    category: servicio
+    content: |
+      Boostic es la línea de negocio de Redegal especializada en SEO, Growth y Analytics para e-commerce.
+      Ayudamos a marcas y retailers a crecer orgánicamente combinando estrategia SEO técnica,
+      contenido optimizado y analítica avanzada.
+
+  - title: "Servicios Boostic"
+    category: servicio
+    content: |
+      - SEO Técnico: auditorías, crawl budget, Core Web Vitals, schema markup, migración segura.
+      - SEO de Contenido: estrategia editorial, keyword research, content clusters, optimización on-page.
+      - Growth Analytics: implementación GA4, dashboards de conversión, A/B testing, attribution modeling.
+      - CRO (Conversion Rate Optimization): análisis de embudo, UX audit, testing multivariante.
+      - Marketplace SEO: optimización para Amazon, eBay, y marketplaces verticales.
+
+  - title: "Clientes Boostic"
+    category: referencias
+    content: |
+      Boostic trabaja con marcas de retail, moda, alimentación y fintech.
+      Algunos sectores clave: e-commerce, retail omnicanal, marketplaces, marcas DTC.
+      Casos de éxito incluyen incrementos de tráfico orgánico superiores al 200% en 12 meses.
+
+  - title: "Diferencial Boostic"
+    category: ventajas
+    content: |
+      - Enfoque data-driven con dashboards propietarios.
+      - Equipo certificado en Google Analytics, Screaming Frog, SEMrush.
+      - Experiencia en migraciones SEO de gran escala (+100K URLs).
+      - Integración con BI (Binnacle) para modelos de atribución avanzados.

@@ -1,0 +1,32 @@
+# General - Redegal
+entries:
+  - title: "Sobre Redegal"
+    category: empresa
+    content: |
+      Redegal es una consultora digital española fundada en 2006 con sede en Vigo (Galicia).
+      Cuenta con más de 160 profesionales y oficinas en España, México, Portugal, Holanda e Italia.
+      Cotiza en BME Growth (ticker RDG) desde 2021, con una facturación superior a 16 millones de euros.
+      Redegal ofrece servicios integrales de transformación digital a través de cuatro líneas de negocio:
+      Boostic (SEO & Growth), Binnacle (Business Intelligence), Marketing Digital y Desarrollo Tecnológico.
+
+  - title: "Oficinas y presencia internacional"
+    category: empresa
+    content: |
+      Sede central: Vigo (Galicia, España).
+      Oficinas: Madrid, Ciudad de México, Lisboa, Ámsterdam, Milán.
+      Clientes en más de 15 países de Europa y Latinoamérica.
+
+  - title: "Modelo de trabajo"
+    category: empresa
+    content: |
+      Redegal combina equipos presenciales y remotos. Ofrece trabajo híbrido para la mayoría de posiciones.
+      Metodología ágil (Scrum/Kanban) con sprints de 2 semanas.
+      Stack tecnológico principal: React, Node.js, Python, AWS, GCP, BigQuery, Looker, Magento, Shopify.
+
+  - title: "Contacto comercial"
+    category: contacto
+    content: |
+      Para consultas comerciales: comercial@redegal.com
+      Teléfono: +34 986 120 022
+      Web: https://redegal.com
+      LinkedIn: https://linkedin.com/company/redegal

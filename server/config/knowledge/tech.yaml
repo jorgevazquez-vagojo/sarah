@@ -1,0 +1,32 @@
+# Tech - Desarrollo Tecnológico
+entries:
+  - title: "Qué es Tech en Redegal"
+    category: servicio
+    content: |
+      La línea de Desarrollo Tecnológico de Redegal diseña, desarrolla y mantiene plataformas digitales:
+      e-commerce, apps, integraciones y modernización de sistemas legacy.
+
+  - title: "Servicios Tech"
+    category: servicio
+    content: |
+      - E-commerce: Magento (Adobe Commerce), Shopify Plus, VTEX, custom headless.
+      - Desarrollo Web: React, Next.js, Vue.js, Node.js, Python (Django/FastAPI).
+      - Aplicaciones Móviles: React Native, Flutter, apps nativas iOS/Android.
+      - Integraciones: ERP (SAP, Dynamics), PIM (Akeneo), OMS, WMS, pasarelas de pago.
+      - Cloud & DevOps: AWS, GCP, Azure, Kubernetes, CI/CD, IaC (Terraform).
+      - Modernización: migración de monolitos a microservicios, headless commerce.
+
+  - title: "Clientes Tech"
+    category: referencias
+    content: |
+      Retailers, fabricantes, marcas DTC y empresas de servicios que necesitan digitalizar
+      sus operaciones o escalar sus plataformas e-commerce.
+
+  - title: "Diferencial Tech"
+    category: ventajas
+    content: |
+      - Partner de Adobe Commerce (Magento), Shopify Plus, AWS.
+      - Equipo de +60 desarrolladores full-stack.
+      - Experiencia en proyectos de alta complejidad (catálogos +1M SKUs, picos Black Friday).
+      - Metodología ágil con entregas cada 2 semanas.
+      - Equipo de QA dedicado con testing automatizado.

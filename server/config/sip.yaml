@@ -1,0 +1,27 @@
+# SIP / Asterisk Queues Configuration
+queues:
+  boostic:
+    name: queue-boostic
+    strategy: ringall
+    timeout: 30
+  binnacle:
+    name: queue-binnacle
+    strategy: ringall
+    timeout: 30
+  marketing:
+    name: queue-marketing
+    strategy: ringall
+    timeout: 30
+  tech:
+    name: queue-tech
+    strategy: ringall
+    timeout: 30
+  general:
+    name: queue-general
+    strategy: ringall
+    timeout: 45
+
+defaults:
+  wrapUpTime: 10
+  maxWaitTime: 120
+  musicOnHold: default

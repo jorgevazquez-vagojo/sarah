@@ -1,0 +1,31 @@
+# Marketing Digital
+entries:
+  - title: "Qué es Marketing Digital en Redegal"
+    category: servicio
+    content: |
+      La línea de Marketing Digital de Redegal gestiona campañas de adquisición, branding y fidelización
+      en canales digitales: SEM, Social Media, Programática, Email Marketing y CRO.
+
+  - title: "Servicios Marketing Digital"
+    category: servicio
+    content: |
+      - SEM / PPC: Google Ads, Microsoft Ads, Amazon Ads. Gestión de campañas de búsqueda, shopping y display.
+      - Social Media Ads: Meta (Facebook/Instagram), TikTok Ads, LinkedIn Ads, Pinterest Ads.
+      - Programática: DSPs, retargeting, audiencias lookalike, brand safety.
+      - Email Marketing & Automation: Salesforce Marketing Cloud, Klaviyo, Brevo, flujos automatizados.
+      - CRO: optimización de landing pages, testing A/B, personalización.
+      - Estrategia de contenido y Social Media Management.
+
+  - title: "Clientes Marketing"
+    category: referencias
+    content: |
+      Marcas de retail, moda, deportes, alimentación, turismo y fintech.
+      Gestión de presupuestos publicitarios de hasta varios millones de euros anuales.
+
+  - title: "Diferencial Marketing"
+    category: ventajas
+    content: |
+      - Certificaciones Google Premier Partner, Meta Business Partner.
+      - Equipo especializado por plataforma y vertical.
+      - Reporting integrado con Binnacle (BI) para atribución multicanal.
+      - Enfoque full-funnel: awareness → consideration → conversion → retention.
