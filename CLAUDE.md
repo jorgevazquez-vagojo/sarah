@@ -7,7 +7,7 @@
 
 ## Project Overview
 Widget embebible para web corporativa Redegal: chatbot IA + webphone VoIP + dashboard agentes.
-Multi-tenant, 12 idiomas, 4 lineas de negocio, parametrizable al completo.
+Multi-tenant, 4 idiomas (es/en/pt/gl), 4 lineas de negocio, parametrizable al completo.
 
 ## Architecture
 - **server/**: Node.js 20 + Express + WebSocket (ws). Three WS paths: /ws/chat, /ws/agent, /ws/sip
@@ -36,7 +36,7 @@ docker compose up --build
 - DB: PostgreSQL 16 with pgvector. Schema in server/config/init.sql
 - Cache: Redis 7. Sessions, pub/sub, rate limiting
 - VoIP: SIP.js (browser) + Asterisk AMI (server). Disabled outside business hours
-- i18n: 12 languages (es, en, pt, fr, de, it, nl, zh, ja, ko, ar, gl) in YAML files
+- i18n: 4 languages (es, en, pt, gl) in YAML files
 - CRM: Salesforce, HubSpot, Zoho, Pipedrive via server/integrations/crm.js
 - Webhooks: HMAC-signed dispatch via server/integrations/webhooks.js
 

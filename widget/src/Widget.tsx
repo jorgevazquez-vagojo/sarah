@@ -27,14 +27,6 @@ const LANG_META: Record<string, { label: string; flag: string; native: string }>
   es: { label: 'Español', flag: '🇪🇸', native: 'Español' },
   en: { label: 'English', flag: '🇬🇧', native: 'English' },
   pt: { label: 'Português', flag: '🇵🇹', native: 'Português' },
-  fr: { label: 'Français', flag: '🇫🇷', native: 'Français' },
-  de: { label: 'Deutsch', flag: '🇩🇪', native: 'Deutsch' },
-  it: { label: 'Italiano', flag: '🇮🇹', native: 'Italiano' },
-  nl: { label: 'Nederlands', flag: '🇳🇱', native: 'Nederlands' },
-  zh: { label: '中文', flag: '🇨🇳', native: '中文' },
-  ja: { label: '日本語', flag: '🇯🇵', native: '日本語' },
-  ko: { label: '한국어', flag: '🇰🇷', native: '한국어' },
-  ar: { label: 'العربية', flag: '🇸🇦', native: 'العربية' },
   gl: { label: 'Galego', flag: '🏴', native: 'Galego' },
 };
 

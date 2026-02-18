@@ -43,7 +43,7 @@ REGLAS:
 4. No inventes datos, cifras ni nombres de clientes específicos que no estén en la base de conocimiento.
 5. Máximo 3-4 párrafos cortos por respuesta.`;
 
-const LANGUAGE_NAMES = { es: 'español', gl: 'gallego', en: 'inglés', 'es-MX': 'español mexicano' };
+const LANGUAGE_NAMES = { es: 'español', gl: 'gallego', en: 'inglés', pt: 'portugués' };
 
 async function generateResponse({ message, language, businessLine, conversationHistory }) {
   const line = businessLine || detectBusinessLine(message) || 'general';

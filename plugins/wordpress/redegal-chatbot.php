@@ -85,7 +85,7 @@ class Redegal_Chatbot {
                         <th><label for="redegal_chatbot_language"><?php _e('Default Language', 'redegal-chatbot'); ?></label></th>
                         <td>
                             <select name="redegal_chatbot_language">
-                                <?php foreach (['auto' => 'Auto-detect', 'es' => 'Español', 'en' => 'English', 'pt' => 'Português', 'fr' => 'Français', 'de' => 'Deutsch', 'it' => 'Italiano', 'nl' => 'Nederlands', 'zh' => '中文', 'ja' => '日本語', 'ko' => '한국어', 'ar' => 'العربية', 'gl' => 'Galego'] as $code => $label): ?>
+                                <?php foreach (['auto' => 'Auto-detect', 'es' => 'Español', 'en' => 'English', 'pt' => 'Português', 'gl' => 'Galego'] as $code => $label): ?>
                                     <option value="<?php echo $code; ?>" <?php selected(get_option('redegal_chatbot_language', 'auto'), $code); ?>><?php echo $label; ?></option>
                                 <?php endforeach; ?>
                             </select>

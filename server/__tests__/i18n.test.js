@@ -9,12 +9,12 @@ describe('i18n', () => {
     .filter((f) => f.endsWith('.yaml'))
     .map((f) => path.basename(f, '.yaml'));
 
-  test('has 13 language files', () => {
-    expect(languages).toHaveLength(13);
+  test('has 4 language files', () => {
+    expect(languages).toHaveLength(4);
   });
 
   test('expected languages are present', () => {
-    const expected = ['es', 'en', 'pt', 'fr', 'de', 'it', 'nl', 'zh', 'ja', 'ko', 'ar', 'gl', 'es-MX'];
+    const expected = ['es', 'en', 'pt', 'gl'];
     for (const lang of expected) {
       expect(languages).toContain(lang);
     }

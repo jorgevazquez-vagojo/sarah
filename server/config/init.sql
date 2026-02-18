@@ -353,7 +353,7 @@ INSERT INTO widget_themes (tenant_id, name, is_active, config) VALUES
         },
         "i18n": {
             "defaultLanguage": "es",
-            "availableLanguages": ["es", "en", "pt", "fr", "de", "it", "nl", "zh", "ja", "ko", "ar", "gl"],
+            "availableLanguages": ["es", "en", "pt", "gl"],
             "autoDetect": true
         },
         "businessLines": [

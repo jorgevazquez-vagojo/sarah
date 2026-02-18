@@ -136,7 +136,7 @@ function CannedResponsesPanel() {
             <div>
               <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--rd-text-secondary)' }}>Idioma</label>
               <select value={form.language} onChange={(e) => setForm({ ...form, language: e.target.value })} className="input-field">
-                {['es', 'en', 'pt', 'fr', 'de', 'it', 'nl', 'zh', 'ja', 'ko', 'ar', 'gl'].map((l) => (
+                {['es', 'en', 'pt', 'gl'].map((l) => (
                   <option key={l} value={l}>{l.toUpperCase()}</option>
                 ))}
               </select>

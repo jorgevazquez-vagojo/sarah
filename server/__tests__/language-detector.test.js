@@ -1,24 +1,6 @@
 const { detectLanguage } = require('../services/language-detector');
 
 describe('Language Detector', () => {
-  describe('Script-based detection', () => {
-    test('detects Chinese from CJK characters', () => {
-      expect(detectLanguage('你好，我需要帮助')).toBe('zh');
-    });
-
-    test('detects Japanese from hiragana/katakana', () => {
-      expect(detectLanguage('こんにちは、サービスについて')).toBe('ja');
-    });
-
-    test('detects Korean from hangul', () => {
-      expect(detectLanguage('안녕하세요 도움이 필요합니다')).toBe('ko');
-    });
-
-    test('detects Arabic from Arabic script', () => {
-      expect(detectLanguage('مرحبا أحتاج مساعدة')).toBe('ar');
-    });
-  });
-
   describe('Keyword-based detection', () => {
     test('detects Spanish', () => {
       expect(detectLanguage('Hola, necesito información sobre los servicios')).toBe('es');
@@ -30,22 +12,6 @@ describe('Language Detector', () => {
 
     test('detects Portuguese', () => {
       expect(detectLanguage('Olá, preciso de ajuda com informação')).toBe('pt');
-    });
-
-    test('detects French', () => {
-      expect(detectLanguage('Bonjour, j\'ai besoin d\'aide s\'il vous plaît')).toBe('fr');
-    });
-
-    test('detects German', () => {
-      expect(detectLanguage('Hallo, ich brauche Hilfe bitte')).toBe('de');
-    });
-
-    test('detects Italian', () => {
-      expect(detectLanguage('Ciao, ho bisogno di aiuto per favore')).toBe('it');
-    });
-
-    test('detects Dutch', () => {
-      expect(detectLanguage('Hallo, ik heb informatie nodig alstublieft')).toBe('nl');
     });
 
     test('detects Galician with strong signal', () => {
@@ -72,10 +38,6 @@ describe('Language Detector', () => {
 
     test('returns "es" for unrecognizable text', () => {
       expect(detectLanguage('xyz abc 123')).toBe('es');
-    });
-
-    test('handles mixed scripts - CJK takes priority', () => {
-      expect(detectLanguage('Hello 你好')).toBe('zh');
     });
   });
 

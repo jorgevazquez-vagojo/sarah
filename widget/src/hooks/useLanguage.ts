@@ -43,7 +43,5 @@ export function useLanguage(lang: string, baseUrl?: string) {
     return str;
   }, [strings]);
 
-  const isRTL = lang === 'ar';
-
-  return { t, isRTL };
+  return { t, isRTL: false };
 }

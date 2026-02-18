@@ -57,7 +57,7 @@ export const DEFAULT_THEME: ThemeConfig = {
     enableAttachments: true, maxFileSize: 10485760,
     allowedFileTypes: ['image/*', 'application/pdf', '.doc', '.docx', '.xls', '.xlsx'],
   },
-  i18n: { defaultLanguage: 'es', availableLanguages: ['es', 'en', 'pt', 'fr', 'de', 'it', 'nl', 'zh', 'ja', 'ko', 'ar', 'gl'], autoDetect: true },
+  i18n: { defaultLanguage: 'es', availableLanguages: ['es', 'en', 'pt', 'gl'], autoDetect: true },
   businessLines: [
     { id: 'boostic', icon: 'chart-line', color: '#3B82F6' },
     { id: 'binnacle', icon: 'chart-bar', color: '#8B5CF6' },

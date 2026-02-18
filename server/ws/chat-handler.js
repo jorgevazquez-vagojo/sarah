@@ -362,7 +362,7 @@ async function handleChat(ws, visitorId, msg) {
   });
 }
 
-const VALID_LANGUAGES = new Set(['es', 'en', 'pt', 'fr', 'de', 'it', 'nl', 'zh', 'ja', 'ko', 'ar', 'gl']);
+const VALID_LANGUAGES = new Set(['es', 'en', 'pt', 'gl']);
 const VALID_LINES = new Set(['boostic', 'binnacle', 'marketing', 'tech']);
 
 async function handleSetLanguage(ws, visitorId, msg) {

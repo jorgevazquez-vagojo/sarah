@@ -181,7 +181,7 @@ function getDefaultTheme() {
     },
     i18n: {
       defaultLanguage: 'es',
-      availableLanguages: ['es', 'en', 'pt', 'fr', 'de', 'it', 'nl', 'zh', 'ja', 'ko', 'ar', 'gl'],
+      availableLanguages: ['es', 'en', 'pt', 'gl'],
       autoDetect: true,
     },
     businessLines: [
