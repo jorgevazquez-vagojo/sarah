@@ -25,6 +25,8 @@ router.post('/login', async (req, res) => {
       id: agent.id,
       username: agent.username,
       displayName: agent.display_name,
+      role: agent.role,
+      email: agent.email,
       languages: agent.languages,
       businessLines: agent.business_lines,
     },

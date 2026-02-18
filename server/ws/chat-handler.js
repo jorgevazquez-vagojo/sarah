@@ -21,16 +21,52 @@ function send(ws, type, data) {
 }
 
 function initChatHandler(wss) {
-  wss.on('connection', (ws, req) => {
-    const visitorId = new URL(req.url, 'http://localhost').searchParams.get('visitorId') || uuid();
+  wss.on('connection', async (ws, req) => {
+    const params = new URL(req.url, 'http://localhost').searchParams;
+    const visitorId = params.get('visitorId') || uuid();
     visitors.set(visitorId, ws);
     logger.info(`Chat WS connected: ${visitorId}`);
+
+    // Store page context from connection params
+    const pageContext = {
+      pageUrl: params.get('pageUrl') || null,
+      pageTitle: params.get('pageTitle') || null,
+      referrer: params.get('referrer') || null,
+    };
+    if (pageContext.pageUrl) {
+      await sessionStore.update(visitorId, { pageContext }).catch(() => {});
+    }
 
     // Send initial config
     send(ws, 'connected', {
       visitorId,
       isBusinessHours: isBusinessHours(),
     });
+
+    // Chat history persistence: send recent messages if visitor has an active conversation
+    try {
+      const conv = await db.getActiveConversation(visitorId);
+      if (conv) {
+        const history = await db.getMessages(conv.id, 30);
+        if (history.length > 0) {
+          send(ws, 'chat_history', {
+            conversationId: conv.id,
+            messages: history.map((m) => ({
+              id: m.id,
+              sender: m.sender,
+              content: m.content,
+              timestamp: m.created_at,
+              metadata: m.metadata,
+            })),
+            language: conv.language,
+            businessLine: conv.business_line,
+            state: conv.state,
+          });
+        }
+      }
+    } catch (e) {
+      logger.warn(`Failed to load chat history for ${visitorId}:`, e.message);
+    }
 
     ws.on('message', async (raw) => {
       try {
@@ -60,6 +96,18 @@ function initChatHandler(wss) {
       });
     }
   }).catch((e) => logger.warn('Redis subscribe error:', e.message));
+
+  // Listen for read receipts: agent read the visitor's messages
+  redis.subscribe('message:read', (data) => {
+    const ws = visitors.get(data.visitorId);
+    if (ws) {
+      send(ws, 'message_status', {
+        conversationId: data.conversationId,
+        status: 'read',
+        timestamp: data.timestamp,
+      });
+    }
+  }).catch((e) => logger.warn('Redis subscribe error:', e.message));
 }
 
 async function handleMessage(ws, visitorId, msg) {
@@ -72,8 +120,31 @@ async function handleMessage(ws, visitorId, msg) {
     case 'escalate': return handleEscalate(ws, visitorId);
     case 'request_call': return handleRequestCall(ws, visitorId);
     case 'csat': return handleCsat(ws, visitorId, msg);
+    case 'page_context': return handlePageContext(ws, visitorId, msg);
     default:
       logger.warn(`Unknown message type: ${msg.type}`);
+  }
+}
+
+// Page context: visitor sends current URL/title for context-aware greetings
+async function handlePageContext(ws, visitorId, msg) {
+  const pageContext = {
+    pageUrl: typeof msg.pageUrl === 'string' ? msg.pageUrl.slice(0, 500) : null,
+    pageTitle: typeof msg.pageTitle === 'string' ? msg.pageTitle.slice(0, 200) : null,
+    referrer: typeof msg.referrer === 'string' ? msg.referrer.slice(0, 500) : null,
+  };
+  await sessionStore.update(visitorId, { pageContext });
+
+  // Auto-detect business line from URL
+  const url = (pageContext.pageUrl || '').toLowerCase();
+  let detectedLine = null;
+  if (/\/seo|\/boostic|\/growth|\/analytics/.test(url)) detectedLine = 'boostic';
+  else if (/\/bi|\/binnacle|\/dashboard|\/dato/.test(url)) detectedLine = 'binnacle';
+  else if (/\/marketing|\/publicidad|\/ads|\/social/.test(url)) detectedLine = 'marketing';
+  else if (/\/desarrollo|\/tech|\/ecommerce|\/shopify|\/magento|\/app/.test(url)) detectedLine = 'tech';
+
+  if (detectedLine) {
+    send(ws, 'business_line_detected', { businessLine: detectedLine });
   }
 }
 
@@ -116,8 +187,11 @@ async function handleChat(ws, visitorId, msg) {
   }
 
   // Save visitor message + webhook
-  await db.saveMessage({ conversationId: conv.id, sender: 'visitor', content: msg.content });
+  const savedMsg = await db.saveMessage({ conversationId: conv.id, sender: 'visitor', content: msg.content });
   triggerWebhooks('message.received', { conversationId: conv.id, visitorId, content: msg.content }).catch(() => {});
+
+  // Delivery receipt: confirm the message was received by server
+  send(ws, 'message_status', { messageId: savedMsg.id, status: 'delivered', timestamp: new Date().toISOString() });
 
   // If agent is assigned, relay to agent via Redis
   if (conv.agent_id && conv.state === 'chat_active') {

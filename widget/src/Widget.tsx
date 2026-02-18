@@ -635,6 +635,22 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
 // ──────────────────────────────────────────────────────────
 // MESSAGE BUBBLE
 // ──────────────────────────────────────────────────────────
+// ─── Read receipt checkmarks ───
+function StatusIcon({ status }: { status?: string }) {
+  if (!status || status === 'sending') return <span style={{ opacity: 0.4 }}>○</span>;
+  if (status === 'sent') return (
+    <svg width="14" height="10" viewBox="0 0 16 12" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: 0.5 }}>
+      <polyline points="1 6 5 10 14 1"/>
+    </svg>
+  );
+  const isRead = status === 'read';
+  return (
+    <svg width="18" height="10" viewBox="0 0 20 12" fill="none" stroke={isRead ? '#34D399' : 'currentColor'} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: isRead ? 1 : 0.5 }}>
+      <polyline points="1 6 5 10 14 1"/><polyline points="6 6 10 10 19 1"/>
+    </svg>
+  );
+}
+
 function MessageBubble({ message: msg, isGrouped }: { message: ChatMessage; isGrouped: boolean }) {
   const isVisitor = msg.sender === 'visitor';
   const isSystem = msg.sender === 'system';
@@ -705,13 +721,19 @@ function MessageBubble({ message: msg, isGrouped }: { message: ChatMessage; isGr
         >
           {msg.content}
         </div>
-        {/* Timestamp */}
+        {/* Timestamp + read receipt */}
         {!isGrouped && (
           <div style={{
-            fontSize: 10, color: 'var(--rc-text-tertiary)', marginTop: 3,
+            fontSize: 10, color: isVisitor ? 'rgba(255,255,255,0.6)' : 'var(--rc-text-tertiary)', marginTop: 3,
             padding: '0 4px', textAlign: isVisitor ? 'right' : 'left',
+            display: 'flex', alignItems: 'center', justifyContent: isVisitor ? 'flex-end' : 'flex-start', gap: 4,
           }}>
-            {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            <span>{new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+            {isVisitor && msg.status && (
+              <span style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--rc-text-tertiary)' }}>
+                <StatusIcon status={msg.status} />
+              </span>
+            )}
           </div>
         )}
       </div>

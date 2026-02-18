@@ -57,7 +57,7 @@ CREATE INDEX idx_conv_priority ON conversations(priority DESC, updated_at ASC);
 CREATE TABLE messages (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
-    sender VARCHAR(16) NOT NULL CHECK (sender IN ('visitor', 'bot', 'agent', 'system')),
+    sender VARCHAR(16) NOT NULL CHECK (sender IN ('visitor', 'bot', 'agent', 'system', 'note')),
     content TEXT NOT NULL,
     message_type VARCHAR(20) DEFAULT 'text' CHECK (message_type IN (
         'text', 'image', 'file', 'audio', 'card', 'carousel', 'buttons', 'quick_reply', 'system'
@@ -109,7 +109,7 @@ CREATE TABLE agents (
     display_name VARCHAR(200) NOT NULL,
     avatar_url VARCHAR(500),
     email VARCHAR(320),
-    role VARCHAR(20) DEFAULT 'agent' CHECK (role IN ('agent', 'supervisor', 'admin')),
+    role VARCHAR(20) DEFAULT 'agent' CHECK (role IN ('agent', 'supervisor', 'admin', 'architect', 'developer', 'qa')),
     languages TEXT[] DEFAULT '{es}',
     business_lines TEXT[] DEFAULT '{}',
     sip_extension VARCHAR(20),

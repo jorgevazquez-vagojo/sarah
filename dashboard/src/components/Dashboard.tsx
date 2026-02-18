@@ -30,6 +30,15 @@ export interface Message {
   metadata?: any;
 }
 
+const ROLE_META: Record<string, { label: string; color: string; bg: string }> = {
+  admin: { label: 'Admin', color: '#DC2626', bg: '#FEE2E2' },
+  supervisor: { label: 'Supervisor', color: '#7C3AED', bg: '#EDE9FE' },
+  architect: { label: 'Arquitecto', color: '#2563EB', bg: '#DBEAFE' },
+  developer: { label: 'Developer', color: '#059669', bg: '#D1FAE5' },
+  qa: { label: 'QA', color: '#D97706', bg: '#FEF3C7' },
+  agent: { label: 'Agente', color: '#64748B', bg: '#F1F5F9' },
+};
+
 type Tab = 'queue' | 'leads' | 'analytics' | 'settings';
 
 const NAV_ITEMS: { id: Tab; label: string; iconPath: string }[] = [
@@ -65,6 +74,9 @@ export function Dashboard({ token, agent, onLogout }: Props) {
   const [connected, setConnected] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
   const [showCmdPalette, setShowCmdPalette] = useState(false);
+  const [convSummary, setConvSummary] = useState<string | null>(null);
+  const [visitorContext, setVisitorContext] = useState<any>(null);
+  const [internalNotes, setInternalNotes] = useState<Array<{ content: string; agentName: string; timestamp: string }>>([]);
   const wsRef = useRef<WebSocket | null>(null);
 
   // Dark mode
@@ -129,6 +141,16 @@ export function Dashboard({ token, agent, onLogout }: Props) {
             setActiveConv(msg.conversation.id);
             setActiveConvData(msg.conversation);
             setMessages(msg.messages);
+            setConvSummary(msg.summary || null);
+            setVisitorContext(msg.visitorContext || null);
+            setInternalNotes([]);
+            break;
+          case 'internal_note':
+            setInternalNotes((prev) => [...prev, {
+              content: msg.content,
+              agentName: msg.agentName,
+              timestamp: msg.timestamp,
+            }]);
             break;
           case 'visitor_message':
             if (msg.conversationId === activeConv) {
@@ -203,6 +225,19 @@ export function Dashboard({ token, agent, onLogout }: Props) {
     setActiveConv(null);
     setActiveConvData(null);
     setMessages([]);
+    setConvSummary(null);
+    setVisitorContext(null);
+    setInternalNotes([]);
+  };
+
+  const handleSendNote = (content: string) => {
+    if (!activeConv) return;
+    sendWS('internal_note', { conversationId: activeConv, content });
+  };
+
+  const handleMarkRead = () => {
+    if (!activeConv) return;
+    sendWS('mark_read', { conversationId: activeConv });
   };
 
   const handleStatusChange = (newStatus: string) => {
@@ -290,6 +325,15 @@ export function Dashboard({ token, agent, onLogout }: Props) {
                 <p className="text-xs font-semibold truncate" style={{ color: 'var(--rd-text)' }}>
                   {agent?.displayName || 'Agente'}
                 </p>
+                {agent?.role && agent.role !== 'agent' && (() => {
+                  const rm = ROLE_META[agent.role] || ROLE_META.agent;
+                  return (
+                    <span className="inline-block text-[9px] font-semibold px-1.5 py-0.5 rounded-md mb-0.5"
+                      style={{ background: rm.bg, color: rm.color }}>
+                      {rm.label}
+                    </span>
+                  );
+                })()}
                 <AgentStatus status={status} onChange={handleStatusChange} compact />
               </div>
             </div>
@@ -361,6 +405,11 @@ export function Dashboard({ token, agent, onLogout }: Props) {
                   onSend={handleSendMessage}
                   onClose={handleClose}
                   onRequestCanned={handleRequestCanned}
+                  summary={convSummary}
+                  visitorContext={visitorContext}
+                  internalNotes={internalNotes}
+                  onSendNote={handleSendNote}
+                  onMarkRead={handleMarkRead}
                 />
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center" style={{ color: 'var(--rd-text-muted)' }}>

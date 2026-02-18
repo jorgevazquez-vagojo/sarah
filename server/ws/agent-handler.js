@@ -5,6 +5,8 @@ const { verifyToken } = require('../middleware/auth');
 const { transition } = require('../state/conversation-fsm');
 const { triggerWebhooks } = require('../integrations/webhooks');
 const { dispatchToCRM } = require('../integrations/crm');
+const { aiComplete } = require('../services/ai');
+const { sessionStore } = require('../state/session-store');
 
 // Map of agentId -> ws
 const agents = new Map();
@@ -117,13 +119,45 @@ async function handleAgentMessage(ws, agent, msg) {
 
       // Send conversation history to agent
       const messages = await db.getMessages(conv.id);
+
+      // AI-generated conversation summary for agent context
+      let summary = null;
+      try {
+        if (messages.length >= 3) {
+          const historyText = messages
+            .filter((m) => m.sender !== 'system')
+            .map((m) => `${m.sender === 'visitor' ? 'Visitante' : 'Bot'}: ${m.content}`)
+            .join('\n');
+          summary = await aiComplete(
+            'Eres un asistente que resume conversaciones de chat. Resume en 2-3 bullet points concisos los puntos clave de la conversación. Identifica: qué necesita el visitante, qué línea de negocio le interesa, y si dejó datos de contacto. Responde en español.',
+            `Resume esta conversación:\n\n${historyText}`,
+            { maxTokens: 256, temperature: 0.2 }
+          );
+        }
+      } catch (e) {
+        logger.warn('Failed to generate conversation summary:', e.message);
+      }
+
+      // Visitor page context for agent sidebar
+      let visitorContext = null;
+      try {
+        const session = await sessionStore.get(conv.visitor_id);
+        if (session?.pageContext) {
+          visitorContext = session.pageContext;
+        }
+      } catch {}
+
       send(ws, 'conversation_accepted', {
         conversation: conv,
         messages: messages.map((m) => ({
+          id: m.id,
           sender: m.sender,
           content: m.content,
           timestamp: m.created_at,
+          metadata: m.metadata,
         })),
+        summary,
+        visitorContext,
       });
 
       // Track + webhook
@@ -237,6 +271,49 @@ async function handleAgentMessage(ws, agent, msg) {
     case 'set_status': {
       await db.updateAgentStatus(agent.id, msg.status);
       send(ws, 'status_updated', { status: msg.status });
+      break;
+    }
+
+    case 'internal_note': {
+      // Internal notes: visible only to agents, never sent to visitors
+      if (!msg.conversationId || !msg.content) {
+        send(ws, 'error', { message: 'conversationId and content required' });
+        return;
+      }
+      const noteConv = await db.getConversation(msg.conversationId);
+      if (!noteConv) {
+        send(ws, 'error', { message: 'Conversation not found' });
+        return;
+      }
+      const note = await db.saveMessage({
+        conversationId: msg.conversationId,
+        sender: 'note',
+        content: msg.content,
+        metadata: { agentId: agent.id, agentName: agent.displayName, internal: true },
+      });
+      // Broadcast to all connected agents (not visitors)
+      for (const [agentId, agentWs] of agents) {
+        send(agentWs, 'internal_note', {
+          conversationId: msg.conversationId,
+          content: msg.content,
+          agentName: agent.displayName,
+          timestamp: note.created_at,
+        });
+      }
+      break;
+    }
+
+    case 'mark_read': {
+      // Agent marks visitor messages as read — notify visitor
+      if (!msg.conversationId) return;
+      const readConv = await db.getConversation(msg.conversationId);
+      if (!readConv?.visitor_id) return;
+      await redis.publish('message:read', {
+        visitorId: readConv.visitor_id,
+        conversationId: msg.conversationId,
+        agentId: agent.id,
+        timestamp: new Date().toISOString(),
+      });
       break;
     }
   }

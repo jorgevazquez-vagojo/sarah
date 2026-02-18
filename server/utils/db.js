@@ -166,11 +166,11 @@ const db = {
     );
   },
 
-  createAgent: async ({ username, passwordHash, displayName, languages, businessLines, sipExtension }) => {
+  createAgent: async ({ username, passwordHash, displayName, languages, businessLines, sipExtension, role, email }) => {
     const r = await pool.query(
-      `INSERT INTO agents (username, password_hash, display_name, languages, business_lines, sip_extension)
-       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
-      [username, passwordHash, displayName, languages || ['es'], businessLines || [], sipExtension]
+      `INSERT INTO agents (username, password_hash, display_name, languages, business_lines, sip_extension, role, email)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+      [username, passwordHash, displayName, languages || ['es'], businessLines || [], sipExtension, role || 'agent', email]
     );
     return r.rows[0];
   },

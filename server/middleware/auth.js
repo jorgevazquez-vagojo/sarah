@@ -9,7 +9,7 @@ const secret = JWT_SECRET || 'dev-secret-' + require('crypto').randomBytes(16).t
 
 function generateToken(agent) {
   return jwt.sign(
-    { id: agent.id, username: agent.username, displayName: agent.display_name },
+    { id: agent.id, username: agent.username, displayName: agent.display_name, role: agent.role || 'agent' },
     secret,
     { expiresIn: '12h' }
   );
@@ -45,4 +45,15 @@ function requireApiKey(req, res, next) {
   next();
 }
 
-module.exports = { generateToken, verifyToken, requireAgent, requireApiKey };
+// Middleware: require specific role(s)
+function requireRole(...roles) {
+  return (req, res, next) => {
+    if (!req.agent) return res.status(401).json({ error: 'Not authenticated' });
+    if (!roles.includes(req.agent.role)) {
+      return res.status(403).json({ error: 'Insufficient permissions' });
+    }
+    next();
+  };
+}
+
+module.exports = { generateToken, verifyToken, requireAgent, requireApiKey, requireRole };

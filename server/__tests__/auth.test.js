@@ -90,6 +90,82 @@ describe('Auth', () => {
     });
   });
 
+  describe('requireRole middleware', () => {
+    const { requireRole } = require('../middleware/auth');
+
+    test('rejects when no agent on request', () => {
+      const middleware = requireRole('admin');
+      const req = {};
+      const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      const next = jest.fn();
+
+      middleware(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(401);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test('rejects when agent has wrong role', () => {
+      const middleware = requireRole('admin', 'supervisor');
+      const req = { agent: { id: '1', role: 'agent' } };
+      const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      const next = jest.fn();
+
+      middleware(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(next).not.toHaveBeenCalled();
+    });
+
+    test('allows matching role', () => {
+      const middleware = requireRole('admin', 'architect');
+      const req = { agent: { id: '1', role: 'architect' } };
+      const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      const next = jest.fn();
+
+      middleware(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+    });
+
+    test('allows admin role for admin-only routes', () => {
+      const middleware = requireRole('admin');
+      const req = { agent: { id: '1', role: 'admin' } };
+      const res = {};
+      const next = jest.fn();
+
+      middleware(req, res, next);
+
+      expect(next).toHaveBeenCalled();
+    });
+
+    test('supports all new roles (architect, developer, qa)', () => {
+      for (const role of ['architect', 'developer', 'qa']) {
+        const middleware = requireRole(role);
+        const req = { agent: { id: '1', role } };
+        const res = {};
+        const next = jest.fn();
+        middleware(req, res, next);
+        expect(next).toHaveBeenCalled();
+      }
+    });
+  });
+
+  describe('generateToken includes role', () => {
+    test('includes role in JWT payload', () => {
+      const agentWithRole = { ...mockAgent, role: 'architect' };
+      const token = generateToken(agentWithRole);
+      const decoded = verifyToken(token);
+      expect(decoded.role).toBe('architect');
+    });
+
+    test('defaults to agent when role is missing', () => {
+      const token = generateToken(mockAgent);
+      const decoded = verifyToken(token);
+      expect(decoded.role).toBe('agent');
+    });
+  });
+
   describe('requireApiKey middleware', () => {
     const { requireApiKey } = require('../middleware/auth');
 

@@ -1,8 +1,9 @@
 #!/usr/bin/env node
 /**
  * Creates an agent user.
- * Usage: node scripts/create-agent.js <username> <password> <displayName> [languages] [businessLines]
- * Example: node scripts/create-agent.js admin admin123 "Admin User" "es,gl,en" "boostic,tech"
+ * Usage: node scripts/create-agent.js <username> <password> <displayName> [role] [languages] [businessLines] [email]
+ * Example: node scripts/create-agent.js admin admin123 "Admin User" admin "es,gl,en" "boostic,tech" "admin@redegal.com"
+ * Roles: agent, supervisor, admin, architect, developer, qa
  */
 require('dotenv/config');
 const path = require('path');
@@ -11,10 +12,11 @@ const bcrypt = require('bcryptjs');
 process.env.POSTGRES_HOST = process.env.POSTGRES_HOST || 'localhost';
 
 async function main() {
-  const [,, username, password, displayName, langs, lines] = process.argv;
+  const [,, username, password, displayName, role, langs, lines, email] = process.argv;
 
   if (!username || !password || !displayName) {
-    console.error('Usage: node create-agent.js <username> <password> <displayName> [languages] [businessLines]');
+    console.error('Usage: node create-agent.js <username> <password> <displayName> [role] [languages] [businessLines] [email]');
+    console.error('Roles: agent, supervisor, admin, architect, developer, qa');
     process.exit(1);
   }
 
@@ -29,11 +31,13 @@ async function main() {
     username,
     passwordHash,
     displayName,
+    role: role || 'agent',
     languages,
     businessLines,
+    email: email || null,
   });
 
-  console.log(`Agent created: ${agent.username} (${agent.id})`);
+  console.log(`Agent created: ${agent.username} (${agent.id}) role=${agent.role}`);
   await db.end();
 }
 
