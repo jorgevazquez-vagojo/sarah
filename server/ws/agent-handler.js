@@ -189,7 +189,12 @@ async function handleAgentMessage(ws, agent, msg) {
            WHERE shortcut = $1 RETURNING content`,
           [shortcut]
         );
-        if (canned.rows[0]) content = canned.rows[0].content;
+        if (canned.rows[0]) {
+          content = canned.rows[0].content;
+        } else {
+          send(ws, 'error', { message: `Atajo "/${shortcut}" no encontrado` });
+          return;
+        }
       }
 
       const conv = await db.getConversation(msg.conversationId);

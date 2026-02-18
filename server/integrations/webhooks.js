@@ -21,7 +21,7 @@ function isAllowedUrl(urlStr) {
 
 async function triggerWebhooks(event, data) {
   const result = await db.query(
-    `SELECT * FROM webhooks WHERE is_active = true AND $1 = ANY(events)`,
+    `SELECT * FROM webhooks WHERE is_active = true AND $1 = ANY(events) AND failure_count < 50`,
     [event]
   );
 

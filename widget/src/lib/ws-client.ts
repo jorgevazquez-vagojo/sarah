@@ -8,6 +8,7 @@ export class WSClient {
   private reconnectDelay = 1000;
   private maxReconnectDelay = 30000;
   private visitorId: string;
+  private destroyed = false;
 
   constructor(url: string, visitorId: string) {
     this.url = url;
@@ -41,7 +42,7 @@ export class WSClient {
   }
 
   private scheduleReconnect() {
-    if (this.reconnectTimer) return;
+    if (this.reconnectTimer || this.destroyed) return;
     this.reconnectTimer = setTimeout(() => {
       this.reconnectTimer = null;
       this.connect();
@@ -73,6 +74,7 @@ export class WSClient {
   }
 
   disconnect() {
+    this.destroyed = true;
     if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
     this.reconnectTimer = null;
     this.ws?.close();

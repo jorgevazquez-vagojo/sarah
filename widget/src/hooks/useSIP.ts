@@ -1,4 +1,4 @@
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { createSipClient, SipClient, SipConfig } from '../lib/sip-client';
 
 export type CallState = 'idle' | 'registering' | 'registered' | 'calling' | 'ringing' | 'active' | 'ended';
@@ -37,6 +37,14 @@ export function useSIP(config?: SipConfig) {
     clientRef.current?.destroy();
     clientRef.current = null;
     setCallState('idle');
+  }, []);
+
+  // Clean up SIP client on unmount
+  useEffect(() => {
+    return () => {
+      clientRef.current?.destroy();
+      clientRef.current = null;
+    };
   }, []);
 
   return { callState, isMuted, register, call, hangup, toggleMute, destroy };

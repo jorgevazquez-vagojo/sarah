@@ -150,7 +150,7 @@ export function Widget(props: WidgetConfig) {
   const rootRef = useRef<HTMLDivElement>(null);
   const prevMsgCountRef = useRef(0);
 
-  const visitorId = getVisitorId();
+  const [visitorId] = useState(() => getVisitorId());
   const wsUrl = props.apiUrl || `${(props.baseUrl || '').replace(/^http/, 'ws').replace(/\/widget$/, '')}/ws/chat`;
   const chat = useChat({ apiUrl: wsUrl, visitorId });
   const { t, isRTL } = useLanguage(chat.language, props.baseUrl?.replace('/widget', ''));
