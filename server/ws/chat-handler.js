@@ -12,8 +12,34 @@ const { scoreLead } = require('../services/lead-capture');
 const { triggerWebhooks } = require('../integrations/webhooks');
 const { dispatchToCRM } = require('../integrations/crm');
 
+const { evaluateTriggers } = require('../services/proactive-triggers');
+
 // Map of visitorId -> ws
 const visitors = new Map();
+
+// ── WebSocket rate limiting ──
+const wsRateLimits = new Map();
+const WS_RATE = { maxMessages: 20, windowMs: 10000 };
+
+function checkWsRateLimit(visitorId) {
+  const now = Date.now();
+  let bucket = wsRateLimits.get(visitorId);
+  if (!bucket || now > bucket.resetAt) {
+    bucket = { count: 0, resetAt: now + WS_RATE.windowMs };
+    wsRateLimits.set(visitorId, bucket);
+  }
+  bucket.count++;
+  return bucket.count <= WS_RATE.maxMessages;
+}
+
+// Cleanup stale rate limit buckets every 60s
+const wsCleanupInterval = setInterval(() => {
+  const now = Date.now();
+  for (const [id, b] of wsRateLimits) {
+    if (now > b.resetAt) wsRateLimits.delete(id);
+  }
+}, 60000);
+wsCleanupInterval.unref(); // Don't prevent process exit
 
 function send(ws, type, data) {
   if (ws.readyState === 1) {
@@ -70,8 +96,17 @@ function initChatHandler(wss) {
     }
 
     ws.on('message', async (raw) => {
+      // Rate limit WebSocket messages
+      if (!checkWsRateLimit(visitorId)) {
+        send(ws, 'error', { message: 'Too many messages. Please slow down.' });
+        return;
+      }
       try {
         const msg = JSON.parse(raw);
+        // Sanitize string content: max 2000 chars, strip control characters
+        if (typeof msg.content === 'string') {
+          msg.content = msg.content.slice(0, 2000).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+        }
         await handleMessage(ws, visitorId, msg);
       } catch (e) {
         logger.error(`Chat WS error (${visitorId}):`, e);
@@ -81,6 +116,7 @@ function initChatHandler(wss) {
 
     ws.on('close', () => {
       visitors.delete(visitorId);
+      wsRateLimits.delete(visitorId);
       logger.info(`Chat WS disconnected: ${visitorId}`);
     });
   });
@@ -94,6 +130,18 @@ function initChatHandler(wss) {
         content: data.content,
         agentName: data.agentName,
         timestamp: data.timestamp,
+      });
+    }
+  }).catch((e) => logger.warn('Redis subscribe error:', e.message));
+
+  // Listen for agent typing indicator
+  redis.subscribe('agent:typing', (data) => {
+    const ws = visitors.get(data.visitorId);
+    if (ws) {
+      send(ws, 'agent_typing', {
+        isTyping: data.isTyping,
+        agentName: data.agentName,
+        conversationId: data.conversationId,
       });
     }
   }).catch((e) => logger.warn('Redis subscribe error:', e.message));
@@ -124,6 +172,8 @@ async function handleMessage(ws, visitorId, msg) {
     case 'page_context': return handlePageContext(ws, visitorId, msg);
     case 'search_kb': return handleSearchKB(ws, visitorId, msg);
     case 'quick_reply': return handleQuickReply(ws, visitorId, msg);
+    case 'visitor_typing': return handleVisitorTyping(ws, visitorId, msg);
+    case 'request_transcript': return handleRequestTranscript(ws, visitorId);
     default:
       logger.warn(`Unknown message type: ${msg.type}`);
   }
@@ -149,6 +199,20 @@ async function handlePageContext(ws, visitorId, msg) {
   if (detectedLine) {
     send(ws, 'business_line_detected', { businessLine: detectedLine });
   }
+
+  // Evaluate proactive triggers based on page context
+  const triggerContext = {
+    ...pageContext,
+    timeOnPage: msg.timeOnPage || 0,
+    scrollDepth: msg.scrollDepth || 0,
+    exitIntent: msg.exitIntent || false,
+    visitCount: msg.visitCount || 1,
+    cartValue: msg.cartValue || 0,
+    formInteraction: msg.formInteraction || false,
+    idleTime: msg.idleTime || 0,
+    language: (await sessionStore.get(visitorId))?.language || 'es',
+  };
+  checkProactiveTriggers(ws, visitorId, triggerContext);
 }
 
 // ─── Rich reply builder: auto-attach cards/quick-replies for common intents ───
@@ -497,6 +561,49 @@ async function handleQuickReply(ws, visitorId, msg) {
   if (msg.value === '__call__') return handleRequestCall(ws, visitorId);
   // Otherwise treat as a regular chat message
   return handleChat(ws, visitorId, { content: msg.value });
+}
+
+// ─── Visitor typing: relay to agent via Redis ───
+async function handleVisitorTyping(ws, visitorId, msg) {
+  const conv = await db.getActiveConversation(visitorId);
+  if (!conv?.agent_id) return;
+  await redis.publish('visitor:typing', {
+    conversationId: conv.id,
+    visitorId,
+    isTyping: !!msg.isTyping,
+  });
+}
+
+// ─── Transcript export: send chat history to visitor ───
+async function handleRequestTranscript(ws, visitorId) {
+  const conv = await db.getActiveConversation(visitorId);
+  if (!conv) {
+    send(ws, 'error', { message: 'No active conversation' });
+    return;
+  }
+  const { generateTranscript } = require('../services/transcript-export');
+  const transcript = await generateTranscript(conv.id);
+  send(ws, 'transcript', { text: transcript.text, html: transcript.html });
+}
+
+// ─── Proactive messaging: check triggers after page context update ───
+async function checkProactiveTriggers(ws, visitorId, context) {
+  try {
+    const conv = await db.getActiveConversation(visitorId);
+    if (conv) return; // Don't interrupt active conversations
+
+    const trigger = await evaluateTriggers(visitorId, context);
+    if (trigger) {
+      send(ws, 'proactive_message', {
+        trigger: trigger.trigger,
+        content: trigger.message,
+        timestamp: new Date().toISOString(),
+      });
+      db.trackEvent({ eventType: 'proactive_trigger', visitorId, data: { trigger: trigger.trigger } }).catch(() => {});
+    }
+  } catch (e) {
+    logger.warn('Proactive trigger check failed:', e.message);
+  }
 }
 
 // Helper: send message to visitor from agent/system

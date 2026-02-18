@@ -8,7 +8,6 @@ function isAllowedUrl(urlStr) {
     const u = new URL(urlStr);
     if (!['http:', 'https:'].includes(u.protocol)) return false;
     const host = u.hostname.toLowerCase();
-    // Block private/internal ranges
     if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return false;
     if (host === '0.0.0.0' || host.endsWith('.local') || host.endsWith('.internal')) return false;
     if (/^10\./.test(host) || /^172\.(1[6-9]|2\d|3[01])\./.test(host) || /^192\.168\./.test(host)) return false;
@@ -30,13 +29,31 @@ async function triggerWebhooks(event, data) {
       logger.warn(`Webhook ${webhook.id}: blocked SSRF attempt to ${webhook.url}`);
       continue;
     }
-    fireWebhook(webhook, event, data).catch((e) => {
-      logger.warn(`Webhook ${webhook.id} failed: ${e.message}`);
-      db.query(
+    fireWebhookWithRetry(webhook, event, data, 0);
+  }
+}
+
+const MAX_RETRIES = 5;
+const BACKOFF_BASE_MS = 5000; // 5s, 10s, 20s, 40s, 80s
+
+async function fireWebhookWithRetry(webhook, event, data, attempt) {
+  try {
+    await fireWebhook(webhook, event, data);
+  } catch (e) {
+    if (attempt < MAX_RETRIES) {
+      const delay = BACKOFF_BASE_MS * Math.pow(2, attempt);
+      logger.warn(`Webhook ${webhook.id}: attempt ${attempt + 1} failed (${e.message}), retrying in ${delay}ms`);
+      setTimeout(() => fireWebhookWithRetry(webhook, event, data, attempt + 1), delay);
+    } else {
+      logger.error(`Webhook ${webhook.id}: failed after ${MAX_RETRIES + 1} attempts for event ${event}`);
+      await db.query(
         `UPDATE webhooks SET failure_count = failure_count + 1 WHERE id = $1`,
         [webhook.id]
-      );
-    });
+      ).catch(() => {});
+
+      // Log delivery failure
+      logDelivery(webhook.id, event, data, null, e.message, attempt + 1).catch(() => {});
+    }
   }
 }
 
@@ -56,14 +73,35 @@ async function fireWebhook(webhook, event, data) {
     signal: AbortSignal.timeout(10000),
   });
 
-  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    // Log failed delivery
+    logDelivery(webhook.id, event, data, res.status, body.slice(0, 500), 1).catch(() => {});
+    throw new Error(`HTTP ${res.status}`);
+  }
 
   await db.query(
     `UPDATE webhooks SET last_triggered_at = NOW(), failure_count = 0 WHERE id = $1`,
     [webhook.id]
   );
 
+  // Log successful delivery
+  logDelivery(webhook.id, event, data, res.status, null, 1).catch(() => {});
+
   logger.info(`Webhook ${webhook.id}: ${event} -> ${res.status}`);
+}
+
+// Delivery log for debugging (best-effort, table may not exist yet)
+async function logDelivery(webhookId, event, data, responseStatus, responseBody, attempt) {
+  try {
+    await db.query(
+      `INSERT INTO webhook_deliveries (webhook_id, event, payload, response_status, response_body, attempt)
+       VALUES ($1, $2, $3, $4, $5, $6)`,
+      [webhookId, event, JSON.stringify(data).slice(0, 5000), responseStatus, responseBody, attempt]
+    );
+  } catch {
+    // Table may not exist — silently skip
+  }
 }
 
 // Supported webhook events
@@ -75,6 +113,7 @@ const EVENTS = [
   'lead.created',
   'lead.updated',
   'agent.assigned',
+  'agent.transferred',
   'call.started',
   'call.ended',
   'csat.submitted',

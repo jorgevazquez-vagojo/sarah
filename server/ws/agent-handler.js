@@ -7,6 +7,7 @@ const { triggerWebhooks } = require('../integrations/webhooks');
 const { dispatchToCRM } = require('../integrations/crm');
 const { aiComplete } = require('../services/ai');
 const { sessionStore } = require('../state/session-store');
+const { generateSuggestedReplies } = require('../services/suggested-replies');
 
 // Map of agentId -> ws
 const agents = new Map();
@@ -63,6 +64,21 @@ function initAgentHandler(wss) {
             conversationId: data.conversationId,
             content: data.content,
             timestamp: data.timestamp,
+          });
+        }
+      }
+    }).catch(() => {});
+  }).catch((e) => logger.warn('Redis subscribe error:', e.message));
+
+  // Listen for visitor typing indicator
+  redis.subscribe('visitor:typing', (data) => {
+    db.getConversation(data.conversationId).then((conv) => {
+      if (conv?.agent_id) {
+        const ws = agents.get(conv.agent_id);
+        if (ws) {
+          send(ws, 'visitor_typing', {
+            conversationId: data.conversationId,
+            isTyping: data.isTyping,
           });
         }
       }
@@ -318,6 +334,152 @@ async function handleAgentMessage(ws, agent, msg) {
         conversationId: msg.conversationId,
         agentId: agent.id,
         timestamp: new Date().toISOString(),
+      });
+      break;
+    }
+
+    case 'typing': {
+      // Agent typing indicator — relay to visitor
+      if (!msg.conversationId) return;
+      const typConv = await db.getConversation(msg.conversationId);
+      if (!typConv?.visitor_id) return;
+      await redis.publish('agent:typing', {
+        visitorId: typConv.visitor_id,
+        conversationId: msg.conversationId,
+        agentName: agent.displayName,
+        isTyping: !!msg.isTyping,
+      });
+      break;
+    }
+
+    case 'transfer_conversation': {
+      // Transfer conversation to another agent
+      const { conversationId, targetAgentId, reason } = msg;
+      if (!conversationId || !targetAgentId) {
+        send(ws, 'error', { message: 'conversationId and targetAgentId required' });
+        return;
+      }
+
+      const xConv = await db.getConversation(conversationId);
+      if (!xConv || xConv.state === 'closed') {
+        send(ws, 'error', { message: 'Conversation not found or closed' });
+        return;
+      }
+
+      // Get target agent info
+      const targetAgent = await db.getAgent(targetAgentId);
+      if (!targetAgent || targetAgent.status === 'offline') {
+        send(ws, 'error', { message: 'Target agent unavailable' });
+        return;
+      }
+
+      // Update assignment
+      await db.query(
+        'UPDATE conversations SET agent_id = $1, updated_at = NOW() WHERE id = $2',
+        [targetAgentId, conversationId]
+      );
+
+      // Save transfer note
+      const transferNote = `Transferida de ${agent.displayName} a ${targetAgent.display_name}${reason ? ': ' + reason : ''}`;
+      await db.saveMessage({
+        conversationId,
+        sender: 'system',
+        content: transferNote,
+      });
+
+      // Notify target agent
+      const targetWs = agents.get(targetAgentId);
+      if (targetWs) {
+        const messages = await db.getMessages(conversationId);
+        send(targetWs, 'conversation_transferred', {
+          conversation: { ...xConv, agent_id: targetAgentId },
+          messages: messages.map((m) => ({
+            id: m.id, sender: m.sender, content: m.content,
+            timestamp: m.created_at, metadata: m.metadata,
+          })),
+          fromAgent: agent.displayName,
+          reason,
+        });
+      }
+
+      // Notify visitor
+      if (xConv.visitor_id) {
+        await redis.publish('agent:message', {
+          visitorId: xConv.visitor_id,
+          content: `${targetAgent.display_name} te va a atender a partir de ahora.`,
+          agentName: targetAgent.display_name,
+          timestamp: new Date().toISOString(),
+        });
+      }
+
+      // Confirm to source agent
+      send(ws, 'transfer_complete', {
+        conversationId,
+        targetAgent: targetAgent.display_name,
+      });
+
+      db.trackEvent({ eventType: 'conversation_transferred', conversationId, agentId: agent.id, data: { targetAgentId, reason } }).catch(() => {});
+      triggerWebhooks('agent.transferred', { conversationId, fromAgentId: agent.id, toAgentId: targetAgentId, reason }).catch(() => {});
+      break;
+    }
+
+    case 'add_tags': {
+      // Add tags to conversation
+      if (!msg.conversationId || !Array.isArray(msg.tags)) {
+        send(ws, 'error', { message: 'conversationId and tags[] required' });
+        return;
+      }
+      const sanitizedTags = msg.tags
+        .filter((t) => typeof t === 'string')
+        .map((t) => t.slice(0, 50).toLowerCase().trim())
+        .filter(Boolean);
+      if (sanitizedTags.length === 0) return;
+
+      await db.query(
+        `UPDATE conversations SET tags = array_cat(tags, $1::text[]), updated_at = NOW() WHERE id = $2`,
+        [sanitizedTags, msg.conversationId]
+      );
+
+      // Broadcast to all agents
+      for (const [, agentWs] of agents) {
+        send(agentWs, 'tags_updated', { conversationId: msg.conversationId, tags: sanitizedTags, action: 'added' });
+      }
+      break;
+    }
+
+    case 'remove_tag': {
+      if (!msg.conversationId || !msg.tag) return;
+      await db.query(
+        `UPDATE conversations SET tags = array_remove(tags, $1), updated_at = NOW() WHERE id = $2`,
+        [msg.tag, msg.conversationId]
+      );
+      for (const [, agentWs] of agents) {
+        send(agentWs, 'tags_updated', { conversationId: msg.conversationId, tag: msg.tag, action: 'removed' });
+      }
+      break;
+    }
+
+    case 'set_priority': {
+      // Set conversation priority (0=normal, 1=high, 2=urgent)
+      if (!msg.conversationId || typeof msg.priority !== 'number') return;
+      const prio = Math.max(0, Math.min(3, Math.round(msg.priority)));
+      await db.query(
+        'UPDATE conversations SET priority = $1, updated_at = NOW() WHERE id = $2',
+        [prio, msg.conversationId]
+      );
+      for (const [, agentWs] of agents) {
+        send(agentWs, 'priority_updated', { conversationId: msg.conversationId, priority: prio });
+      }
+      break;
+    }
+
+    case 'get_suggestions': {
+      // AI-generated reply suggestions
+      if (!msg.conversationId) return;
+      const suggestions = await generateSuggestedReplies(msg.conversationId);
+      send(ws, 'suggested_replies', {
+        conversationId: msg.conversationId,
+        suggestions,
       });
       break;
     }

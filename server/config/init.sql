@@ -231,6 +231,44 @@ CREATE INDEX idx_analytics_type ON analytics_events(event_type, created_at);
 CREATE INDEX idx_analytics_conv ON analytics_events(conversation_id);
 CREATE INDEX idx_analytics_tenant ON analytics_events(tenant_id, created_at);
 
+-- ─── Webhook Delivery Log ───
+CREATE TABLE webhook_deliveries (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    webhook_id UUID REFERENCES webhooks(id) ON DELETE CASCADE,
+    event TEXT NOT NULL,
+    payload JSONB,
+    response_status INTEGER,
+    response_body TEXT,
+    attempt INTEGER DEFAULT 1,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_webhook_del_webhook ON webhook_deliveries(webhook_id, created_at DESC);
+
+-- ─── Scheduled Messages ───
+CREATE TABLE scheduled_messages (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+    content TEXT NOT NULL,
+    send_at TIMESTAMPTZ,
+    send_on_reconnect BOOLEAN DEFAULT false,
+    created_by UUID REFERENCES agents(id),
+    sent BOOLEAN DEFAULT false,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_scheduled_pending ON scheduled_messages(sent, send_at) WHERE sent = false;
+
+-- ─── Conversation Transfer Log ───
+CREATE TABLE conversation_transfers (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    conversation_id UUID NOT NULL REFERENCES conversations(id) ON DELETE CASCADE,
+    from_agent_id UUID REFERENCES agents(id),
+    to_agent_id UUID NOT NULL REFERENCES agents(id),
+    reason TEXT,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 -- ─── Config ───
 CREATE TABLE config (
     key VARCHAR(100) PRIMARY KEY,

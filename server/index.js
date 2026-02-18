@@ -8,11 +8,14 @@ const { redis } = require('./utils/redis');
 const { loadLanguages } = require('./utils/i18n');
 const { loadKnowledgeFiles, seedKnowledgeToDB } = require('./services/knowledge-base');
 const { corsMiddleware } = require('./middleware/cors');
+const { securityHeaders } = require('./middleware/security-headers');
+const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
 
 const app = express();
 const server = http.createServer(app);
 
 // ─── Middleware ───
+app.use(securityHeaders);
 app.use(corsMiddleware);
 app.use(express.json({ limit: '15mb' }));
 
@@ -58,6 +61,27 @@ initAgentHandler(wssAgent);
 
 const { initSipSignaling } = require('./ws/sip-signaling');
 initSipSignaling(wssSip);
+
+// ─── Transcript export ───
+const { asyncRoute } = require('./middleware/error-handler');
+const { requireAgent } = require('./middleware/auth');
+const { generateTranscript } = require('./services/transcript-export');
+
+app.get('/api/conversations/:id/transcript', requireAgent, asyncRoute(async (req, res) => {
+  const format = req.query.format || 'json';
+  const transcript = await generateTranscript(req.params.id);
+  if (format === 'html') {
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="transcript-${req.params.id.slice(0, 8)}.html"`);
+    return res.send(transcript.html);
+  }
+  if (format === 'text') {
+    res.setHeader('Content-Type', 'text/plain; charset=utf-8');
+    res.setHeader('Content-Disposition', `attachment; filename="transcript-${req.params.id.slice(0, 8)}.txt"`);
+    return res.send(transcript.text);
+  }
+  res.json(transcript);
+}));
 
 // ─── Premium test page ───
 app.get('/widget/test.html', (_req, res) => {
@@ -161,6 +185,10 @@ app.get('/widget/test.html', (_req, res) => {
 </body>
 </html>`);
 });
+
+// ─── Error handling (must be AFTER all routes) ───
+app.use(notFoundHandler);
+app.use(errorHandler);
 
 // ─── Startup ───
 const PORT = process.env.PORT || 3000;

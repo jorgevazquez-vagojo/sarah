@@ -1,0 +1,30 @@
+// Security headers middleware (CSP, HSTS, etc.)
+function securityHeaders(req, res, next) {
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  res.setHeader('X-XSS-Protection', '0'); // Modern browsers use CSP instead
+  res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
+
+  if (process.env.NODE_ENV === 'production') {
+    res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
+  }
+
+  // CSP: allow inline styles (Shadow DOM needs them), widget script, WebSocket connections
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
+  const connectSrc = ["'self'", 'wss:', 'ws:', ...allowedOrigins].join(' ');
+  res.setHeader('Content-Security-Policy', [
+    "default-src 'self'",
+    "script-src 'self'",
+    "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+    "font-src 'self' https://fonts.gstatic.com",
+    `connect-src ${connectSrc}`,
+    "img-src 'self' data: https:",
+    "media-src 'self' blob:",
+    "frame-ancestors 'self' " + allowedOrigins.join(' '),
+  ].join('; '));
+
+  next();
+}
+
+module.exports = { securityHeaders };

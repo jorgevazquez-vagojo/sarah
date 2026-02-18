@@ -15,8 +15,8 @@ describe('Webhooks', () => {
       expect(EVENTS).toContain('csat.submitted');
     });
 
-    test('has 10 event types', () => {
-      expect(EVENTS).toHaveLength(10);
+    test('has 11 event types', () => {
+      expect(EVENTS).toHaveLength(11);
     });
 
     test('all events follow dot notation', () => {
