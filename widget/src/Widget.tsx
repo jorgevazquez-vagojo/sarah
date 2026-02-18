@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { useChat, ChatMessage } from './hooks/useChat';
+import { useChat, ChatMessage, RichContent } from './hooks/useChat';
 import { useLanguage } from './hooks/useLanguage';
 import { useSIP } from './hooks/useSIP';
-import { ThemeConfig, WidgetView, RichContent } from './lib/types';
+import { ThemeConfig, RichContent as RichContentType } from './lib/types';
 import { applyTheme, DEFAULT_THEME } from './lib/theme';
 import { playSound } from './lib/sounds';
 
@@ -125,6 +125,16 @@ const I = {
       <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
     </svg>
   ),
+  search: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+  ),
+  book: (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/>
+    </svg>
+  ),
 };
 
 // ─── Line config ───
@@ -142,7 +152,8 @@ export function Widget(props: WidgetConfig) {
   const [theme, setTheme] = useState<ThemeConfig>(DEFAULT_THEME);
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
-  const [view, setView] = useState<WidgetView>('welcome');
+  type ViewType = 'welcome' | 'chat' | 'call' | 'offline_form' | 'csat' | 'help' | 'lead_form';
+  const [view, setView] = useState<ViewType>('welcome');
   const [soundEnabled, setSoundEnabled] = useState(true);
   const [darkMode, setDarkMode] = useState(false);
   const [showLangPicker, setShowLangPicker] = useState(false);
@@ -195,6 +206,11 @@ export function Widget(props: WidgetConfig) {
   useEffect(() => {
     if (!chat.isBusinessHours && isOpen && view === 'welcome') setView('offline_form');
   }, [chat.isBusinessHours, isOpen, view]);
+
+  // Server requests lead form (from rich message action)
+  useEffect(() => {
+    if (chat.showLeadForm) { setView('lead_form'); chat.clearLeadForm(); }
+  }, [chat.showLeadForm]);
 
   const handleToggle = () => {
     if (isOpen) {
@@ -389,7 +405,8 @@ export function Widget(props: WidgetConfig) {
             {view === 'welcome' && chat.messages.length === 0 ? (
               <WelcomeView theme={theme} t={t} darkMode={darkMode}
                 onStartChat={() => setView('chat')}
-                onSelectLine={(l) => { chat.setBusinessLine(l); setView('chat'); }} />
+                onSelectLine={(l) => { chat.setBusinessLine(l); setView('chat'); }}
+                onOpenHelp={() => setView('help')} />
             ) : view === 'offline_form' ? (
               <OfflineFormView theme={theme} t={t}
                 onSubmit={(data) => { chat.submitOfflineForm({ ...data, language: chat.language }); }} />
@@ -398,6 +415,15 @@ export function Widget(props: WidgetConfig) {
                 onSubmit={(r, c) => { chat.submitCsat(r, c); setView('chat'); }} />
             ) : view === 'call' ? (
               <CallView theme={theme} t={t} sip={sip} onBack={() => setView('chat')} />
+            ) : view === 'help' ? (
+              <HelpCenterView theme={theme} t={t}
+                kbResults={chat.kbResults} onSearch={chat.searchKB}
+                onBack={() => setView(chat.messages.length > 0 ? 'chat' : 'welcome')}
+                onStartChat={(q) => { chat.sendMessage(q); setView('chat'); }} />
+            ) : view === 'lead_form' ? (
+              <LeadFormView theme={theme} t={t}
+                onSubmit={(data) => { chat.submitLead(data); chat.clearLeadForm(); setView('chat'); }}
+                onBack={() => setView('chat')} />
             ) : (
               <ChatView
                 theme={theme} t={t} messages={chat.messages} isTyping={chat.isTyping}
@@ -405,6 +431,10 @@ export function Widget(props: WidgetConfig) {
                 onCall={() => { chat.isBusinessHours ? (chat.requestCall(), setView('call')) : setView('offline_form'); }}
                 onCsat={() => setView('csat')}
                 isBusinessHours={chat.isBusinessHours}
+                onQuickReply={chat.sendQuickReply}
+                onUpload={(f) => chat.uploadFile(f, props.baseUrl?.replace('/widget', '') || '')}
+                onLeadForm={() => setView('lead_form')}
+                onHelp={() => setView('help')}
               />
             )}
           </div>
@@ -446,9 +476,9 @@ function HeaderBtn({ onClick, children, color }: { onClick: () => void; children
 // ──────────────────────────────────────────────────────────
 // WELCOME VIEW (Intercom-style home screen)
 // ──────────────────────────────────────────────────────────
-function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine }: {
+function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine, onOpenHelp }: {
   theme: ThemeConfig; t: (k: string) => string; darkMode: boolean;
-  onStartChat: () => void; onSelectLine: (l: string) => void;
+  onStartChat: () => void; onSelectLine: (l: string) => void; onOpenHelp: () => void;
 }) {
   return (
     <div className="rc-slide-up" style={{ padding: '28px 20px 20px', overflowY: 'auto' }}>
@@ -494,10 +524,23 @@ function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine }: {
         </div>
       )}
 
-      {/* CTA Button */}
+      {/* CTA Buttons */}
       <button onClick={onStartChat} className="rc-btn-primary" style={{ width: '100%' }}>
         {t('greeting').split('!')[0] || t('new_conversation')}
         <span style={{ display: 'flex' }}>{I.arrowRight}</span>
+      </button>
+      <button onClick={onOpenHelp} style={{
+        width: '100%', marginTop: 10, padding: '11px 20px',
+        background: 'var(--rc-surface)', border: '1.5px solid var(--rc-border)',
+        borderRadius: 'var(--rc-radius-pill)', cursor: 'pointer',
+        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+        color: 'var(--rc-text-secondary)', fontWeight: 600, fontSize: 13,
+        transition: 'all 0.2s',
+      }}
+        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--rc-primary)'; e.currentTarget.style.color = 'var(--rc-primary)'; }}
+        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--rc-border)'; e.currentTarget.style.color = 'var(--rc-text-secondary)'; }}
+      >
+        {I.book} {t('help_center') || 'Centro de ayuda'}
       </button>
     </div>
   );
@@ -506,16 +549,32 @@ function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine }: {
 // ──────────────────────────────────────────────────────────
 // CHAT VIEW
 // ──────────────────────────────────────────────────────────
-function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, onCsat, isBusinessHours }: {
+function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, onCsat, isBusinessHours, onQuickReply, onUpload, onLeadForm, onHelp }: {
   theme: ThemeConfig; t: (k: string) => string; messages: ChatMessage[]; isTyping: boolean;
   onSend: (m: string) => void; onEscalate: () => void; onCall: () => void; onCsat: () => void; isBusinessHours: boolean;
+  onQuickReply?: (v: string) => void; onUpload?: (f: File) => Promise<any>; onLeadForm?: () => void; onHelp?: () => void;
 }) {
   const { features } = theme;
   const [input, setInput] = useState('');
+  const [uploading, setUploading] = useState(false);
   const endRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { endRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [messages, isTyping]);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !onUpload) return;
+    if (file.size > (features.maxFileSize || 10485760)) {
+      alert('File too large');
+      return;
+    }
+    setUploading(true);
+    try { await onUpload(file); } catch { /* handled */ }
+    setUploading(false);
+    e.target.value = '';
+  };
 
   const submit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -545,7 +604,21 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
         {messages.map((msg, i) => {
           const prev = i > 0 ? messages[i - 1] : null;
           const isGrouped = prev && prev.sender === msg.sender && (new Date(msg.timestamp).getTime() - new Date(prev.timestamp).getTime() < 60000);
-          return <MessageBubble key={i} message={msg} isGrouped={!!isGrouped} />;
+          return (
+            <React.Fragment key={i}>
+              <MessageBubble message={msg} isGrouped={!!isGrouped} />
+              {msg.richContent && (
+                <RichContentBlock content={msg.richContent} theme={theme}
+                  onQuickReply={(v) => {
+                    if (v === '__escalate__') onEscalate();
+                    else if (v === '__lead_form__' && onLeadForm) onLeadForm();
+                    else if (v === '__call__') onCall();
+                    else if (onQuickReply) onQuickReply(v);
+                    else onSend(v);
+                  }} />
+              )}
+            </React.Fragment>
+          );
         })}
         {isTyping && features.enableTypingIndicator && (
           <div className="rc-msg-enter" style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingTop: 4 }}>
@@ -576,6 +649,11 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
             {I.phone} {t('call')}
           </button>
         )}
+        {onHelp && (
+          <button className="rc-btn-ghost" onClick={onHelp}>
+            {I.book} {t('help_center') || 'Ayuda'}
+          </button>
+        )}
         {features.enableCsat && messages.length > 2 && (
           <button className="rc-btn-ghost" onClick={onCsat} style={{ marginLeft: 'auto' }}>
             ⭐ {t('rate_experience')}
@@ -589,16 +667,22 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
         borderTop: '1px solid var(--rc-border)', alignItems: 'center',
         background: 'var(--rc-bg)',
       }}>
-        {features.enableAttachments && (
-          <button type="button" style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-            color: 'var(--rc-text-tertiary)', display: 'flex', transition: 'color 0.15s',
-          }}
-            onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
-            onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
-          >
-            {I.attach}
-          </button>
+        {features.enableAttachments && onUpload && (
+          <>
+            <input ref={fileRef} type="file" hidden
+              accept={features.allowedFileTypes?.join(',') || 'image/*,application/pdf,.doc,.docx,.xls,.xlsx'}
+              onChange={handleFileChange} />
+            <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+              style={{
+                background: 'none', border: 'none', cursor: uploading ? 'wait' : 'pointer', padding: 4,
+                color: uploading ? 'var(--rc-primary)' : 'var(--rc-text-tertiary)', display: 'flex', transition: 'color 0.15s',
+              }}
+              onMouseEnter={e => { if (!uploading) e.currentTarget.style.color = 'var(--rc-text-secondary)'; }}
+              onMouseLeave={e => { if (!uploading) e.currentTarget.style.color = 'var(--rc-text-tertiary)'; }}
+            >
+              {uploading ? <span style={{ animation: 'rc-spin 1s linear infinite', display: 'inline-block' }}>⟳</span> : I.attach}
+            </button>
+          </>
         )}
         <input
           ref={inputRef}
@@ -626,6 +710,297 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
           transform: input.trim() ? 'scale(1)' : 'scale(0.92)',
         }}>
           {I.send}
+        </button>
+      </form>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// RICH CONTENT BLOCK
+// ──────────────────────────────────────────────────────────
+function RichContentBlock({ content, theme, onQuickReply }: {
+  content: RichContent; theme: ThemeConfig; onQuickReply: (v: string) => void;
+}) {
+  if (!content?.type) return null;
+
+  if (content.type === 'quick_replies') {
+    return (
+      <div className="rc-msg-enter" style={{ display: 'flex', flexWrap: 'wrap', gap: 6, padding: '4px 46px' }}>
+        {(content.replies || []).map((r, i) => (
+          <button key={i} onClick={() => onQuickReply(r.value)} className="rc-quick-reply" style={{
+            padding: '7px 14px', fontSize: 12, fontWeight: 600, borderRadius: 'var(--rc-radius-pill)',
+            border: '1.5px solid var(--rc-primary)', background: 'var(--rc-bg)',
+            color: 'var(--rc-primary)', cursor: 'pointer', transition: 'all 0.2s',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'var(--rc-primary)'; e.currentTarget.style.color = 'var(--rc-on-primary, white)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--rc-bg)'; e.currentTarget.style.color = 'var(--rc-primary)'; }}
+          >{r.label}</button>
+        ))}
+      </div>
+    );
+  }
+
+  if (content.type === 'card') {
+    return (
+      <div className="rc-msg-enter" style={{ padding: '4px 46px' }}>
+        <div style={{
+          background: 'var(--rc-surface)', border: '1px solid var(--rc-border)',
+          borderRadius: 14, overflow: 'hidden', maxWidth: 280,
+        }}>
+          {content.imageUrl && (
+            <img src={content.imageUrl} alt="" style={{ width: '100%', height: 140, objectFit: 'cover' }} />
+          )}
+          <div style={{ padding: '12px 14px' }}>
+            {content.title && <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--rc-text)', marginBottom: 4 }}>{content.title}</div>}
+            {content.subtitle && <div style={{ fontSize: 12, color: 'var(--rc-text-secondary)', marginBottom: 10, lineHeight: 1.4 }}>{content.subtitle}</div>}
+            {(content.buttons || []).map((btn, i) => (
+              <button key={i} onClick={() => onQuickReply(btn.value)} style={{
+                display: 'block', width: '100%', padding: '9px 12px', fontSize: 13, fontWeight: 600,
+                background: i === 0 ? 'var(--rc-primary)' : 'transparent',
+                color: i === 0 ? 'white' : 'var(--rc-primary)',
+                border: i === 0 ? 'none' : '1px solid var(--rc-border)',
+                borderRadius: 8, cursor: 'pointer', marginTop: 6, transition: 'all 0.15s',
+                textAlign: 'center',
+              }}>{btn.label}</button>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (content.type === 'buttons') {
+    return (
+      <div className="rc-msg-enter" style={{ display: 'flex', flexDirection: 'column', gap: 6, padding: '4px 46px' }}>
+        {(content.buttons || []).map((btn, i) => (
+          <button key={i} onClick={() => onQuickReply(btn.value)} style={{
+            padding: '9px 16px', fontSize: 13, fontWeight: 600, borderRadius: 10,
+            border: '1.5px solid var(--rc-border)', background: 'var(--rc-bg)',
+            color: 'var(--rc-text)', cursor: 'pointer', transition: 'all 0.15s',
+            textAlign: 'left',
+          }}
+            onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--rc-primary)'; e.currentTarget.style.color = 'var(--rc-primary)'; }}
+            onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--rc-border)'; e.currentTarget.style.color = 'var(--rc-text)'; }}
+          >{btn.label}</button>
+        ))}
+      </div>
+    );
+  }
+
+  if (content.type === 'carousel') {
+    return (
+      <div className="rc-msg-enter" style={{ padding: '4px 0', overflowX: 'auto', display: 'flex', gap: 10, paddingLeft: 46, paddingRight: 16 }}>
+        {(content.cards || []).map((c, i) => (
+          <div key={i} style={{ flex: '0 0 220px' }}>
+            <RichContentBlock content={c} theme={theme} onQuickReply={onQuickReply} />
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  return null;
+}
+
+// ──────────────────────────────────────────────────────────
+// HELP CENTER VIEW (in-widget KB search)
+// ──────────────────────────────────────────────────────────
+function HelpCenterView({ theme, t, kbResults, onSearch, onBack, onStartChat }: {
+  theme: ThemeConfig; t: (k: string) => string;
+  kbResults: { id: number; title: string; content: string; category?: string; businessLine?: string }[];
+  onSearch: (q: string) => void; onBack: () => void; onStartChat: (q: string) => void;
+}) {
+  const [query, setQuery] = useState('');
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (query.trim().length >= 2) onSearch(query.trim());
+  };
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      {/* Header */}
+      <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--rc-border)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+          <button onClick={onBack} style={{
+            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+            color: 'var(--rc-text-secondary)', display: 'flex',
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="15 18 9 12 15 6"/>
+            </svg>
+          </button>
+          <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
+            {t('help_center') || 'Centro de ayuda'}
+          </h4>
+        </div>
+        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8 }}>
+          <input
+            type="text" value={query} onChange={e => setQuery(e.target.value)}
+            placeholder={t('search_placeholder') || 'Buscar en la base de conocimiento...'}
+            className="rc-input-focus"
+            style={{
+              flex: 1, padding: '10px 16px', border: '1.5px solid var(--rc-border)',
+              borderRadius: 'var(--rc-radius-pill)', fontSize: 13, outline: 'none',
+              background: 'var(--rc-surface)', color: 'var(--rc-text)',
+            }}
+          />
+          <button type="submit" disabled={query.trim().length < 2} style={{
+            width: 38, height: 38, borderRadius: 19, border: 'none',
+            background: query.trim().length >= 2 ? 'var(--rc-primary)' : 'var(--rc-surface)',
+            color: query.trim().length >= 2 ? 'white' : 'var(--rc-text-tertiary)',
+            cursor: query.trim().length >= 2 ? 'pointer' : 'default',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            {I.search}
+          </button>
+        </form>
+      </div>
+
+      {/* Results */}
+      <div className="rc-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
+        {kbResults.length === 0 && query.length > 0 && (
+          <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--rc-text-secondary)' }}>
+            <p style={{ fontSize: 13, marginBottom: 16 }}>{t('no_results') || 'No se encontraron resultados'}</p>
+            <button onClick={() => onStartChat(query)} className="rc-btn-primary" style={{ padding: '9px 20px', fontSize: 13 }}>
+              💬 {t('ask_agent') || 'Preguntar al asistente'}
+            </button>
+          </div>
+        )}
+        {kbResults.length === 0 && query.length === 0 && (
+          <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--rc-text-secondary)' }}>
+            <div style={{ fontSize: 36, marginBottom: 12 }}>📚</div>
+            <p style={{ fontSize: 13, lineHeight: 1.5 }}>{t('help_center_intro') || 'Busca en nuestra base de conocimiento para encontrar respuestas rápidas.'}</p>
+          </div>
+        )}
+        {kbResults.map((r) => (
+          <div key={r.id} style={{
+            marginBottom: 8, border: '1px solid var(--rc-border)',
+            borderRadius: 10, overflow: 'hidden', background: 'var(--rc-bg)',
+          }}>
+            <button onClick={() => setExpanded(expanded === r.id ? null : r.id)} style={{
+              width: '100%', padding: '12px 14px', border: 'none',
+              background: 'transparent', cursor: 'pointer', textAlign: 'left',
+              display: 'flex', alignItems: 'center', gap: 8,
+            }}>
+              <span style={{
+                fontSize: 10, padding: '2px 8px', borderRadius: 4,
+                background: 'var(--rc-primary-light)', color: 'var(--rc-primary)',
+                fontWeight: 600, flexShrink: 0,
+              }}>
+                {r.category || r.businessLine || 'General'}
+              </span>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--rc-text)', flex: 1 }}>
+                {r.title}
+              </span>
+              <span style={{
+                transition: 'transform 0.2s', display: 'flex',
+                transform: expanded === r.id ? 'rotate(180deg)' : 'rotate(0deg)',
+                color: 'var(--rc-text-tertiary)',
+              }}>
+                {I.minimize}
+              </span>
+            </button>
+            {expanded === r.id && (
+              <div className="rc-fade-in" style={{
+                padding: '0 14px 12px', fontSize: 12, color: 'var(--rc-text-secondary)',
+                lineHeight: 1.6, borderTop: '1px solid var(--rc-border-subtle)',
+                paddingTop: 10,
+              }}>
+                {r.content}
+                <button onClick={() => onStartChat(r.title)} style={{
+                  display: 'block', marginTop: 10, fontSize: 12, fontWeight: 600,
+                  color: 'var(--rc-primary)', background: 'none', border: 'none',
+                  cursor: 'pointer', padding: 0,
+                }}>
+                  💬 {t('ask_more') || 'Preguntar más sobre esto'}
+                </button>
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// LEAD FORM VIEW (standalone form from rich message action)
+// ──────────────────────────────────────────────────────────
+function LeadFormView({ theme, t, onSubmit, onBack }: {
+  theme: ThemeConfig; t: (k: string) => string;
+  onSubmit: (data: { name: string; email: string; phone?: string; company?: string }) => void; onBack: () => void;
+}) {
+  const [form, setForm] = useState({ name: '', email: '', phone: '', company: '' });
+  const [submitted, setSubmitted] = useState(false);
+
+  const handle = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim() || !form.email.trim()) return;
+    onSubmit(form);
+    setSubmitted(true);
+  };
+
+  if (submitted) {
+    return (
+      <div className="rc-slide-up" style={{ padding: 40, textAlign: 'center' }}>
+        <div style={{
+          width: 56, height: 56, borderRadius: 16, margin: '0 auto 16px',
+          background: 'linear-gradient(135deg, #10B981, #059669)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>
+          {t('lead_thanks') || 'Gracias, nos pondremos en contacto pronto'}
+        </p>
+        <button onClick={onBack} style={{
+          marginTop: 16, fontSize: 13, color: 'var(--rc-primary)', background: 'none',
+          border: 'none', cursor: 'pointer', fontWeight: 600,
+        }}>
+          ← {t('back_to_chat') || 'Volver al chat'}
+        </button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="rc-slide-up" style={{ padding: '22px 20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
+        <button onClick={onBack} style={{
+          background: 'none', border: 'none', cursor: 'pointer', padding: 4,
+          color: 'var(--rc-text-secondary)', display: 'flex',
+        }}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <polyline points="15 18 9 12 15 6"/>
+          </svg>
+        </button>
+        <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
+          {t('lead_form_title') || 'Solicitar información'}
+        </h4>
+      </div>
+      <p style={{ fontSize: 13, color: 'var(--rc-text-secondary)', marginBottom: 16, lineHeight: 1.4 }}>
+        {t('lead_form_subtitle') || 'Déjanos tus datos y un experto se pondrá en contacto contigo.'}
+      </p>
+      <form onSubmit={handle} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        <input type="text" required placeholder={t('offline_form_name') || 'Nombre *'}
+          className="rc-input rc-input-focus"
+          value={form.name} onChange={e => setForm({ ...form, name: e.target.value })} />
+        <input type="email" required placeholder={t('offline_form_email') || 'Email *'}
+          className="rc-input rc-input-focus"
+          value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+        <input type="tel" placeholder={t('offline_form_phone') || 'Teléfono'}
+          className="rc-input rc-input-focus"
+          value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
+        <input type="text" placeholder={t('lead_form_company') || 'Empresa'}
+          className="rc-input rc-input-focus"
+          value={form.company} onChange={e => setForm({ ...form, company: e.target.value })} />
+        <button type="submit" className="rc-btn-primary" style={{ width: '100%', marginTop: 4 }}>
+          {t('lead_form_submit') || 'Enviar solicitud'}
         </button>
       </form>
     </div>
@@ -698,6 +1073,31 @@ function MessageBubble({ message: msg, isGrouped }: { message: ChatMessage; isGr
             {msg.agentName}
           </div>
         )}
+        {/* Attachments (images/files) */}
+        {msg.attachments && msg.attachments.length > 0 && msg.attachments.map((att, i) => (
+          <div key={i} style={{ marginBottom: 4 }}>
+            {att.mimeType.startsWith('image/') ? (
+              <img src={att.url} alt={att.name} style={{
+                maxWidth: '100%', maxHeight: 200, borderRadius: 10,
+                border: '1px solid var(--rc-border-subtle)', cursor: 'pointer',
+              }} onClick={() => window.open(att.url, '_blank')} />
+            ) : (
+              <a href={att.url} target="_blank" rel="noopener noreferrer" style={{
+                display: 'flex', alignItems: 'center', gap: 8, padding: '8px 12px',
+                background: 'var(--rc-surface)', border: '1px solid var(--rc-border)',
+                borderRadius: 10, textDecoration: 'none', fontSize: 12, color: 'var(--rc-text)',
+              }}>
+                <span style={{ fontSize: 18 }}>📄</span>
+                <div>
+                  <div style={{ fontWeight: 600 }}>{att.name}</div>
+                  <div style={{ fontSize: 10, color: 'var(--rc-text-tertiary)' }}>
+                    {(att.size / 1024).toFixed(0)} KB
+                  </div>
+                </div>
+              </a>
+            )}
+          </div>
+        ))}
         {/* Bubble */}
         <div
           className={isVisitor

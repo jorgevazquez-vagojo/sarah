@@ -7,6 +7,7 @@ const { sessionStore } = require('../state/session-store');
 const { transition } = require('../state/conversation-fsm');
 const { detectLanguage } = require('../services/language-detector');
 const { generateResponse, detectBusinessLine, isBusinessHours } = require('../services/router');
+const { searchKnowledge } = require('../services/knowledge-base');
 const { scoreLead } = require('../services/lead-capture');
 const { triggerWebhooks } = require('../integrations/webhooks');
 const { dispatchToCRM } = require('../integrations/crm');
@@ -121,6 +122,8 @@ async function handleMessage(ws, visitorId, msg) {
     case 'request_call': return handleRequestCall(ws, visitorId);
     case 'csat': return handleCsat(ws, visitorId, msg);
     case 'page_context': return handlePageContext(ws, visitorId, msg);
+    case 'search_kb': return handleSearchKB(ws, visitorId, msg);
+    case 'quick_reply': return handleQuickReply(ws, visitorId, msg);
     default:
       logger.warn(`Unknown message type: ${msg.type}`);
   }
@@ -146,6 +149,62 @@ async function handlePageContext(ws, visitorId, msg) {
   if (detectedLine) {
     send(ws, 'business_line_detected', { businessLine: detectedLine });
   }
+}
+
+// ─── Rich reply builder: auto-attach cards/quick-replies for common intents ───
+const RICH_LINE_INFO = {
+  boostic:   { title: 'Boostic - SEO & Growth', subtitle: 'Posicionamiento, analítica web y CRO', icon: '📈' },
+  binnacle:  { title: 'Binnacle - Business Intelligence', subtitle: 'Dashboards, datos y reporting', icon: '📊' },
+  marketing: { title: 'Marketing Digital', subtitle: 'SEM, Social Media y campañas', icon: '📣' },
+  tech:      { title: 'Digital Tech', subtitle: 'Desarrollo web, apps y e-commerce', icon: '💻' },
+};
+
+function buildRichReply(question, answer, businessLine, language) {
+  const q = question.toLowerCase();
+
+  // If asking about services/what you do → quick replies for business lines
+  if (/qué (hacéis|hacen|ofrec|servicio)|what (do|service)|quais serviço/i.test(q) && !businessLine) {
+    return {
+      type: 'quick_replies',
+      text: answer,
+      replies: Object.entries(RICH_LINE_INFO).map(([id, info]) => ({
+        label: `${info.icon} ${info.title.split(' - ')[0] || info.title}`,
+        value: `Quiero saber más sobre ${info.title}`,
+      })),
+    };
+  }
+
+  // If a specific line is detected → card with CTA
+  if (businessLine && RICH_LINE_INFO[businessLine]) {
+    const info = RICH_LINE_INFO[businessLine];
+    // Only on first interaction with the line (short conversation)
+    if (/cuénta|cuéntame|tell me|info|saber más|más sobre|know more/i.test(q)) {
+      return {
+        type: 'card',
+        title: info.title,
+        subtitle: info.subtitle,
+        buttons: [
+          { label: '📞 Contactar un experto', action: 'postback', value: '__escalate__' },
+          { label: '📝 Dejar mis datos', action: 'postback', value: '__lead_form__' },
+        ],
+      };
+    }
+  }
+
+  // If asking about contact/pricing → buttons
+  if (/precio|presupuesto|coste|cost|price|budget|cotización/i.test(q)) {
+    return {
+      type: 'buttons',
+      text: answer,
+      buttons: [
+        { label: '💬 Hablar con un agente', action: 'postback', value: '__escalate__' },
+        { label: '📝 Solicitar presupuesto', action: 'postback', value: '__lead_form__' },
+        { label: '📞 Llamar', action: 'postback', value: '__call__' },
+      ],
+    };
+  }
+
+  return null;
 }
 
 async function handleChat(ws, visitorId, msg) {
@@ -220,14 +279,21 @@ async function handleChat(ws, visitorId, msg) {
     await db.updateConversation(conv.id, { business_line: detectedLine });
   }
 
+  // Build rich content when applicable
+  const richContent = buildRichReply(msg.content, response, detectedLine || conv.business_line, language);
+
   // Save bot message + webhook
-  await db.saveMessage({ conversationId: conv.id, sender: 'bot', content: response });
+  await db.saveMessage({
+    conversationId: conv.id, sender: 'bot', content: response,
+    metadata: richContent ? { richContent } : {},
+  });
   triggerWebhooks('message.sent', { conversationId: conv.id, sender: 'bot', content: response }).catch(() => {});
 
   send(ws, 'typing', { isTyping: false });
   send(ws, 'message', {
     sender: 'bot',
     content: response,
+    richContent,
     timestamp: new Date().toISOString(),
   });
 }
@@ -400,6 +466,39 @@ async function handleCsat(ws, visitorId, msg) {
   });
 }
 
+// ─── Help Center: search knowledge base ───
+async function handleSearchKB(ws, visitorId, msg) {
+  if (!msg.query || typeof msg.query !== 'string' || msg.query.trim().length < 2) {
+    send(ws, 'error', { message: 'Query too short' });
+    return;
+  }
+  const session = (await sessionStore.get(visitorId)) || {};
+  const results = await searchKnowledge(msg.query.trim(), msg.businessLine || null, session.language || 'es');
+  send(ws, 'kb_results', {
+    query: msg.query.trim(),
+    results: results.slice(0, 8).map((r) => ({
+      id: r.id,
+      title: r.title,
+      content: (r.content || '').slice(0, 300),
+      category: r.category,
+      businessLine: r.business_line,
+    })),
+  });
+}
+
+// ─── Quick Reply postback: handle special actions from rich messages ───
+async function handleQuickReply(ws, visitorId, msg) {
+  if (!msg.value) return;
+  if (msg.value === '__escalate__') return handleEscalate(ws, visitorId);
+  if (msg.value === '__lead_form__') {
+    send(ws, 'show_lead_form', {});
+    return;
+  }
+  if (msg.value === '__call__') return handleRequestCall(ws, visitorId);
+  // Otherwise treat as a regular chat message
+  return handleChat(ws, visitorId, { content: msg.value });
+}
+
 // Helper: send message to visitor from agent/system
 async function sendToVisitor(visitorId, sender, content) {
   const ws = visitors.get(visitorId);
@@ -408,4 +507,4 @@ async function sendToVisitor(visitorId, sender, content) {
   }
 }
 
-module.exports = { initChatHandler, sendToVisitor };
+module.exports = { initChatHandler, sendToVisitor, buildRichReply };

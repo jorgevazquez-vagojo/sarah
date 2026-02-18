@@ -3,6 +3,30 @@ import { WSClient } from '../lib/ws-client';
 
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read';
 
+export interface RichContent {
+  type: 'card' | 'carousel' | 'quick_replies' | 'buttons' | 'image' | 'file';
+  title?: string;
+  subtitle?: string;
+  imageUrl?: string;
+  text?: string;
+  buttons?: { label: string; action: string; value: string }[];
+  cards?: RichContent[];
+  replies?: { label: string; value: string }[];
+  url?: string;
+  name?: string;
+  mimeType?: string;
+  size?: number;
+  caption?: string;
+}
+
+export interface KBResult {
+  id: number;
+  title: string;
+  content: string;
+  category?: string;
+  businessLine?: string;
+}
+
 export interface ChatMessage {
   id?: string;
   sender: 'visitor' | 'bot' | 'agent' | 'system';
@@ -11,6 +35,8 @@ export interface ChatMessage {
   agentName?: string;
   status?: MessageStatus;
   metadata?: any;
+  richContent?: RichContent | null;
+  attachments?: { name: string; url: string; mimeType: string; size: number }[];
 }
 
 interface UseChatOptions {
@@ -26,6 +52,8 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
   const [language, setLanguageState] = useState('es');
   const [businessLine, setBusinessLineState] = useState<string | null>(null);
   const [allRead, setAllRead] = useState(false);
+  const [kbResults, setKbResults] = useState<KBResult[]>([]);
+  const [showLeadForm, setShowLeadForm] = useState(false);
   const wsRef = useRef<WSClient | null>(null);
 
   useEffect(() => {
@@ -60,6 +88,7 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
         timestamp: data.timestamp,
         agentName: data.agentName,
         status: 'delivered',
+        richContent: data.richContent || null,
       }]);
     });
 
@@ -108,6 +137,16 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
         content: data.message,
         timestamp: new Date().toISOString(),
       }]);
+    });
+
+    // Help Center KB search results
+    ws.on('kb_results', (data) => {
+      setKbResults(data.results || []);
+    });
+
+    // Server requests showing lead form (from rich message postback)
+    ws.on('show_lead_form', () => {
+      setShowLeadForm(true);
     });
 
     ws.on('_close', () => setIsConnected(false));
@@ -174,10 +213,45 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
     wsRef.current?.send('csat', { rating, comment });
   }, []);
 
+  const searchKB = useCallback((query: string) => {
+    wsRef.current?.send('search_kb', { query, businessLine: businessLine || undefined });
+  }, [businessLine]);
+
+  const sendQuickReply = useCallback((value: string) => {
+    wsRef.current?.send('quick_reply', { value });
+  }, []);
+
+  const uploadFile = useCallback(async (file: File, baseUrl: string) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${baseUrl}/api/upload?sender=visitor`, {
+      method: 'POST',
+      body: formData,
+      headers: { 'X-API-Key': 'widget' },
+    });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    // Send as a chat message with attachment info
+    wsRef.current?.send('chat', {
+      content: file.type.startsWith('image/') ? `📷 ${file.name}` : `📎 ${file.name}`,
+    });
+    setMessages((prev) => [...prev, {
+      sender: 'visitor',
+      content: file.type.startsWith('image/') ? `📷 ${file.name}` : `📎 ${file.name}`,
+      timestamp: new Date().toISOString(),
+      status: 'sent',
+      attachments: [{ name: data.name, url: data.url, mimeType: data.mimeType, size: data.size }],
+    }]);
+    return data;
+  }, []);
+
+  const clearLeadForm = useCallback(() => setShowLeadForm(false), []);
+
   return {
     messages, isTyping, isConnected, isBusinessHours,
-    language, businessLine, allRead,
+    language, businessLine, allRead, kbResults, showLeadForm,
     sendMessage, setLanguage, setBusinessLine,
     escalate, requestCall, submitLead, submitOfflineForm, submitCsat,
+    searchKB, sendQuickReply, uploadFile, clearLeadForm,
   };
 }
