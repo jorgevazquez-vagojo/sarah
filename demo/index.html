@@ -238,6 +238,199 @@ h3{font-size:28px;font-weight:700;letter-spacing:-0.01em}
 .file-info .file-name{font-size:12px;font-weight:600;color:var(--slate)}
 .file-info .file-size{font-size:10px;color:var(--gray)}
 
+/* ── Phone Mockup ── */
+.phone-mock{
+  width:320px;background:var(--white);border-radius:20px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  transform:perspective(1000px) rotateY(-5deg) rotateX(2deg);
+  transition:transform 0.5s;
+}
+.phone-mock:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg)}
+.phone-header{
+  background:linear-gradient(135deg,var(--green),#059669);
+  padding:16px 18px;display:flex;align-items:center;gap:12px;color:white;
+}
+.phone-form{padding:20px;display:flex;flex-direction:column;gap:14px}
+.phone-input{
+  padding:12px 16px;border:1.5px solid var(--border);border-radius:12px;
+  font-size:13px;font-family:var(--font);background:var(--light);color:var(--slate);
+}
+.phone-btn{
+  padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:700;
+  color:white;cursor:pointer;font-family:var(--font);
+  background:linear-gradient(135deg,var(--green),#059669);
+  display:flex;align-items:center;justify-content:center;gap:8px;
+}
+
+/* ── Premium Grid ── */
+.premium-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;max-width:960px;margin:0 auto}
+.premium-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:20px 16px;text-align:center;
+  transition:transform 0.3s,border-color 0.3s;
+}
+.premium-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.15)}
+.premium-card .p-emoji{font-size:32px;margin-bottom:10px}
+.premium-card h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.premium-card p{font-size:12px;color:#94A3B8;line-height:1.4}
+
+/* ── Preflight Steps ── */
+.preflight-steps{display:flex;flex-direction:column;gap:12px;width:100%}
+.pf-step{
+  display:flex;align-items:center;gap:14px;padding:14px 18px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;
+}
+.pf-check{
+  width:28px;height:28px;border-radius:50%;
+  background:var(--green);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;flex-shrink:0;
+}
+.pf-step .pf-label{font-size:14px;font-weight:600}
+.pf-step .pf-sub{font-size:11px;color:#94A3B8}
+
+/* ── Signal Bars ── */
+.signal-bars{display:flex;align-items:flex-end;gap:3px;height:32px}
+.signal-bar{width:8px;border-radius:2px;background:var(--green)}
+
+/* ── Scheduler Mockup ── */
+.sched-mock{
+  width:360px;background:var(--white);border-radius:20px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  transform:perspective(1000px) rotateY(-5deg) rotateX(2deg);
+  transition:transform 0.5s;
+}
+.sched-mock:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg)}
+.sched-header{
+  background:linear-gradient(135deg,var(--blue),#1D4ED8);
+  padding:16px 18px;color:white;
+}
+.sched-body{padding:16px}
+.day-tabs{display:flex;gap:6px;margin-bottom:14px}
+.day-tab{
+  flex:1;padding:10px 4px;border-radius:10px;text-align:center;
+  border:1.5px solid var(--border);font-size:11px;font-weight:600;color:var(--slate);
+  cursor:pointer;transition:all 0.2s;
+}
+.day-tab.active{background:var(--blue);border-color:var(--blue);color:white}
+.time-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.time-slot{
+  padding:10px;border-radius:10px;text-align:center;
+  border:1.5px solid var(--border);font-size:12px;font-weight:600;color:var(--slate);
+  cursor:pointer;transition:all 0.2s;
+}
+.time-slot.active{background:var(--blue);border-color:var(--blue);color:white}
+.bu-selector{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.bu-option{
+  padding:10px;border-radius:10px;text-align:center;
+  border:1.5px solid var(--border);font-size:11px;font-weight:600;color:var(--slate);
+  cursor:pointer;
+}
+.bu-option.active{border-color:var(--blue);background:rgba(59,130,246,0.05)}
+
+/* ── Wallboard ── */
+.wallboard-mock{
+  width:100%;max-width:900px;background:#0B1120;border-radius:16px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);padding:20px;
+}
+.wb-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.wb-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.wb-kpi{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px;padding:16px;text-align:center;
+}
+.wb-kpi .wb-val{font-size:32px;font-weight:900}
+.wb-kpi .wb-label{font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;margin-top:4px}
+.wb-bu-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:16px}
+.wb-bu{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px;text-align:center}
+.wb-bu .wb-bu-name{font-size:11px;font-weight:600;margin-bottom:4px}
+.wb-bu .wb-bu-val{font-size:18px;font-weight:800}
+.wb-agents{width:100%}
+.wb-agents table{width:100%;border-collapse:collapse}
+.wb-agents th{font-size:10px;color:#64748B;text-transform:uppercase;letter-spacing:0.08em;padding:8px 12px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.06)}
+.wb-agents td{font-size:12px;color:#E2E8F0;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,0.03)}
+.wb-status{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:3px 10px;border-radius:6px}
+
+/* ── Security Stack ── */
+.security-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:900px;margin:0 auto}
+.sec-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:20px;text-align:center;
+  transition:transform 0.3s,border-color 0.3s;
+}
+.sec-card:hover{transform:translateY(-4px);border-color:rgba(255,255,255,0.15)}
+.sec-card .sec-icon{font-size:28px;margin-bottom:10px}
+.sec-card h4{font-size:14px;font-weight:700;margin-bottom:6px}
+.sec-card p{font-size:12px;color:#94A3B8;line-height:1.4}
+.audit-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:12px 24px;border-radius:12px;
+  background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.2);
+  color:var(--green);font-size:14px;font-weight:700;
+}
+
+/* ── Impact Numbers ── */
+.impact-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:24px;max-width:900px;margin:0 auto}
+.impact-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;padding:32px 20px;text-align:center;
+  transition:transform 0.3s;
+}
+.impact-card:hover{transform:translateY(-4px)}
+.impact-val{font-size:48px;font-weight:900;line-height:1}
+.impact-label{font-size:14px;color:#94A3B8;margin-top:8px;font-weight:500}
+
+/* ── Comparison Table ── */
+.comp-table{
+  width:100%;max-width:900px;margin:0 auto;border-collapse:collapse;
+  background:rgba(255,255,255,0.03);border-radius:16px;overflow:hidden;
+}
+.comp-table th{
+  font-size:12px;font-weight:700;padding:14px 16px;text-align:center;
+  border-bottom:1px solid rgba(255,255,255,0.08);color:#94A3B8;
+  text-transform:uppercase;letter-spacing:0.06em;
+}
+.comp-table th:first-child{text-align:left}
+.comp-table th.highlight{color:var(--red);background:rgba(227,6,19,0.05)}
+.comp-table td{font-size:13px;padding:12px 16px;text-align:center;border-bottom:1px solid rgba(255,255,255,0.04);color:#E2E8F0}
+.comp-table td:first-child{text-align:left;font-weight:600}
+.comp-table td.highlight{background:rgba(227,6,19,0.03)}
+.comp-yes{color:var(--green);font-weight:700}
+.comp-no{color:#64748B}
+.comp-partial{color:var(--orange);font-weight:600}
+
+/* ── Timeline ── */
+.timeline{display:flex;gap:32px;max-width:900px;margin:0 auto;justify-content:center}
+.tl-phase{
+  flex:1;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;padding:24px;position:relative;
+  transition:transform 0.3s;
+}
+.tl-phase:hover{transform:translateY(-4px)}
+.tl-phase.done{border-color:rgba(16,185,129,0.3)}
+.tl-badge{
+  font-size:11px;font-weight:700;padding:4px 12px;border-radius:8px;
+  display:inline-block;margin-bottom:12px;
+}
+.tl-items{list-style:none;padding:0}
+.tl-items li{font-size:13px;color:#94A3B8;padding:4px 0;display:flex;align-items:center;gap:8px}
+.tl-items li::before{content:'';width:6px;height:6px;border-radius:50%;flex-shrink:0}
+
+/* ── CTA slide ── */
+.cta-contact{
+  display:flex;gap:24px;justify-content:center;flex-wrap:wrap;margin-top:16px;
+}
+.cta-item{
+  display:flex;align-items:center;gap:10px;padding:12px 20px;
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;font-size:14px;color:#E2E8F0;
+}
+.cta-item .cta-icon{font-size:20px}
+
+/* ── Count-up animation ── */
+.count-up{display:inline-block}
+
 /* ── Responsive ── */
 @media(max-width:768px){
   h1{font-size:36px}h2{font-size:28px}
@@ -248,6 +441,17 @@ h3{font-size:28px;font-weight:700;letter-spacing:-0.01em}
   .team-grid{grid-template-columns:repeat(3,1fr)}
   .stack-grid{grid-template-columns:repeat(2,1fr)}
   .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .premium-grid{grid-template-columns:repeat(2,1fr)}
+  .security-grid{grid-template-columns:1fr 1fr}
+  .impact-grid{grid-template-columns:repeat(2,1fr)}
+  .impact-val{font-size:36px}
+  .timeline{flex-direction:column;gap:16px}
+  .wb-kpi-row{grid-template-columns:repeat(2,1fr)}
+  .wb-bu-row{grid-template-columns:repeat(2,1fr)}
+  .phone-mock,.sched-mock{width:100%;max-width:340px;transform:none}
+  .wallboard-mock{max-width:100%}
+  .comp-table{font-size:11px}
+  .comp-table th,.comp-table td{padding:8px 6px;font-size:10px}
 }
 </style>
 </head>
@@ -628,15 +832,366 @@ h3{font-size:28px;font-weight:700;letter-spacing:-0.01em}
       </div>
     </div>
 
-    <!-- SLIDE 11: Summary -->
-    <div class="slide slide-center" data-narration="En resumen, el chatbot de Redegal es una plataforma completa de comunicacion con clientes. Chatbot con inteligencia artificial, webphone VoIP, dashboard profesional para agentes, doce idiomas, cuatro lineas de negocio, integracion con CRMs, webhooks, plugins para las principales plataformas e-commerce, y un sistema de theming totalmente parametrizable. Ciento once tests automatizados garantizan la calidad. Todo desplegable con Docker Compose en un solo comando. Gracias por vuestra atencion.">
+    <!-- SLIDE 12: WebPhone VoIP -->
+    <div class="slide slide-split" data-narration="El WebPhone integrado permite llamadas VoIP directamente desde el navegador. Sin aplicaciones, sin descargas. El visitante puede solicitar una devolucion de llamada o iniciar una llamada WebRTC directa. El sistema usa protocolo SIP contra la centralita cloud Vozelia con senalizacion WebSocket.">
+      <div class="text-side">
+        <div class="tag animate-in">WebPhone VoIP</div>
+        <h2 class="animate-in animate-in-d1">Click2Call<br><span class="gradient-text">desde el navegador</span></h2>
+        <p class="subtitle animate-in animate-in-d2">SIP.js + WebRTC. Sin apps, sin descargas. Llamadas directas o callback programado. Señalizacion WebSocket contra centralita cloud Vozelia.</p>
+        <div class="animate-in animate-in-d3" style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap">
+          <span style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(16,185,129,0.15);color:var(--green);font-weight:600">WebRTC</span>
+          <span style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(59,130,246,0.15);color:var(--blue);font-weight:600">SIP.js</span>
+          <span style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(139,92,246,0.15);color:var(--purple);font-weight:600">Asterisk AMI</span>
+          <span style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(245,158,11,0.15);color:var(--orange);font-weight:600">DTLS-SRTP</span>
+        </div>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="phone-mock">
+          <div class="phone-header">
+            <div style="width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);display:flex;align-items:center;justify-content:center;font-size:18px">&#x1F4DE;</div>
+            <div>
+              <div style="font-weight:700;font-size:14px">Llamar a Redegal</div>
+              <div style="font-size:11px;opacity:0.8">Tiempo de espera: ~15s</div>
+            </div>
+          </div>
+          <div class="phone-form">
+            <div style="text-align:center;padding:8px 0">
+              <div style="font-size:48px;margin-bottom:4px">&#x1F4DE;</div>
+              <div style="font-size:14px;font-weight:700;color:var(--slate)">WebPhone VoIP</div>
+              <div style="font-size:12px;color:var(--gray)">Llamada directa desde el navegador</div>
+            </div>
+            <div class="phone-input" style="color:var(--gray)">&#x1F464; Tu nombre</div>
+            <div class="phone-input" style="color:var(--gray)">&#x1F4DE; +34 6XX XXX XXX</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+              <select class="phone-input" style="appearance:none;cursor:pointer" disabled>
+                <option>Boostic</option>
+              </select>
+              <select class="phone-input" style="appearance:none;cursor:pointer" disabled>
+                <option>Espanol</option>
+              </select>
+            </div>
+            <div class="phone-btn">&#x1F4DE; Llamar ahora</div>
+            <div style="text-align:center;font-size:11px;color:var(--gray)">o</div>
+            <div class="phone-btn" style="background:linear-gradient(135deg,var(--blue),#1D4ED8)">&#x1F4C5; Programar callback</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13: 7 Premium Improvements -->
+    <div class="slide slide-center" data-narration="Hemos implementado siete mejoras premium inspiradas en Twilio, 3CX y Genesys. Indicador de calidad de audio en tiempo real, test de conectividad pre-llamada, nueve estados visuales distintos, monitor de nivel de audio, programacion de callbacks estilo Calendly, posicion en cola en tiempo real, y un wallboard de contact center.">
+      <div class="animate-in">
+        <div class="tag">Premium</div>
+        <h2>7 Mejoras <span class="gradient-text">Premium</span></h2>
+        <p class="subtitle" style="margin:0 auto">Inspiradas en Twilio, 3CX y Genesys</p>
+      </div>
+      <div class="premium-grid animate-in animate-in-d1">
+        <div class="premium-card">
+          <div class="p-emoji">&#x1F4F6;</div>
+          <h4>Quality Indicator</h4>
+          <p>MOS score en tiempo real con barras de senal</p>
+        </div>
+        <div class="premium-card">
+          <div class="p-emoji">&#x2705;</div>
+          <h4>Preflight Test</h4>
+          <p>5 pasos de verificacion pre-llamada</p>
+        </div>
+        <div class="premium-card">
+          <div class="p-emoji">&#x1F534;</div>
+          <h4>9 Estados Visuales</h4>
+          <p>Idle, ringing, connecting, active, hold, muted...</p>
+        </div>
+        <div class="premium-card">
+          <div class="p-emoji">&#x1F3A4;</div>
+          <h4>Audio Level Monitor</h4>
+          <p>VU meter visual de nivel de entrada/salida</p>
+        </div>
+        <div class="premium-card">
+          <div class="p-emoji">&#x1F4C5;</div>
+          <h4>Callback Scheduler</h4>
+          <p>Programacion estilo Calendly con franjas horarias</p>
+        </div>
+        <div class="premium-card">
+          <div class="p-emoji">&#x23F3;</div>
+          <h4>Queue Position</h4>
+          <p>Posicion y tiempo estimado en cola en vivo</p>
+        </div>
+        <div class="premium-card" style="grid-column:span 2">
+          <div class="p-emoji">&#x1F4FA;</div>
+          <h4>Contact Center Wallboard</h4>
+          <p>KPIs, colas, agentes y SLAs en pantalla de TV con tema oscuro y actualizacion cada 5s via WebSocket</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 14: Preflight Test + Quality Monitor -->
+    <div class="slide slide-split" data-narration="Antes de cada llamada, el sistema ejecuta un test de conectividad de cinco pasos similar al de Twilio. Verifica el navegador, el microfono, la conectividad STUN TURN, la calidad de red y los codecs disponibles. Durante la llamada, un indicador de calidad muestra la puntuacion MOS en tiempo real con barras de senal como un telefono movil.">
+      <div class="text-side">
+        <div class="tag animate-in">Preflight Test</div>
+        <h2 class="animate-in animate-in-d1">Test Pre-llamada<br><span class="gradient-text">+ Quality Monitor</span></h2>
+        <p class="subtitle animate-in animate-in-d2">5 verificaciones automaticas antes de cada llamada. Indicador MOS en tiempo real durante la conversacion.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div style="display:flex;flex-direction:column;gap:24px;align-items:center;width:100%">
+          <!-- Preflight steps -->
+          <div class="preflight-steps" style="max-width:360px">
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div><div class="pf-label">1. Navegador</div><div class="pf-sub">WebRTC API disponible</div></div>
+            </div>
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div><div class="pf-label">2. Microfono</div><div class="pf-sub">Permisos concedidos, dispositivo activo</div></div>
+            </div>
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div><div class="pf-label">3. Conectividad STUN/TURN</div><div class="pf-sub">ICE candidates recopilados</div></div>
+            </div>
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div><div class="pf-label">4. Calidad de Red</div><div class="pf-sub">Latencia 23ms, jitter 4ms</div></div>
+            </div>
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div><div class="pf-label">5. Codecs</div><div class="pf-sub">Opus, G.711, PCMU disponibles</div></div>
+            </div>
+          </div>
+          <!-- Quality indicator -->
+          <div style="display:flex;align-items:center;gap:16px;padding:16px 24px;background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);border-radius:14px">
+            <div class="signal-bars">
+              <div class="signal-bar" style="height:8px"></div>
+              <div class="signal-bar" style="height:14px"></div>
+              <div class="signal-bar" style="height:20px"></div>
+              <div class="signal-bar" style="height:26px"></div>
+              <div class="signal-bar" style="height:32px"></div>
+            </div>
+            <div>
+              <div style="font-size:14px;font-weight:700;color:var(--green)">MOS 4.3 - Excelente</div>
+              <div style="font-size:11px;color:#94A3B8">Latencia: 23ms | Jitter: 4ms | Paquetes: 0.1%</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 15: Callback Scheduling -->
+    <div class="slide slide-split" data-narration="Fuera del horario de atencion, el sistema no pierde visitantes. Ofrece una experiencia de programacion de callback estilo Calendly donde el visitante elige dia, franja horaria y linea de negocio. IPGlobal consiguio un veinticinco por ciento de conversion con esta funcionalidad para Jazztel.">
+      <div class="text-side">
+        <div class="tag animate-in">Callback</div>
+        <h2 class="animate-in animate-in-d1">Programacion<br><span class="gradient-text">estilo Calendly</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Fuera de horario, no se pierden visitantes. Eligen dia, franja y linea de negocio. IPGlobal logro +25% conversion con Jazztel.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="sched-mock">
+          <div class="sched-header">
+            <div style="font-size:11px;font-weight:600;opacity:0.8;margin-bottom:4px">PROGRAMAR CALLBACK</div>
+            <div style="font-size:16px;font-weight:800">Elige tu horario preferido</div>
+          </div>
+          <div class="sched-body">
+            <div style="font-size:11px;font-weight:600;color:var(--slate);margin-bottom:8px">Dia</div>
+            <div class="day-tabs">
+              <div class="day-tab">LUN<br><span style="font-size:15px;font-weight:800">24</span></div>
+              <div class="day-tab active">MAR<br><span style="font-size:15px;font-weight:800">25</span></div>
+              <div class="day-tab">MIE<br><span style="font-size:15px;font-weight:800">26</span></div>
+              <div class="day-tab">JUE<br><span style="font-size:15px;font-weight:800">27</span></div>
+              <div class="day-tab">VIE<br><span style="font-size:15px;font-weight:800">28</span></div>
+            </div>
+            <div style="font-size:11px;font-weight:600;color:var(--slate);margin-bottom:8px">Hora</div>
+            <div class="time-slots">
+              <div class="time-slot">09:00</div>
+              <div class="time-slot active">10:30</div>
+              <div class="time-slot">12:00</div>
+              <div class="time-slot">13:30</div>
+              <div class="time-slot">16:00</div>
+              <div class="time-slot">17:30</div>
+            </div>
+            <div style="font-size:11px;font-weight:600;color:var(--slate);margin-bottom:8px">Linea de negocio</div>
+            <div class="bu-selector">
+              <div class="bu-option active">&#x1F4C8; Boostic</div>
+              <div class="bu-option">&#x1F4CA; Binnacle</div>
+              <div class="bu-option">&#x1F4E3; Marketing</div>
+              <div class="bu-option">&#x1F4BB; Tech</div>
+            </div>
+            <div style="margin-top:14px;padding:14px;border-radius:12px;text-align:center;font-weight:700;font-size:14px;color:white;background:linear-gradient(135deg,var(--blue),#1D4ED8);cursor:pointer">Confirmar callback</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 16: Wallboard -->
+    <div class="slide slide-center" data-narration="El wallboard de contact center muestra en tiempo real las llamadas activas, colas por linea de negocio, estado de cada agente, SLAs y alertas. Diseñado para pantallas de television en la oficina, con tema oscuro, actualizacion cada cinco segundos via WebSocket y rotacion automatica entre vistas.">
+      <div class="animate-in">
+        <div class="tag">Contact Center</div>
+        <h2>Wallboard <span class="gradient-text">en Tiempo Real</span></h2>
+      </div>
+      <div class="wallboard-mock animate-in animate-in-d1">
+        <div class="wb-header">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="font-size:16px;font-weight:800;color:#F1F5F9">&#x1F4FA; Redegal Contact Center</div>
+            <span style="font-size:10px;padding:4px 10px;border-radius:6px;background:rgba(16,185,129,0.15);color:var(--green);font-weight:600">LIVE</span>
+          </div>
+          <div style="font-size:11px;color:#64748B">Actualizado hace 3s</div>
+        </div>
+        <div class="wb-kpi-row">
+          <div class="wb-kpi"><div class="wb-val" style="color:var(--green)">12</div><div class="wb-label">Llamadas activas</div></div>
+          <div class="wb-kpi"><div class="wb-val" style="color:var(--orange)">4</div><div class="wb-label">En cola</div></div>
+          <div class="wb-kpi"><div class="wb-val" style="color:var(--blue)">93%</div><div class="wb-label">SLA (&lt;20s)</div></div>
+          <div class="wb-kpi"><div class="wb-val" style="color:var(--purple)">2:34</div><div class="wb-label">Tiempo medio</div></div>
+        </div>
+        <div class="wb-bu-row">
+          <div class="wb-bu"><div class="wb-bu-name" style="color:var(--blue)">Boostic</div><div class="wb-bu-val" style="color:#E2E8F0">5 activas / 2 cola</div></div>
+          <div class="wb-bu"><div class="wb-bu-name" style="color:var(--purple)">Binnacle</div><div class="wb-bu-val" style="color:#E2E8F0">3 activas / 1 cola</div></div>
+          <div class="wb-bu"><div class="wb-bu-name" style="color:var(--green)">Marketing</div><div class="wb-bu-val" style="color:#E2E8F0">2 activas / 0 cola</div></div>
+          <div class="wb-bu"><div class="wb-bu-name" style="color:var(--orange)">Tech</div><div class="wb-bu-val" style="color:#E2E8F0">2 activas / 1 cola</div></div>
+        </div>
+        <div class="wb-agents">
+          <table>
+            <thead><tr><th>Agente</th><th>Estado</th><th>Linea</th><th>Duracion</th><th>Llamadas hoy</th></tr></thead>
+            <tbody>
+              <tr><td>Ana Garcia</td><td><span class="wb-status" style="background:rgba(16,185,129,0.15);color:var(--green)">&#x1F7E2; En llamada</span></td><td>Boostic</td><td>3:45</td><td>18</td></tr>
+              <tr><td>Pablo Lopez</td><td><span class="wb-status" style="background:rgba(59,130,246,0.15);color:var(--blue)">&#x1F535; Disponible</span></td><td>Tech</td><td>-</td><td>12</td></tr>
+              <tr><td>Laura Ruiz</td><td><span class="wb-status" style="background:rgba(245,158,11,0.15);color:var(--orange)">&#x1F7E1; Pausa</span></td><td>Marketing</td><td>-</td><td>15</td></tr>
+              <tr><td>Carlos Diaz</td><td><span class="wb-status" style="background:rgba(16,185,129,0.15);color:var(--green)">&#x1F7E2; En llamada</span></td><td>Binnacle</td><td>1:22</td><td>20</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 17: Security -->
+    <div class="slide slide-center" data-narration="La seguridad es grado bancario. Auditoria OWASP Top 10 completada con treinta vulnerabilidades encontradas y todas corregidas. JWT con algoritmo fijo, cifrado DTLS SRTP obligatorio en WebRTC, rate limiting atomico en Redis, proteccion CSRF, sanitizacion de inputs, y cabeceras de seguridad completas.">
+      <div class="animate-in">
+        <div class="tag">Seguridad</div>
+        <h2>Grado <span class="gradient-text">Bancario</span></h2>
+      </div>
+      <div class="security-grid animate-in animate-in-d1">
+        <div class="sec-card"><div class="sec-icon">&#x1F512;</div><h4>JWT Seguro</h4><p>Algoritmo fijo RS256, rotacion de claves, blacklist en Redis</p></div>
+        <div class="sec-card"><div class="sec-icon">&#x1F510;</div><h4>DTLS-SRTP</h4><p>Cifrado obligatorio en todo el trafico WebRTC de voz</p></div>
+        <div class="sec-card"><div class="sec-icon">&#x26A1;</div><h4>Rate Limiting</h4><p>Atomico en Redis, por IP y por sesion, sliding window</p></div>
+        <div class="sec-card"><div class="sec-icon">&#x1F6E1;</div><h4>CSRF + XSS</h4><p>Tokens CSRF, sanitizacion de inputs, CSP headers</p></div>
+        <div class="sec-card"><div class="sec-icon">&#x1F50D;</div><h4>SSRF Protection</h4><p>Validacion de URLs, whitelist de dominios, bloqueo IPs internas</p></div>
+        <div class="sec-card"><div class="sec-icon">&#x1F4CB;</div><h4>Audit Log</h4><p>Todas las acciones registradas con timestamp, IP y user-agent</p></div>
+      </div>
+      <div class="animate-in animate-in-d2" style="margin-top:20px">
+        <div class="audit-badge">&#x2705; OWASP Top 10 - 30/30 vulnerabilidades corregidas</div>
+      </div>
+    </div>
+
+    <!-- SLIDE 18: Business Impact -->
+    <div class="slide slide-center" data-narration="Los numeros hablan por si solos. Reduccion del cuarenta por ciento en coste de adquisicion de clientes. Veinticinco por ciento mas de conversion. Tiempo medio de respuesta de tres segundos. Satisfaccion de cuatro punto seis sobre cinco. Doscientos noventa y cuatro tests automatizados. Doce idiomas soportados.">
+      <div class="animate-in">
+        <div class="tag">Impacto</div>
+        <h2>Resultados <span class="gradient-text">Medibles</span></h2>
+      </div>
+      <div class="impact-grid animate-in animate-in-d1">
+        <div class="impact-card">
+          <div class="impact-val" style="color:var(--red)"><span class="count-up" data-target="40">0</span>%</div>
+          <div class="impact-label">Reduccion CAC</div>
+        </div>
+        <div class="impact-card">
+          <div class="impact-val" style="color:var(--green)">+<span class="count-up" data-target="25">0</span>%</div>
+          <div class="impact-label">Conversion</div>
+        </div>
+        <div class="impact-card">
+          <div class="impact-val" style="color:var(--blue)"><span class="count-up" data-target="3">0</span>s</div>
+          <div class="impact-label">Respuesta media</div>
+        </div>
+        <div class="impact-card">
+          <div class="impact-val" style="color:var(--orange)"><span class="count-up" data-target="4" data-decimal="6">0</span></div>
+          <div class="impact-label">CSAT (sobre 5)</div>
+        </div>
+        <div class="impact-card">
+          <div class="impact-val" style="color:var(--purple)"><span class="count-up" data-target="294">0</span></div>
+          <div class="impact-label">Tests automatizados</div>
+        </div>
+        <div class="impact-card">
+          <div class="impact-val" style="color:#F1F5F9"><span class="count-up" data-target="12">0</span></div>
+          <div class="impact-label">Idiomas soportados</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 19: Competitive Advantage -->
+    <div class="slide slide-center" data-narration="Ningun competidor integra chatbot IA, webphone VoIP y dashboard de agentes en un solo widget. IPGlobal solo hace callback telefonico. Intercom y Drift no tienen voz integrada. Zendesk Chat requiere complementos. Nosotros lo hacemos todo en un bundle de doscientos setenta y cinco kilobytes.">
+      <div class="animate-in">
+        <div class="tag">Competencia</div>
+        <h2>Ventaja <span class="gradient-text">Competitiva</span></h2>
+        <p class="subtitle" style="margin:0 auto">Nadie integra chatbot IA + VoIP + dashboard en un solo widget</p>
+      </div>
+      <div class="animate-in animate-in-d1" style="width:100%;overflow-x:auto">
+        <table class="comp-table">
+          <thead>
+            <tr>
+              <th>Funcionalidad</th>
+              <th class="highlight">Redegal</th>
+              <th>IPGlobal</th>
+              <th>Intercom</th>
+              <th>Drift</th>
+              <th>Zendesk</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Chatbot IA</td><td class="highlight comp-yes">&#x2713; Multi-provider</td><td class="comp-no">&#x2717;</td><td class="comp-yes">&#x2713;</td><td class="comp-yes">&#x2713;</td><td class="comp-partial">Parcial</td></tr>
+            <tr><td>VoIP integrado</td><td class="highlight comp-yes">&#x2713; WebRTC</td><td class="comp-yes">&#x2713; Callback</td><td class="comp-no">&#x2717;</td><td class="comp-no">&#x2717;</td><td class="comp-no">&#x2717;</td></tr>
+            <tr><td>Dashboard agentes</td><td class="highlight comp-yes">&#x2713; Premium</td><td class="comp-partial">Basico</td><td class="comp-yes">&#x2713;</td><td class="comp-yes">&#x2713;</td><td class="comp-yes">&#x2713;</td></tr>
+            <tr><td>Multi-idioma</td><td class="highlight comp-yes">&#x2713; 12 idiomas</td><td class="comp-partial">2</td><td class="comp-yes">&#x2713;</td><td class="comp-partial">Limitado</td><td class="comp-yes">&#x2713;</td></tr>
+            <tr><td>Wallboard</td><td class="highlight comp-yes">&#x2713; Tiempo real</td><td class="comp-no">&#x2717;</td><td class="comp-no">&#x2717;</td><td class="comp-no">&#x2717;</td><td class="comp-partial">Add-on</td></tr>
+            <tr><td>Callback scheduler</td><td class="highlight comp-yes">&#x2713; Calendly-style</td><td class="comp-yes">&#x2713;</td><td class="comp-no">&#x2717;</td><td class="comp-partial">Basico</td><td class="comp-no">&#x2717;</td></tr>
+            <tr><td>Bundle size</td><td class="highlight comp-yes">275 KB</td><td class="comp-partial">~400 KB</td><td class="comp-no">~1.2 MB</td><td class="comp-no">~900 KB</td><td class="comp-no">~800 KB</td></tr>
+            <tr><td>Self-hosted</td><td class="highlight comp-yes">&#x2713; Docker</td><td class="comp-no">&#x2717;</td><td class="comp-no">&#x2717;</td><td class="comp-no">&#x2717;</td><td class="comp-no">&#x2717;</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SLIDE 20: Roadmap -->
+    <div class="slide slide-center" data-narration="El roadmap contempla escalado a video y compartir pantalla en el segundo trimestre, co-browsing y asistente IA para agentes en el tercer trimestre. El objetivo es construir la plataforma de engagement mas completa del mercado hispanohablante.">
+      <div class="animate-in">
+        <div class="tag">Roadmap</div>
+        <h2>Hoja de <span class="gradient-text">Ruta 2026</span></h2>
+      </div>
+      <div class="timeline animate-in animate-in-d1">
+        <div class="tl-phase done">
+          <div class="tl-badge" style="background:rgba(16,185,129,0.15);color:var(--green)">&#x2705; Q1 2026 - Completado</div>
+          <ul class="tl-items">
+            <li style="color:#E2E8F0"><span style="color:var(--green)">&#x2713;</span> Chatbot IA multi-provider</li>
+            <li style="color:#E2E8F0"><span style="color:var(--green)">&#x2713;</span> WebPhone VoIP + SIP.js</li>
+            <li style="color:#E2E8F0"><span style="color:var(--green)">&#x2713;</span> Dashboard premium agentes</li>
+            <li style="color:#E2E8F0"><span style="color:var(--green)">&#x2713;</span> 12 idiomas + RTL</li>
+            <li style="color:#E2E8F0"><span style="color:var(--green)">&#x2713;</span> Wallboard contact center</li>
+            <li style="color:#E2E8F0"><span style="color:var(--green)">&#x2713;</span> 294 tests automatizados</li>
+          </ul>
+        </div>
+        <div class="tl-phase">
+          <div class="tl-badge" style="background:rgba(59,130,246,0.15);color:var(--blue)">&#x1F680; Q2 2026</div>
+          <ul class="tl-items">
+            <li><span style="color:var(--blue)">&#x25CB;</span> Video llamadas WebRTC</li>
+            <li><span style="color:var(--blue)">&#x25CB;</span> Compartir pantalla</li>
+            <li><span style="color:var(--blue)">&#x25CB;</span> Transcripcion en tiempo real</li>
+            <li><span style="color:var(--blue)">&#x25CB;</span> Sentimiento de voz IA</li>
+          </ul>
+        </div>
+        <div class="tl-phase">
+          <div class="tl-badge" style="background:rgba(139,92,246,0.15);color:var(--purple)">&#x1F52E; Q3 2026</div>
+          <ul class="tl-items">
+            <li><span style="color:var(--purple)">&#x25CB;</span> Co-browsing con visitante</li>
+            <li><span style="color:var(--purple)">&#x25CB;</span> AI Agent Assist (sugerencias)</li>
+            <li><span style="color:var(--purple)">&#x25CB;</span> Campanas outbound</li>
+            <li><span style="color:var(--purple)">&#x25CB;</span> WhatsApp Business API</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 21: Summary (original, kept intact) -->
+    <div class="slide slide-center" data-narration="En resumen, el chatbot de Redegal es una plataforma completa de comunicacion con clientes. Chatbot con inteligencia artificial, webphone VoIP, dashboard profesional para agentes, doce idiomas, cuatro lineas de negocio, integracion con CRMs, webhooks, plugins para las principales plataformas e-commerce, y un sistema de theming totalmente parametrizable. Doscientos noventa y cuatro tests automatizados garantizan la calidad. Todo desplegable con Docker Compose en un solo comando.">
       <div class="animate-in">
         <div class="tag">Resumen</div>
         <h1><span class="gradient-text">Listo para</span><br>produccion</h1>
         <p class="subtitle" style="margin:0 auto">Plataforma completa de comunicacion con clientes. Chat IA + VoIP + Dashboard + CRM + Analytics.</p>
       </div>
       <div class="features-grid animate-in animate-in-d2" style="grid-template-columns:repeat(4,1fr);max-width:800px">
-        <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--red)">111</div><div style="font-size:12px;color:#94A3B8">Tests</div></div>
+        <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--red)">294</div><div style="font-size:12px;color:#94A3B8">Tests</div></div>
         <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--blue)">12</div><div style="font-size:12px;color:#94A3B8">Idiomas</div></div>
         <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--green)">4</div><div style="font-size:12px;color:#94A3B8">CRMs</div></div>
         <div style="text-align:center"><div style="font-size:40px;font-weight:900;color:var(--purple)">3</div><div style="font-size:12px;color:#94A3B8">Providers IA</div></div>
@@ -646,15 +1201,45 @@ h3{font-size:28px;font-weight:700;letter-spacing:-0.01em}
       </div>
     </div>
 
+    <!-- SLIDE 22: Contact / CTA (closing) -->
+    <div class="slide slide-center" data-narration="Gracias por su atencion. Estamos listos para una demo en vivo. Pueden contactarnos para programar una presentacion personalizada.">
+      <div class="animate-in">
+        <div class="tag">Contacto</div>
+        <h1 style="font-size:64px"><span class="gradient-text">Hablamos?</span></h1>
+        <p class="subtitle" style="margin:0 auto;font-size:22px">Estamos listos para una demo en vivo personalizada</p>
+      </div>
+      <div class="cta-contact animate-in animate-in-d1">
+        <div class="cta-item"><span class="cta-icon">&#x1F4E7;</span> info@redegal.com</div>
+        <div class="cta-item"><span class="cta-icon">&#x1F4DE;</span> +34 988 600 500</div>
+        <div class="cta-item"><span class="cta-icon">&#x1F310;</span> redegal.com</div>
+      </div>
+      <div class="animate-in animate-in-d2" style="margin-top:24px;display:flex;gap:16px;justify-content:center;flex-wrap:wrap">
+        <span style="font-size:13px;padding:10px 24px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-weight:600">Ourense HQ</span>
+        <span style="font-size:13px;padding:10px 24px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-weight:600">A Coruna</span>
+        <span style="font-size:13px;padding:10px 24px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-weight:600">Madrid</span>
+        <span style="font-size:13px;padding:10px 24px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-weight:600">Barcelona</span>
+        <span style="font-size:13px;padding:10px 24px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);font-weight:600">CDMX</span>
+      </div>
+      <div class="animate-in animate-in-d3" style="margin-top:32px">
+        <div style="display:flex;align-items:center;gap:12px;justify-content:center">
+          <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--red),var(--red-dark));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:white">R</div>
+          <div style="text-align:left">
+            <div style="font-size:18px;font-weight:800">Redegal</div>
+            <div style="font-size:12px;color:#94A3B8">BME:RDG | Digital Transformation</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Controls -->
   <div id="controls">
     <button class="ctrl-btn" id="btn-prev" disabled>&#x2190; Anterior</button>
     <div id="progress"><div id="progress-bar" style="width:0%"></div></div>
-    <span id="slide-counter">1 / 12</span>
+    <span id="slide-counter">1 / 22</span>
     <button class="ctrl-btn primary" id="btn-next">Siguiente &#x2192;</button>
-    <button class="ctrl-btn" id="btn-auto">&#x25B6; Auto (10 min)</button>
+    <button class="ctrl-btn" id="btn-auto">&#x25B6; Auto (20 min)</button>
     <span id="voice-status"></span>
   </div>
 </div>
@@ -771,7 +1356,7 @@ function stopAuto() {
   speaking = false;
   if (autoTimer) clearTimeout(autoTimer);
   autoTimer = null;
-  btnAuto.innerHTML = '&#x25B6; Auto (10 min)';
+  btnAuto.innerHTML = '&#x25B6; Auto (20 min)';
 }
 
 function autoStep() {
@@ -821,6 +1406,39 @@ if (window.speechSynthesis) {
   // Trigger initial load
   window.speechSynthesis.getVoices();
 }
+
+// ── Count-up Animation ──
+function animateCountUps() {
+  const counters = document.querySelectorAll('.slide.active .count-up');
+  counters.forEach(el => {
+    const target = parseInt(el.getAttribute('data-target'));
+    const decimal = el.getAttribute('data-decimal');
+    const duration = 1500;
+    const start = performance.now();
+
+    function step(now) {
+      const elapsed = now - start;
+      const progress = Math.min(elapsed / duration, 1);
+      // Ease out cubic
+      const ease = 1 - Math.pow(1 - progress, 3);
+      let val = Math.round(ease * target);
+      if (decimal && progress >= 1) {
+        el.textContent = target + '.' + decimal;
+      } else {
+        el.textContent = val;
+      }
+      if (progress < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  });
+}
+
+// Observe slide changes for count-up
+const origGoTo = goTo;
+goTo = function(n) {
+  origGoTo(n);
+  setTimeout(animateCountUps, 300);
+};
 
 // Init
 updateUI();
