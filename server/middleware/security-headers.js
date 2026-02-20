@@ -1,10 +1,15 @@
-// Security headers middleware (CSP, HSTS, etc.)
+// Security headers middleware (CSP, HSTS, etc.) — Helmet-equivalent without the dependency
 function securityHeaders(req, res, next) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
   res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
   res.setHeader('X-XSS-Protection', '0'); // Modern browsers use CSP instead
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
+  res.setHeader('X-Permitted-Cross-Domain-Policies', 'none');
+  res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+  res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+  res.setHeader('X-DNS-Prefetch-Control', 'off');
+  res.setHeader('Origin-Agent-Cluster', '?1');
 
   // noindex — staging/tunnel only
   res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');

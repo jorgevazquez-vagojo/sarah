@@ -1,10 +1,12 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useChat, ChatMessage, RichContent } from './hooks/useChat';
 import { useLanguage } from './hooks/useLanguage';
-// useSIP removed — Click2Call now uses AMI callback via phone number
+import { useSIP } from './hooks/useSIP';
+import { useCallQuality } from './hooks/useCallQuality';
 import { ThemeConfig, RichContent as RichContentType } from './lib/types';
 import { applyTheme, DEFAULT_THEME } from './lib/theme';
 import { playSound } from './lib/sounds';
+import { CallQualityMetrics } from './lib/audio-quality';
 
 interface WidgetConfig {
   baseUrl?: string;
@@ -157,6 +159,8 @@ export function Widget(props: WidgetConfig) {
   const wsUrl = props.apiUrl || `${(props.baseUrl || '').replace(/^http/, 'ws').replace(/\/widget$/, '')}/ws/chat`;
   const chat = useChat({ apiUrl: wsUrl, visitorId });
   const { t, isRTL } = useLanguage(chat.language, props.baseUrl?.replace('/widget', ''));
+  const sip = useSIP();
+  const callQuality = useCallQuality(sip.qualityMonitor);
   // Load remote theme
   useEffect(() => {
     if (props.configUrl) {
@@ -421,7 +425,14 @@ export function Widget(props: WidgetConfig) {
             ) : view === 'call' ? (
               <CallView theme={theme} t={t} callStatus={chat.callStatus}
                 onRequestCall={(phone) => chat.requestCall(phone)}
-                onBack={() => { chat.resetCallStatus(); setView('chat'); }} />
+                onBack={() => { chat.resetCallStatus(); sip.hangup(); setView('chat'); }}
+                sipState={sip.callState}
+                isMuted={sip.isMuted}
+                onToggleMute={sip.toggleMute}
+                onHangup={sip.hangup}
+                qualityMetrics={callQuality.metrics}
+                qualitySignal={callQuality.signal}
+                qualityWarnings={callQuality.warnings} />
             ) : view === 'help' ? (
               <HelpCenterView theme={theme} t={t}
                 kbResults={chat.kbResults} onSearch={chat.searchKB}
@@ -1269,17 +1280,279 @@ function CsatView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string) =
 }
 
 // ──────────────────────────────────────────────────────────
-// CALL VIEW — Phone callback form
+// SIGNAL BARS — Real-time audio quality indicator (like mobile signal)
 // ──────────────────────────────────────────────────────────
-function CallView({ theme, t, callStatus, onRequestCall, onBack }: {
+function SignalBars({ signal, mos }: { signal: 1 | 2 | 3 | 4 | 5; mos?: number }) {
+  const color = signal >= 4 ? 'var(--rc-success)' : signal === 3 ? 'var(--rc-warning)' : 'var(--rc-error)';
+  const barHeights = [4, 7, 10, 13, 16];
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'flex-end', gap: 2,
+      padding: '4px 6px', borderRadius: 8,
+      background: 'rgba(0,0,0,0.06)',
+    }}
+      title={mos !== undefined ? `MOS: ${mos}/5.0` : 'Calidad de audio'}
+    >
+      {barHeights.map((h, i) => (
+        <div key={i} style={{
+          width: 3,
+          height: h,
+          borderRadius: 1.5,
+          background: i < signal ? color : 'var(--rc-border)',
+          transition: 'background 0.4s ease, height 0.3s ease',
+        }} />
+      ))}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// CALL TIMER — Elapsed time display
+// ──────────────────────────────────────────────────────────
+function CallTimer({ active }: { active: boolean }) {
+  const [elapsed, setElapsed] = useState(0);
+  const startRef = useRef<number>(0);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    if (active) {
+      startRef.current = Date.now();
+      setElapsed(0);
+      intervalRef.current = setInterval(() => {
+        setElapsed(Math.floor((Date.now() - startRef.current) / 1000));
+      }, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+        intervalRef.current = null;
+      }
+    }
+    return () => {
+      if (intervalRef.current) clearInterval(intervalRef.current);
+    };
+  }, [active]);
+
+  const minutes = Math.floor(elapsed / 60);
+  const seconds = elapsed % 60;
+  const display = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+  return (
+    <span style={{
+      fontSize: 24, fontWeight: 700, fontVariantNumeric: 'tabular-nums',
+      color: 'var(--rc-text)', letterSpacing: '0.04em',
+    }}>
+      {display}
+    </span>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// QUALITY WARNING BANNER
+// ──────────────────────────────────────────────────────────
+function QualityWarningBanner({ warnings }: { warnings: string[] }) {
+  if (warnings.length === 0) return null;
+
+  const hasNoAudio = warnings.includes('no-audio');
+  const hasLowMos = warnings.includes('low-mos');
+  const hasSevere = hasLowMos || warnings.includes('high-packet-loss');
+
+  return (
+    <div className="rc-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%' }}>
+      {/* Connection quality warning */}
+      {!hasNoAudio && warnings.length > 0 && (
+        <div style={{
+          padding: '6px 12px', borderRadius: 8, fontSize: 11, fontWeight: 600,
+          textAlign: 'center',
+          background: hasSevere ? 'rgba(207,46,46,0.08)' : 'rgba(252,185,0,0.12)',
+          color: hasSevere ? 'var(--rc-error)' : '#92400E',
+          transition: 'all 0.3s ease',
+        }}>
+          {hasSevere ? 'Conexion mala' : 'Conexion inestable'}
+        </div>
+      )}
+      {/* Mic/audio warning */}
+      {hasNoAudio && (
+        <div style={{
+          padding: '8px 12px', borderRadius: 8, fontSize: 11, fontWeight: 500,
+          display: 'flex', alignItems: 'center', gap: 6,
+          background: 'rgba(252,185,0,0.10)', color: '#92400E',
+          transition: 'all 0.3s ease',
+        }}>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="1" y1="1" x2="23" y2="23"/>
+            <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/>
+            <path d="M17 16.95A7 7 0 015 12v-2m14 0v2c0 .67-.1 1.32-.27 1.93"/>
+            <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+          </svg>
+          <span>No detectamos tu voz. Comprueba el microfono.</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// PHONE ICON SVG (reusable)
+// ──────────────────────────────────────────────────────────
+const PhoneIconSvg = ({ size = 28, strokeWidth = 1.8 }: { size?: number; strokeWidth?: number }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round">
+    <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+  </svg>
+);
+
+// ──────────────────────────────────────────────────────────
+// AUDIO WAVEFORM — CSS-only animated bars for connected state
+// ──────────────────────────────────────────────────────────
+function AudioWaveform() {
+  const bars = [12, 18, 10, 20, 14, 16, 8];
+  return (
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 2, height: 24,
+    }}>
+      {bars.map((maxH, i) => (
+        <div key={i} style={{
+          width: 3, borderRadius: 1.5,
+          background: 'rgba(16, 185, 129, 0.5)',
+          animation: `rc-waveform-bar ${0.8 + (i * 0.15)}s ease-in-out infinite`,
+          animationDelay: `${i * 0.1}s`,
+          ['--rc-waveform-h' as string]: `${maxH}px`,
+          minHeight: 4,
+        }} />
+      ))}
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// INLINE CSAT — Stars rating for ended state
+// ──────────────────────────────────────────────────────────
+function InlineCsat({ onSubmit }: { onSubmit: (rating: number, comment?: string) => void }) {
+  const [rating, setRating] = useState(0);
+  const [hover, setHover] = useState(0);
+  const [submitted, setSubmitted] = useState(false);
+
+  if (submitted) {
+    return (
+      <div style={{ textAlign: 'center', animation: 'rc-state-enter 0.35s var(--rc-ease-out-expo) forwards' }}>
+        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--rc-success)', margin: 0 }}>Gracias por tu valoracion</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 8,
+      animation: 'rc-state-enter 0.4s var(--rc-ease-out-expo) forwards',
+      animationDelay: '0.6s', opacity: 0,
+    }}>
+      <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--rc-text-secondary)', margin: 0 }}>
+        Como fue tu experiencia?
+      </p>
+      <div style={{ display: 'flex', gap: 4 }}>
+        {[1, 2, 3, 4, 5].map(n => (
+          <button key={n} onClick={() => { setRating(n); onSubmit(n); setSubmitted(true); }}
+            onMouseEnter={() => setHover(n)} onMouseLeave={() => setHover(0)}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer', padding: 3,
+              transition: 'transform 0.2s var(--rc-ease-spring)',
+              transform: (hover >= n || rating >= n) ? 'scale(1.2)' : 'scale(1)',
+              color: (hover >= n || rating >= n) ? '#FBBF24' : 'var(--rc-text-tertiary)',
+            }}>
+            {(hover >= n || rating >= n) ? I.star : I.starOutline}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// ──────────────────────────────────────────────────────────
+// CALL STATE TYPES
+// ──────────────────────────────────────────────────────────
+type CallViewState = 'idle' | 'preflight' | 'calling' | 'ringing' | 'queued' | 'connected' | 'on-hold' | 'ended' | 'error';
+
+// ──────────────────────────────────────────────────────────
+// CALL VIEW — Premium 9-state visual experience
+// Inspired by 3CX, iOS Phone, Ramotion concepts
+// ──────────────────────────────────────────────────────────
+function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMuted, onToggleMute, onHangup, qualityMetrics, qualitySignal, qualityWarnings, queuePosition, estimatedWait, onHold, callEnded, callDuration, onSubmitCsat, onRetry }: {
   theme: ThemeConfig;
   t: (k: string) => string;
   callStatus: { callId?: string; status: string; message?: string };
   onRequestCall: (phone: string) => void;
   onBack: () => void;
+  sipState?: string;
+  isMuted?: boolean;
+  onToggleMute?: () => void;
+  onHangup?: () => void;
+  qualityMetrics?: CallQualityMetrics | null;
+  qualitySignal?: 1 | 2 | 3 | 4 | 5;
+  qualityWarnings?: string[];
+  queuePosition?: number;
+  estimatedWait?: string;
+  onHold?: boolean;
+  callEnded?: boolean;
+  callDuration?: number;
+  onSubmitCsat?: (rating: number, comment?: string) => void;
+  onRetry?: () => void;
 }) {
   const [phone, setPhone] = useState('');
-  const isWaiting = callStatus.status === 'requesting' || callStatus.status === 'ringing' || callStatus.status === 'queued';
+  const [preflightChecks, setPreflightChecks] = useState<boolean[]>([]);
+  const [lastCallDuration, setLastCallDuration] = useState(0);
+  const callTimerRef = useRef<number>(0);
+  const preflightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Derive the visual state from all props
+  const deriveState = useCallback((): CallViewState => {
+    // Explicit ended state
+    if (callEnded) return 'ended';
+    // SIP ended
+    if (sipState === 'ended') return 'ended';
+    // On hold
+    if (onHold && sipState === 'active') return 'on-hold';
+    // Active call
+    if (sipState === 'active') return 'connected';
+    // SIP ringing
+    if (sipState === 'ringing') return 'ringing';
+    // SIP calling
+    if (sipState === 'calling') return 'calling';
+    // SIP registering = preflight
+    if (sipState === 'registering') return 'preflight';
+    // Server-side states
+    if (callStatus.status === 'error') return 'error';
+    if (callStatus.status === 'queued') return 'queued';
+    if (callStatus.status === 'ringing') return 'ringing';
+    if (callStatus.status === 'requesting') return 'calling';
+    return 'idle';
+  }, [sipState, callStatus.status, callEnded, onHold]);
+
+  const state = deriveState();
+
+  // Track call duration for ended state display
+  useEffect(() => {
+    if (state === 'connected') {
+      callTimerRef.current = Date.now();
+    } else if (state === 'ended' && callTimerRef.current > 0) {
+      setLastCallDuration(callDuration ?? Math.floor((Date.now() - callTimerRef.current) / 1000));
+      callTimerRef.current = 0;
+    }
+  }, [state, callDuration]);
+
+  // Preflight check simulation (sequential checkmarks)
+  useEffect(() => {
+    if (state === 'preflight') {
+      setPreflightChecks([]);
+      const steps = [500, 900, 1300];
+      steps.forEach((delay, i) => {
+        preflightTimerRef.current = setTimeout(() => {
+          setPreflightChecks(prev => { const next = [...prev]; next[i] = true; return next; });
+        }, delay);
+      });
+    }
+    return () => {
+      if (preflightTimerRef.current) clearTimeout(preflightTimerRef.current);
+    };
+  }, [state]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1288,134 +1561,564 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack }: {
     }
   };
 
-  return (
-    <div className="rc-slide-up" style={{ padding: '32px 28px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
-      {/* Phone icon */}
-      <div style={{
-        width: 80, height: 80, borderRadius: 40, position: 'relative',
-        background: `linear-gradient(135deg, ${theme.colors.gradientFrom}15, ${theme.colors.gradientTo}15)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'var(--rc-primary)',
-      }}>
-        {isWaiting && (
+  const formatDuration = (s: number) => {
+    const m = Math.floor(s / 60);
+    const sec = s % 60;
+    return `${String(m).padStart(2, '0')}:${String(sec).padStart(2, '0')}`;
+  };
+
+  // ─── Render the phone icon area based on state ───
+  const renderPhoneIcon = () => {
+    const baseSize = 72;
+    const baseStyle: React.CSSProperties = {
+      width: baseSize, height: baseSize, borderRadius: baseSize / 2,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      position: 'relative', transition: 'all 0.4s var(--rc-ease-out-expo)',
+    };
+
+    switch (state) {
+      case 'idle':
+        return (
           <div style={{
-            position: 'absolute', inset: -8, borderRadius: '50%',
-            border: '2px solid var(--rc-primary)',
-            animation: 'rc-pulse-ring 2s ease-out infinite', opacity: 0.4,
-          }} />
-        )}
-        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
-        </svg>
-      </div>
-
-      {callStatus.status === 'idle' || callStatus.status === 'error' ? (
-        <>
-          <div>
-            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>
-              Te llamamos
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
-              Introduce tu telefono y te devolvemos la llamada en segundos
-            </p>
-            <span style={{
-              display: 'inline-block', marginTop: 6, padding: '2px 10px', borderRadius: 20,
-              fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
-              textTransform: 'uppercase' as const,
-              background: `linear-gradient(135deg, ${theme.colors.gradientFrom}22, ${theme.colors.gradientTo}22)`,
-              color: 'var(--rc-primary)', border: '1px solid var(--rc-primary)',
-              opacity: 0.7,
-            }}>Version Beta</span>
-          </div>
-
-          {callStatus.status === 'error' && callStatus.message && (
+            ...baseStyle, width: 80, height: 80, borderRadius: 40,
+            background: `linear-gradient(135deg, ${theme.colors.gradientFrom}12, ${theme.colors.gradientTo}18)`,
+            color: 'var(--rc-primary)',
+          }}>
             <div style={{
-              padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight: 500,
-              background: 'rgba(207,46,46,0.08)', color: 'var(--rc-error)', width: '100%',
-            }}>
-              {callStatus.message}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
-            <div style={{ position: 'relative' }}>
-              <span style={{
-                position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
-                fontSize: 16, color: 'var(--rc-text-secondary)',
-              }}>📞</span>
-              <input
-                type="tel"
-                value={phone}
-                onChange={e => setPhone(e.target.value)}
-                placeholder="+34 600 000 000"
-                autoFocus
-                required
-                style={{
-                  width: '100%', padding: '12px 14px 12px 42px', borderRadius: 14,
-                  border: '1.5px solid var(--rc-border)', background: 'var(--rc-surface)',
-                  fontSize: 15, color: 'var(--rc-text)', outline: 'none',
-                  transition: 'border-color 0.2s',
-                  fontFamily: 'inherit',
-                }}
-                onFocus={e => (e.target.style.borderColor = 'var(--rc-primary)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--rc-border)')}
-              />
-            </div>
-            <button type="submit" disabled={phone.replace(/[^\d+]/g, '').length < 6} style={{
-              width: '100%', padding: '12px', borderRadius: 14, border: 'none',
-              background: phone.replace(/[^\d+]/g, '').length >= 6
-                ? `linear-gradient(135deg, ${theme.colors.gradientFrom}, ${theme.colors.gradientTo})`
-                : 'var(--rc-surface)',
-              color: phone.replace(/[^\d+]/g, '').length >= 6 ? 'white' : 'var(--rc-text-tertiary)',
-              fontSize: 14, fontWeight: 600, cursor: phone.replace(/[^\d+]/g, '').length >= 6 ? 'pointer' : 'default',
-              boxShadow: phone.replace(/[^\d+]/g, '').length >= 6 ? '0 2px 10px rgba(0,127,255,0.25)' : 'none',
-              transition: 'all 0.25s',
-            }}>
-              Llamadme ahora
-            </button>
-          </form>
-        </>
-      ) : (
-        <>
-          <div>
-            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>
-              {callStatus.status === 'ringing' ? 'Conectando llamada...' :
-               callStatus.status === 'queued' ? 'Llamada en cola' :
-               'Solicitando llamada...'}
-            </p>
-            <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
-              {callStatus.status === 'ringing'
-                ? 'Recibiras una llamada en tu telefono en unos segundos'
-                : callStatus.status === 'queued'
-                  ? 'Un agente te llamara lo antes posible'
-                  : 'Procesando tu solicitud...'}
-            </p>
+              position: 'absolute', inset: 0, borderRadius: '50%',
+              background: `linear-gradient(90deg, transparent, ${theme.colors.gradientFrom}10, transparent)`,
+              backgroundSize: '200% 100%',
+              animation: 'rc-gradient-shimmer 3s ease-in-out infinite',
+            }} />
+            <PhoneIconSvg size={30} />
           </div>
-          {isWaiting && (
+        );
+
+      case 'preflight':
+        return (
+          <div style={{ ...baseStyle, background: `${theme.colors.gradientFrom}10`, color: 'var(--rc-primary)' }}>
+            {/* Circular spinner around icon */}
+            <svg style={{
+              position: 'absolute', inset: -6, width: baseSize + 12, height: baseSize + 12,
+              animation: 'rc-circular-spin 1.5s linear infinite',
+            }} viewBox="0 0 84 84">
+              <circle cx="42" cy="42" r="40" fill="none" stroke="var(--rc-border)" strokeWidth="2" />
+              <circle cx="42" cy="42" r="40" fill="none" stroke="var(--rc-primary)" strokeWidth="2.5"
+                strokeDasharray="62 189" strokeLinecap="round" />
+            </svg>
+            <PhoneIconSvg size={26} />
+          </div>
+        );
+
+      case 'calling':
+        return (
+          <div style={{ ...baseStyle, background: `linear-gradient(135deg, #3B82F612, #1D4ED812)`, color: '#3B82F6' }}>
+            {/* Expanding rings */}
+            {[0, 1, 2].map(i => (
+              <div key={i} style={{
+                position: 'absolute', inset: 0, borderRadius: '50%',
+                border: '2px solid #3B82F6',
+                animation: 'rc-ring-expand 2s ease-out infinite',
+                animationDelay: `${i * 0.6}s`,
+                opacity: 0,
+              }} />
+            ))}
+            <PhoneIconSvg size={28} />
+          </div>
+        );
+
+      case 'ringing':
+        return (
+          <div style={{ ...baseStyle, background: `linear-gradient(135deg, #3B82F615, #6366F115)`, color: '#3B82F6' }}>
+            <div style={{ animation: 'rc-phone-shake 0.8s ease-in-out infinite', display: 'flex' }}>
+              <PhoneIconSvg size={28} />
+            </div>
+          </div>
+        );
+
+      case 'queued':
+        return (
+          <div style={{ ...baseStyle, background: 'linear-gradient(135deg, #F59E0B12, #D9770612)', color: '#D97706' }}>
+            <PhoneIconSvg size={28} />
+            {/* Queue position badge */}
+            {queuePosition !== undefined && (
+              <div style={{
+                position: 'absolute', top: -4, right: -4,
+                width: 26, height: 26, borderRadius: 13,
+                background: 'linear-gradient(135deg, #F59E0B, #D97706)',
+                color: 'white', fontSize: 12, fontWeight: 800,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 6px rgba(245,158,11,0.35)',
+                border: '2px solid var(--rc-bg)',
+              }}>
+                {queuePosition}
+              </div>
+            )}
+          </div>
+        );
+
+      case 'connected':
+        return (
+          <div style={{
+            ...baseStyle,
+            background: 'linear-gradient(135deg, #10B981, #059669)',
+            color: 'white',
+            animation: 'rc-connected-glow 2.5s ease-in-out infinite',
+          }}>
+            <PhoneIconSvg size={28} />
+          </div>
+        );
+
+      case 'on-hold':
+        return (
+          <div style={{
+            ...baseStyle,
+            background: 'linear-gradient(135deg, #F59E0B18, #92400E10)',
+            color: '#92400E',
+          }}>
+            <PhoneIconSvg size={28} />
+            {/* Pause overlay */}
+            <div style={{
+              position: 'absolute', inset: 0, borderRadius: '50%',
+              background: 'rgba(245,158,11,0.08)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <div style={{
+                position: 'absolute', bottom: -2, right: -2,
+                width: 24, height: 24, borderRadius: 12,
+                background: '#F59E0B', color: 'white',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                boxShadow: '0 2px 6px rgba(245,158,11,0.3)',
+                border: '2px solid var(--rc-bg)',
+              }}>
+                <svg width="10" height="10" viewBox="0 0 12 12" fill="white">
+                  <rect x="1" y="1" width="3.5" height="10" rx="1" />
+                  <rect x="7.5" y="1" width="3.5" height="10" rx="1" />
+                </svg>
+              </div>
+            </div>
+            {/* Music note floating */}
+            <div style={{
+              position: 'absolute', top: -8, left: -4,
+              fontSize: 16, animation: 'rc-music-pulse 1.5s ease-in-out infinite',
+              opacity: 0.6,
+            }}>
+              ♪
+            </div>
+            <div style={{
+              position: 'absolute', top: -4, right: -8,
+              fontSize: 12, animation: 'rc-music-pulse 1.8s ease-in-out infinite',
+              animationDelay: '0.4s', opacity: 0.4,
+            }}>
+              ♫
+            </div>
+          </div>
+        );
+
+      case 'ended':
+        return (
+          <div style={{
+            ...baseStyle,
+            background: 'linear-gradient(135deg, #10B98118, #05966910)',
+            color: '#10B981',
+          }}>
+            {/* Animated checkmark */}
+            <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+              stroke="#10B981" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="20 6 9 17 4 12"
+                style={{
+                  strokeDasharray: 36, strokeDashoffset: 36,
+                  animation: 'rc-checkmark-draw 0.5s ease-out 0.2s forwards',
+                }} />
+            </svg>
+          </div>
+        );
+
+      case 'error':
+        return (
+          <div style={{
+            ...baseStyle,
+            background: 'linear-gradient(135deg, #EF444412, #DC262610)',
+            color: 'var(--rc-error)',
+          }}>
+            {/* Animated X mark */}
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none"
+              stroke="var(--rc-error)" strokeWidth="2.5" strokeLinecap="round">
+              <line x1="18" y1="6" x2="6" y2="18"
+                style={{
+                  strokeDasharray: 17, strokeDashoffset: 17,
+                  animation: 'rc-x-draw 0.35s ease-out 0.15s forwards',
+                }} />
+              <line x1="6" y1="6" x2="18" y2="18"
+                style={{
+                  strokeDasharray: 17, strokeDashoffset: 17,
+                  animation: 'rc-x-draw 0.35s ease-out 0.3s forwards',
+                }} />
+            </svg>
+          </div>
+        );
+    }
+  };
+
+  // ─── State-specific content below the icon ───
+  const renderStateContent = () => {
+    switch (state) {
+      case 'preflight': {
+        const steps = ['Microfono', 'Conexion', 'Servidor'];
+        return (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%', maxWidth: 200 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--rc-text)', margin: '0 0 4px', textAlign: 'center' }}>
+              Verificando conexion...
+            </p>
+            {steps.map((step, i) => (
+              <div key={step} style={{
+                display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, fontWeight: 500,
+                color: preflightChecks[i] ? 'var(--rc-success)' : 'var(--rc-text-tertiary)',
+                animation: preflightChecks[i] ? 'rc-preflight-step 0.3s var(--rc-ease-out-expo) forwards' : 'none',
+                transition: 'color 0.3s ease',
+              }}>
+                {preflightChecks[i] ? (
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--rc-success)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                ) : (
+                  <div style={{
+                    width: 14, height: 14, borderRadius: 7,
+                    border: '2px solid var(--rc-border)',
+                    flexShrink: 0,
+                  }} />
+                )}
+                {step}
+              </div>
+            ))}
+          </div>
+        );
+      }
+
+      case 'calling':
+        return (
+          <>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
+              Llamando...
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0, fontWeight: 500 }}>
+              Espere un momento
+            </p>
+          </>
+        );
+
+      case 'ringing':
+        return (
+          <>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
+              Conectando llamada...
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0, fontWeight: 500 }}>
+              {callStatus.status === 'ringing'
+                ? 'Recibiras una llamada en tu telefono'
+                : 'Estableciendo conexion'}
+            </p>
+          </>
+        );
+
+      case 'queued':
+        return (
+          <>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
+              En cola
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0, fontWeight: 500, lineHeight: 1.5 }}>
+              {queuePosition !== undefined && `Posicion ${queuePosition}`}
+              {queuePosition !== undefined && estimatedWait && ' — '}
+              {estimatedWait && `Tiempo estimado: ~${estimatedWait}`}
+            </p>
+            {/* Animated progress dots */}
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
-              {[0, 1, 2].map(i => (
+              {[0, 1, 2, 3].map(i => (
                 <div key={i} style={{
-                  width: 8, height: 8, borderRadius: 4,
-                  background: 'var(--rc-primary)',
-                  animation: `rc-bounce 1.4s infinite both`,
-                  animationDelay: `${i * 0.16}s`,
+                  width: 7, height: 7, borderRadius: '50%',
+                  background: '#F59E0B',
+                  animation: 'rc-queue-pulse 1.2s ease-in-out infinite',
+                  animationDelay: `${i * 0.2}s`,
                 }} />
               ))}
             </div>
-          )}
-        </>
-      )}
+          </>
+        );
 
-      <button onClick={onBack} style={{
-        fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
-        border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
-        marginTop: 4,
-      }}
-        onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
-        onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
-      >
-        ← Volver al chat
-      </button>
+      case 'connected':
+        return (
+          <>
+            {/* Signal bars — top right */}
+            {qualitySignal !== undefined && (
+              <div style={{ position: 'absolute', top: 16, right: 20 }}>
+                <SignalBars signal={qualitySignal} mos={qualityMetrics?.mos} />
+              </div>
+            )}
+            <CallTimer active={true} />
+            <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0, fontWeight: 500 }}>
+              Llamada en curso
+            </p>
+            {/* Waveform visualization */}
+            <AudioWaveform />
+            {/* Quality warnings */}
+            {qualityWarnings && qualityWarnings.length > 0 && (
+              <QualityWarningBanner warnings={qualityWarnings} />
+            )}
+            {/* Call controls — mute + hangup */}
+            <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
+              {onToggleMute && (
+                <button onClick={onToggleMute} style={{
+                  width: 48, height: 48, borderRadius: 24, border: 'none',
+                  background: isMuted ? 'var(--rc-error)' : 'var(--rc-surface)',
+                  color: isMuted ? 'white' : 'var(--rc-text)',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: 'var(--rc-shadow-sm)',
+                }}
+                  title={isMuted ? 'Activar microfono' : 'Silenciar microfono'}
+                >
+                  {isMuted ? (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <line x1="1" y1="1" x2="23" y2="23"/>
+                      <path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/>
+                      <path d="M17 16.95A7 7 0 015 12v-2m14 0v2c0 .67-.1 1.32-.27 1.93"/>
+                      <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                  ) : (
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/>
+                      <path d="M19 10v2a7 7 0 01-14 0v-2"/>
+                      <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
+                    </svg>
+                  )}
+                </button>
+              )}
+              {onHangup && (
+                <button onClick={onHangup} style={{
+                  width: 48, height: 48, borderRadius: 24, border: 'none',
+                  background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                  color: 'white',
+                  cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'all 0.2s ease',
+                  boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+                }}
+                  title="Colgar"
+                >
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.11 2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91"/>
+                    <line x1="23" y1="1" x2="1" y2="23"/>
+                  </svg>
+                </button>
+              )}
+            </div>
+          </>
+        );
+
+      case 'on-hold':
+        return (
+          <>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#92400E', margin: 0 }}>
+              En espera...
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', margin: 0, fontWeight: 500 }}>
+              El agente te atendera en un momento
+            </p>
+            {/* Hangup still available */}
+            {onHangup && (
+              <button onClick={onHangup} style={{
+                width: 48, height: 48, borderRadius: 24, border: 'none',
+                background: 'linear-gradient(135deg, #EF4444, #DC2626)',
+                color: 'white', marginTop: 8,
+                cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                transition: 'all 0.2s ease',
+                boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
+              }}
+                title="Colgar"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.11 2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91"/>
+                  <line x1="23" y1="1" x2="1" y2="23"/>
+                </svg>
+              </button>
+            )}
+          </>
+        );
+
+      case 'ended': {
+        const duration = callDuration ?? lastCallDuration;
+        return (
+          <>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
+              Llamada finalizada
+            </p>
+            {duration > 0 && (
+              <p style={{
+                fontSize: 20, fontWeight: 700, color: 'var(--rc-text-secondary)',
+                margin: 0, fontVariantNumeric: 'tabular-nums', letterSpacing: '0.04em',
+              }}>
+                {formatDuration(duration)}
+              </p>
+            )}
+            {/* Inline CSAT */}
+            {onSubmitCsat && (
+              <InlineCsat onSubmit={onSubmitCsat} />
+            )}
+          </>
+        );
+      }
+
+      case 'error':
+        return (
+          <>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-error)', margin: 0 }}>
+              Error de conexion
+            </p>
+            {callStatus.message && (
+              <p style={{
+                fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0,
+                padding: '6px 12px', borderRadius: 8,
+                background: 'rgba(207,46,46,0.06)', fontWeight: 500,
+                maxWidth: '100%', textAlign: 'center', lineHeight: 1.4,
+              }}>
+                {callStatus.message}
+              </p>
+            )}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', justifyContent: 'center' }}>
+              {onRetry && (
+                <button onClick={onRetry} style={{
+                  padding: '10px 20px', borderRadius: 12, border: 'none',
+                  background: 'linear-gradient(135deg, var(--rc-primary), var(--rc-primary-hover, #0066cc))',
+                  color: 'white', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                  boxShadow: '0 2px 8px rgba(0,127,255,0.25)',
+                  transition: 'all 0.2s ease',
+                }}>
+                  Reintentar
+                </button>
+              )}
+              <button onClick={onBack} style={{
+                padding: '10px 20px', borderRadius: 12,
+                border: '1.5px solid var(--rc-border)', background: 'var(--rc-bg)',
+                color: 'var(--rc-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
+                transition: 'all 0.2s ease',
+              }}>
+                Usar callback telefonico
+              </button>
+            </div>
+          </>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // ─── IDLE STATE: Phone callback form (original flow) ───
+  if (state === 'idle') {
+    return (
+      <div style={{
+        padding: '32px 28px', textAlign: 'center',
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+        animation: 'rc-state-enter 0.4s var(--rc-ease-out-expo) forwards',
+      }}>
+        {renderPhoneIcon()}
+
+        <div>
+          <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>
+            Te llamamos
+          </p>
+          <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
+            Introduce tu telefono y te devolvemos la llamada en segundos
+          </p>
+          <span style={{
+            display: 'inline-block', marginTop: 6, padding: '2px 10px', borderRadius: 20,
+            fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
+            textTransform: 'uppercase' as const,
+            background: `linear-gradient(135deg, ${theme.colors.gradientFrom}22, ${theme.colors.gradientTo}22)`,
+            color: 'var(--rc-primary)', border: '1px solid var(--rc-primary)',
+            opacity: 0.7,
+          }}>Version Beta</span>
+        </div>
+
+        <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ position: 'relative' }}>
+            <span style={{
+              position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+              fontSize: 16, color: 'var(--rc-text-secondary)', display: 'flex',
+            }}>
+              {I.phone}
+            </span>
+            <input
+              type="tel"
+              value={phone}
+              onChange={e => setPhone(e.target.value)}
+              placeholder="+34 600 000 000"
+              autoFocus
+              required
+              style={{
+                width: '100%', padding: '12px 14px 12px 42px', borderRadius: 14,
+                border: '1.5px solid var(--rc-border)', background: 'var(--rc-surface)',
+                fontSize: 15, color: 'var(--rc-text)', outline: 'none',
+                transition: 'border-color 0.2s',
+                fontFamily: 'inherit',
+              }}
+              onFocus={e => (e.target.style.borderColor = 'var(--rc-primary)')}
+              onBlur={e => (e.target.style.borderColor = 'var(--rc-border)')}
+            />
+          </div>
+          <button type="submit" disabled={phone.replace(/[^\d+]/g, '').length < 6} style={{
+            width: '100%', padding: '12px', borderRadius: 14, border: 'none',
+            background: phone.replace(/[^\d+]/g, '').length >= 6
+              ? `linear-gradient(135deg, ${theme.colors.gradientFrom}, ${theme.colors.gradientTo})`
+              : 'var(--rc-surface)',
+            color: phone.replace(/[^\d+]/g, '').length >= 6 ? 'white' : 'var(--rc-text-tertiary)',
+            fontSize: 14, fontWeight: 600, cursor: phone.replace(/[^\d+]/g, '').length >= 6 ? 'pointer' : 'default',
+            boxShadow: phone.replace(/[^\d+]/g, '').length >= 6 ? '0 2px 10px rgba(0,127,255,0.25)' : 'none',
+            transition: 'all 0.25s',
+          }}>
+            Llamadme ahora
+          </button>
+        </form>
+
+        <button onClick={onBack} style={{
+          fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
+          border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
+        }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
+        >
+          ← Volver al chat
+        </button>
+      </div>
+    );
+  }
+
+  // ─── ALL OTHER STATES: Unified layout ───
+  return (
+    <div style={{
+      padding: '24px 28px', textAlign: 'center',
+      display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+      position: 'relative',
+      animation: 'rc-state-enter 0.4s var(--rc-ease-out-expo) forwards',
+    }}
+      key={state} // Force re-mount on state change for animation
+    >
+      {renderPhoneIcon()}
+      {renderStateContent()}
+
+      {/* Back to chat link — shown on non-error states (error has its own buttons) */}
+      {state !== 'error' && (
+        <button onClick={onBack} style={{
+          fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
+          border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
+          marginTop: 4,
+        }}
+          onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
+          onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
+        >
+          ← Volver al chat
+        </button>
+      )}
     </div>
   );
 }

@@ -41,7 +41,7 @@ function initSipSignaling(wss) {
     }
   }).catch((e) => logger.warn('Redis subscribe error (call:rejected):', e.message));
 
-  wss.on('connection', (ws, req) => {
+  wss.on('connection', async (ws, req) => {
     const params = new URL(req.url, 'http://localhost').searchParams;
     const role = params.get('role'); // 'visitor' or 'agent'
     const callId = params.get('callId');
@@ -63,7 +63,30 @@ function initSipSignaling(wss) {
       }
     }
 
-    const participantId = role === 'agent' ? agentInfo?.id : params.get('extension');
+    // Visitor connections require visitorId and callId must exist in DB or activeCalls
+    if (role === 'visitor') {
+      const visitorId = params.get('visitorId');
+      if (!visitorId || visitorId.length < 8) {
+        ws.close(4002, 'Missing or invalid visitorId');
+        return;
+      }
+      // Verify callId exists (registered by chat-handler or already in activeCalls)
+      if (!activeCalls.has(callId)) {
+        try {
+          const result = await db.query('SELECT 1 FROM calls WHERE call_id = $1 LIMIT 1', [callId]);
+          if (result.rows.length === 0) {
+            ws.close(4003, 'Unknown callId');
+            return;
+          }
+        } catch (e) {
+          logger.warn('SIP visitor auth DB check failed:', e.message);
+          ws.close(4003, 'Unknown callId');
+          return;
+        }
+      }
+    }
+
+    const participantId = role === 'agent' ? agentInfo?.id : params.get('visitorId');
     participants.set(ws, { role, callId, id: participantId });
 
     // Register in call session

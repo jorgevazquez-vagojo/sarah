@@ -106,6 +106,9 @@ export const api = {
   stopMonitorCall: (callId: string) =>
     request(`/calls/recordings/${callId}/monitor/stop`, { method: 'POST' }),
   cleanupRecordings: () => request('/calls/cleanup', { method: 'POST' }),
+
+  // Wallboard
+  getWallboard: () => request('/wallboard'),
 };
 
 export function createAgentWS(token: string): WebSocket {

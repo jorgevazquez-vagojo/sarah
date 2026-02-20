@@ -13,15 +13,168 @@ const { sendConversationSummary } = require('../services/email');
 // Map of agentId -> ws
 const agents = new Map();
 
+// Wallboard clients: Set of ws connections that receive periodic updates
+const wallboardClients = new Set();
+
+/** Wallboard push interval (5 seconds) */
+const WALLBOARD_INTERVAL = 5000;
+
 function send(ws, type, data) {
   if (ws.readyState === 1) {
     ws.send(JSON.stringify({ type, ...data }));
   }
 }
 
+/**
+ * Fetch wallboard data (same logic as /api/wallboard route).
+ * Imported lazily to avoid circular dependency.
+ */
+async function getWallboardData() {
+  try {
+    // We duplicate the aggregation logic here for WS push to avoid HTTP round-trip.
+    // This is a simplified version — the full logic lives in server/routes/wallboard.js.
+    const { callQueue } = require('../services/call-queue');
+
+    const SLA_TARGET = parseInt(process.env.SLA_TARGET || '80', 10);
+    const SLA_THRESHOLD_SECONDS = parseInt(process.env.SLA_THRESHOLD_SECONDS || '180', 10);
+    const BU_META = {
+      boostic: { label: 'Boostic — SEO & Growth', emoji: '☀️', color: '#10B981' },
+      binnacle: { label: 'Binnacle — BI & Analytics', emoji: '📊', color: '#6366F1' },
+      marketing: { label: 'Marketing — Digital Marketing', emoji: '📣', color: '#F59E0B' },
+      tech: { label: 'Tech — Development', emoji: '⚙️', color: '#3B82F6' },
+    };
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const ts = todayStart.toISOString();
+
+    const [queueStats, callsR, chatsR, leadsR, callbacksR, csatR, agentsR] = await Promise.all([
+      callQueue.getAllQueueStats(),
+      db.query(`SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE status = 'ended' AND answered_at IS NOT NULL) AS answered, COUNT(*) FILTER (WHERE status IN ('missed','failed')) AS missed FROM calls WHERE created_at >= $1`, [ts]),
+      db.query(`SELECT COUNT(*) AS total, COUNT(*) FILTER (WHERE state = 'closed') AS resolved, COUNT(*) FILTER (WHERE agent_id IS NOT NULL AND state != 'closed') AS escalated FROM conversations WHERE started_at >= $1`, [ts]),
+      db.query(`SELECT COUNT(*) FROM leads WHERE created_at >= $1`, [ts]),
+      db.query(`SELECT COUNT(*) FROM callbacks WHERE created_at >= $1`, [ts]),
+      db.query(`SELECT AVG((data->>'rating')::numeric) AS avg_rating FROM analytics_events WHERE event_type = 'csat' AND created_at >= $1`, [ts]),
+      db.query(`
+        SELECT a.id, a.display_name, a.status, a.business_lines, a.last_seen_at,
+          (SELECT COUNT(*) FROM calls c WHERE c.agent_id = a.id AND c.created_at >= $1) AS today_calls,
+          (SELECT COUNT(*) FROM conversations c WHERE c.agent_id = a.id AND c.started_at >= $1) AS today_chats,
+          (SELECT AVG((ae.data->>'rating')::numeric) FROM analytics_events ae WHERE ae.agent_id = a.id AND ae.event_type = 'csat' AND ae.created_at >= $1) AS avg_csat
+        FROM agents a WHERE a.status != 'offline' OR a.last_seen_at >= $1
+        ORDER BY CASE a.status WHEN 'online' THEN 1 WHEN 'busy' THEN 2 WHEN 'away' THEN 3 ELSE 4 END, a.display_name
+      `, [ts]),
+    ]);
+
+    const callRow = callsR.rows[0] || {};
+    const chatRow = chatsR.rows[0] || {};
+    const totalChats = parseInt(chatRow.total) || 0;
+    const leadsCount = parseInt(leadsR.rows[0]?.count) || 0;
+
+    const todayStats = {
+      totalCalls: parseInt(callRow.total) || 0,
+      answeredCalls: parseInt(callRow.answered) || 0,
+      missedCalls: parseInt(callRow.missed) || 0,
+      totalChats,
+      resolvedChats: parseInt(chatRow.resolved) || 0,
+      escalatedChats: parseInt(chatRow.escalated) || 0,
+      leads: leadsCount,
+      callbacks: parseInt(callbacksR.rows[0]?.count) || 0,
+      avgCsat: parseFloat(csatR.rows[0]?.avg_rating) || 0,
+      avgWaitTime: 0,
+      avgCallDuration: 0,
+      avgChatResponseTime: 0,
+      conversionRate: totalChats > 0 ? parseFloat(((leadsCount / totalChats) * 100).toFixed(1)) : 0,
+    };
+
+    // Build agents array
+    const agentsList = agentsR.rows.map((r) => ({
+      id: r.id,
+      name: r.display_name,
+      status: r.status === 'busy' ? 'on_call' : r.status,
+      businessLine: (r.business_lines && r.business_lines[0]) || 'general',
+      businessLines: r.business_lines || [],
+      currentCall: null,
+      avgCsat: parseFloat(r.avg_csat) || 0,
+      todayCalls: parseInt(r.today_calls) || 0,
+      todayChats: parseInt(r.today_chats) || 0,
+    }));
+
+    // Build queues
+    const businessLines = ['boostic', 'binnacle', 'marketing', 'tech'];
+    const queues = businessLines.map((bl) => {
+      const qName = `queue-${bl}`;
+      const stats = queueStats[qName] || { waiting: 0, agentsOnline: 0, longestWaitSeconds: 0 };
+      const meta = BU_META[bl];
+      return {
+        name: bl,
+        label: meta.label,
+        emoji: meta.emoji,
+        color: meta.color,
+        activeCalls: 0,
+        activeChats: 0,
+        inQueue: stats.waiting,
+        agentsOnline: stats.agentsOnline,
+        avgWaitTime: stats.longestWaitSeconds || 0,
+        slaPercent: SLA_TARGET,
+      };
+    });
+
+    const totalInQueue = Object.values(queueStats).reduce((sum, q) => sum + q.waiting, 0);
+    const agentsOnline = agentsList.filter((a) => a.status !== 'offline').length;
+
+    return {
+      timestamp: new Date().toISOString(),
+      global: {
+        activeCalls: agentsList.filter((a) => a.status === 'on_call').length,
+        activeChats: agentsList.filter((a) => a.status === 'busy').length,
+        inQueue: totalInQueue,
+        agentsOnline,
+        agentsTotal: agentsList.length,
+        slaPercent: SLA_TARGET,
+        slaTarget: SLA_TARGET,
+        todayStats,
+      },
+      queues,
+      agents: agentsList,
+      alerts: [],
+      hourlyVolume: [],
+    };
+  } catch (e) {
+    logger.warn('Wallboard WS data fetch error:', e.message);
+    return null;
+  }
+}
+
+// Start wallboard push interval
+let wallboardTimer = null;
+
+function startWallboardPush() {
+  if (wallboardTimer) return;
+  wallboardTimer = setInterval(async () => {
+    if (wallboardClients.size === 0) return;
+    const data = await getWallboardData();
+    if (!data) return;
+    for (const ws of wallboardClients) {
+      send(ws, 'wallboard_update', { data });
+    }
+  }, WALLBOARD_INTERVAL);
+  logger.info(`Wallboard: push timer started (${WALLBOARD_INTERVAL}ms interval)`);
+}
+
+function stopWallboardPush() {
+  if (wallboardTimer && wallboardClients.size === 0) {
+    clearInterval(wallboardTimer);
+    wallboardTimer = null;
+    logger.info('Wallboard: push timer stopped (no clients)');
+  }
+}
+
 function initAgentHandler(wss) {
   wss.on('connection', (ws, req) => {
-    const token = new URL(req.url, 'http://localhost').searchParams.get('token');
+    const url = new URL(req.url, 'http://localhost');
+    const token = url.searchParams.get('token');
+    const role = url.searchParams.get('role');
+
     let agent;
     try {
       agent = verifyToken(token);
@@ -30,6 +183,28 @@ function initAgentHandler(wss) {
       return;
     }
 
+    // ─── Wallboard client mode ───
+    if (role === 'wallboard') {
+      wallboardClients.add(ws);
+      logger.info(`Wallboard WS connected: ${agent.username}`);
+      startWallboardPush();
+
+      // Send immediate first push
+      getWallboardData().then((data) => {
+        if (data) send(ws, 'wallboard_update', { data });
+      }).catch(() => {});
+
+      ws.on('close', () => {
+        wallboardClients.delete(ws);
+        logger.info(`Wallboard WS disconnected: ${agent.username}`);
+        stopWallboardPush();
+      });
+
+      // Wallboard clients don't process agent messages
+      return;
+    }
+
+    // ─── Normal agent client ───
     agents.set(agent.id, ws);
     logger.info(`Agent WS connected: ${agent.username} (${agent.id})`);
 

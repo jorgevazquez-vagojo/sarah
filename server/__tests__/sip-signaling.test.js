@@ -1,6 +1,10 @@
 // SIP Signaling (WebRTC relay) tests
 jest.mock('../utils/logger', () => ({ logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() } }));
-jest.mock('../utils/db', () => ({ db: { query: jest.fn().mockResolvedValue({ rows: [] }) } }));
+jest.mock('../utils/db', () => ({
+  db: {
+    query: jest.fn().mockResolvedValue({ rows: [{ call_id: 'exists' }] }),
+  },
+}));
 jest.mock('../utils/redis', () => ({
   redis: {
     subscribe: jest.fn().mockResolvedValue(null),
@@ -18,6 +22,7 @@ jest.mock('../integrations/webhooks', () => ({
 
 const { initSipSignaling, registerCall, activeCalls } = require('../ws/sip-signaling');
 const { triggerWebhooks } = require('../integrations/webhooks');
+const { db } = require('../utils/db');
 
 // Mock WebSocket
 function createMockWs(readyState = 1) {
@@ -54,53 +59,85 @@ describe('SIP Signaling', () => {
     activeCalls.clear();
     wss = createMockWss();
     initSipSignaling(wss);
+    // Default: DB returns a matching call
+    db.query.mockResolvedValue({ rows: [{ call_id: 'exists' }] });
   });
 
-  function simulateConnection(role, callId, extra = {}) {
+  // Connection handler is now async — must await
+  async function simulateConnection(role, callId, extra = {}) {
     const ws = createMockWs();
+    const visitorId = extra.visitorId || 'visitor-12345678';
     const url = `http://localhost/ws/sip?role=${role}&callId=${callId}` +
       (extra.token ? `&token=${extra.token}` : '') +
+      (extra.visitorId ? `&visitorId=${extra.visitorId}` : `&visitorId=${visitorId}`) +
       (extra.extension ? `&extension=${extra.extension}` : '');
     const req = { url };
-    wss.handlers.connection(ws, req);
+    await wss.handlers.connection(ws, req);
     return ws;
   }
 
   describe('Connection Handling', () => {
-    test('rejects connection without role', () => {
+    test('rejects connection without role', async () => {
       const ws = createMockWs();
-      wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?callId=c1' });
+      await wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?callId=c1' });
       expect(ws.close).toHaveBeenCalledWith(4001, 'Missing role or callId');
     });
 
-    test('rejects connection without callId', () => {
+    test('rejects connection without callId', async () => {
       const ws = createMockWs();
-      wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?role=visitor' });
+      await wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?role=visitor' });
       expect(ws.close).toHaveBeenCalledWith(4001, 'Missing role or callId');
     });
 
-    test('rejects agent connection with invalid token', () => {
+    test('rejects agent connection with invalid token', async () => {
       const ws = createMockWs();
-      wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?role=agent&callId=c1&token=bad-token' });
+      await wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?role=agent&callId=c1&token=bad-token' });
       expect(ws.close).toHaveBeenCalledWith(4001, 'Invalid agent token');
     });
 
-    test('accepts visitor connection', () => {
-      const ws = simulateConnection('visitor', 'call-1', { extension: 'ext-1' });
-      expect(ws.close).not.toHaveBeenCalled();
-      expect(activeCalls.has('call-1')).toBe(true);
-      expect(activeCalls.get('call-1').visitor).toBe(ws);
+    test('rejects visitor without visitorId', async () => {
+      const ws = createMockWs();
+      await wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?role=visitor&callId=c1' });
+      expect(ws.close).toHaveBeenCalledWith(4002, 'Missing or invalid visitorId');
     });
 
-    test('accepts agent connection with valid token', () => {
-      const ws = simulateConnection('agent', 'call-2', { token: 'valid-token' });
+    test('rejects visitor with short visitorId', async () => {
+      const ws = createMockWs();
+      await wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?role=visitor&callId=c1&visitorId=abc' });
+      expect(ws.close).toHaveBeenCalledWith(4002, 'Missing or invalid visitorId');
+    });
+
+    test('rejects visitor with unknown callId not in DB', async () => {
+      db.query.mockResolvedValue({ rows: [] }); // No matching call
+      const ws = createMockWs();
+      await wss.handlers.connection(ws, { url: 'http://localhost/ws/sip?role=visitor&callId=unknown-call&visitorId=visitor-12345678' });
+      expect(ws.close).toHaveBeenCalledWith(4003, 'Unknown callId');
+    });
+
+    test('accepts visitor when callId exists in activeCalls', async () => {
+      registerCall('active-call-1', 'conv-1');
+      const ws = await simulateConnection('visitor', 'active-call-1', { visitorId: 'visitor-12345678' });
+      expect(ws.close).not.toHaveBeenCalled();
+      expect(activeCalls.get('active-call-1').visitor).toBe(ws);
+    });
+
+    test('accepts visitor when callId exists in DB', async () => {
+      db.query.mockResolvedValue({ rows: [{ call_id: 'db-call-1' }] });
+      const ws = await simulateConnection('visitor', 'db-call-1', { visitorId: 'visitor-12345678' });
+      expect(ws.close).not.toHaveBeenCalled();
+      expect(activeCalls.has('db-call-1')).toBe(true);
+    });
+
+    test('accepts agent connection with valid token', async () => {
+      const ws = await simulateConnection('agent', 'call-2', { token: 'valid-token' });
       expect(ws.close).not.toHaveBeenCalled();
       expect(activeCalls.has('call-2')).toBe(true);
       expect(activeCalls.get('call-2').agent).toBe(ws);
     });
 
-    test('creates call session if not exists', () => {
-      simulateConnection('visitor', 'new-call');
+    test('creates call session if not exists', async () => {
+      const ws = await simulateConnection('visitor', 'new-call', { visitorId: 'visitor-12345678' });
+      expect(ws.close).not.toHaveBeenCalled();
       expect(activeCalls.has('new-call')).toBe(true);
       const call = activeCalls.get('new-call');
       expect(call.visitor).not.toBeNull();
@@ -110,9 +147,10 @@ describe('SIP Signaling', () => {
   });
 
   describe('WebRTC Signal Relay', () => {
-    test('relays SDP offer from visitor to agent', () => {
-      const visitorWs = simulateConnection('visitor', 'relay-call', { extension: 'ext-1' });
-      const agentWs = simulateConnection('agent', 'relay-call', { token: 'valid-token' });
+    test('relays SDP offer from visitor to agent', async () => {
+      registerCall('relay-call', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'relay-call', { visitorId: 'visitor-12345678' });
+      const agentWs = await simulateConnection('agent', 'relay-call', { token: 'valid-token' });
 
       // Visitor sends offer
       visitorWs.handlers.message(JSON.stringify({
@@ -125,9 +163,10 @@ describe('SIP Signaling', () => {
       );
     });
 
-    test('relays SDP answer from agent to visitor', () => {
-      const visitorWs = simulateConnection('visitor', 'relay-call-2', { extension: 'ext-1' });
-      const agentWs = simulateConnection('agent', 'relay-call-2', { token: 'valid-token' });
+    test('relays SDP answer from agent to visitor', async () => {
+      registerCall('relay-call-2', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'relay-call-2', { visitorId: 'visitor-12345678' });
+      const agentWs = await simulateConnection('agent', 'relay-call-2', { token: 'valid-token' });
 
       // Agent sends answer
       agentWs.handlers.message(JSON.stringify({
@@ -140,9 +179,10 @@ describe('SIP Signaling', () => {
       );
     });
 
-    test('relays ICE candidates between peers', () => {
-      const visitorWs = simulateConnection('visitor', 'ice-call', { extension: 'ext-1' });
-      const agentWs = simulateConnection('agent', 'ice-call', { token: 'valid-token' });
+    test('relays ICE candidates between peers', async () => {
+      registerCall('ice-call', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'ice-call', { visitorId: 'visitor-12345678' });
+      const agentWs = await simulateConnection('agent', 'ice-call', { token: 'valid-token' });
 
       // Visitor sends ICE candidate
       visitorWs.handlers.message(JSON.stringify({
@@ -155,8 +195,9 @@ describe('SIP Signaling', () => {
       );
     });
 
-    test('does nothing if no peer connected', () => {
-      const visitorWs = simulateConnection('visitor', 'no-peer', { extension: 'ext-1' });
+    test('does nothing if no peer connected', async () => {
+      registerCall('no-peer', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'no-peer', { visitorId: 'visitor-12345678' });
 
       // Visitor sends offer but no agent yet
       visitorWs.handlers.message(JSON.stringify({
@@ -169,30 +210,34 @@ describe('SIP Signaling', () => {
   });
 
   describe('Call Lifecycle', () => {
-    test('start_call sets startedAt timestamp', () => {
-      const visitorWs = simulateConnection('visitor', 'start-call', { extension: 'ext-1' });
+    test('start_call sets startedAt timestamp', async () => {
+      registerCall('start-call', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'start-call', { visitorId: 'visitor-12345678' });
 
       visitorWs.handlers.message(JSON.stringify({ type: 'start_call' }));
 
       expect(activeCalls.get('start-call').startedAt).toBeInstanceOf(Date);
     });
 
-    test('hangup notifies peer and ends call', () => {
-      const visitorWs = simulateConnection('visitor', 'hangup-call', { extension: 'ext-1' });
-      const agentWs = simulateConnection('agent', 'hangup-call', { token: 'valid-token' });
+    test('hangup notifies peer and ends call', async () => {
+      registerCall('hangup-call', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'hangup-call', { visitorId: 'visitor-12345678' });
+      const agentWs = await simulateConnection('agent', 'hangup-call', { token: 'valid-token' });
 
       visitorWs.handlers.message(JSON.stringify({ type: 'hangup' }));
 
       expect(agentWs.send).toHaveBeenCalledWith(
         expect.stringContaining('"type":"call_ended"')
       );
-      // Call should be cleaned up
+      // endCall is async (fire-and-forget from handleSignal) — wait for microtasks
+      await new Promise((r) => setTimeout(r, 10));
       expect(activeCalls.has('hangup-call')).toBe(false);
     });
 
-    test('disconnect notifies peer', () => {
-      const visitorWs = simulateConnection('visitor', 'disconnect-call', { extension: 'ext-1' });
-      const agentWs = simulateConnection('agent', 'disconnect-call', { token: 'valid-token' });
+    test('disconnect notifies peer', async () => {
+      registerCall('disconnect-call', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'disconnect-call', { visitorId: 'visitor-12345678' });
+      const agentWs = await simulateConnection('agent', 'disconnect-call', { token: 'valid-token' });
 
       // Visitor disconnects
       visitorWs.handlers.close();
@@ -202,13 +247,17 @@ describe('SIP Signaling', () => {
       );
     });
 
-    test('fires webhook on call end', () => {
-      const visitorWs = simulateConnection('visitor', 'webhook-call', { extension: 'ext-1' });
-      simulateConnection('agent', 'webhook-call', { token: 'valid-token' });
+    test('fires webhook on call end', async () => {
+      registerCall('webhook-call', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'webhook-call', { visitorId: 'visitor-12345678' });
+      await simulateConnection('agent', 'webhook-call', { token: 'valid-token' });
 
       // Start call then hangup
       visitorWs.handlers.message(JSON.stringify({ type: 'start_call' }));
       visitorWs.handlers.message(JSON.stringify({ type: 'hangup' }));
+
+      // endCall is async — wait for microtasks
+      await new Promise((r) => setTimeout(r, 10));
 
       expect(triggerWebhooks).toHaveBeenCalledWith(
         'call.ended',
@@ -232,20 +281,23 @@ describe('SIP Signaling', () => {
   });
 
   describe('Edge Cases', () => {
-    test('handles invalid JSON in message', () => {
-      const visitorWs = simulateConnection('visitor', 'json-err', { extension: 'ext-1' });
+    test('handles invalid JSON in message', async () => {
+      registerCall('json-err', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'json-err', { visitorId: 'visitor-12345678' });
       // Should not throw
       expect(() => visitorWs.handlers.message('not-json')).not.toThrow();
     });
 
-    test('handles register signal type', () => {
-      const visitorWs = simulateConnection('visitor', 'register-test', { extension: 'ext-1' });
+    test('handles register signal type', async () => {
+      registerCall('register-test', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'register-test', { visitorId: 'visitor-12345678' });
       // Should not throw
       visitorWs.handlers.message(JSON.stringify({ type: 'register' }));
     });
 
-    test('handles unknown signal type gracefully', () => {
-      const visitorWs = simulateConnection('visitor', 'unknown-sig', { extension: 'ext-1' });
+    test('handles unknown signal type gracefully', async () => {
+      registerCall('unknown-sig', 'conv-1');
+      const visitorWs = await simulateConnection('visitor', 'unknown-sig', { visitorId: 'visitor-12345678' });
       expect(() => {
         visitorWs.handlers.message(JSON.stringify({ type: 'totally_unknown' }));
       }).not.toThrow();

@@ -13,8 +13,9 @@ router.use(requireApiKey);
 
 const UPLOAD_DIR = path.join(__dirname, '..', 'uploads');
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
+// SVG excluded — can contain embedded JS (XSS risk)
 const ALLOWED_TYPES = new Set([
-  'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+  'image/jpeg', 'image/png', 'image/gif', 'image/webp',
   'application/pdf',
   'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
@@ -62,6 +63,12 @@ router.post('/', async (req, res) => {
     // Validate mime type
     if (!ALLOWED_TYPES.has(mimeType)) {
       return res.status(400).json({ error: `File type ${mimeType} not allowed` });
+    }
+
+    // Double-check: block SVG even if MIME sniffing is wrong
+    const lowerFilename = rawFilename.toLowerCase();
+    if (lowerFilename.endsWith('.svg') || lowerFilename.endsWith('.svgz') || lowerFilename.endsWith('.html') || lowerFilename.endsWith('.htm')) {
+      return res.status(400).json({ error: 'File extension not allowed' });
     }
 
     // Sanitize filename: strip path components and non-safe chars

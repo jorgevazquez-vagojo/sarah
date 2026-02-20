@@ -20,9 +20,14 @@ const redis = {
   getJSON: async (k) => { const v = await client.get(k); return v ? JSON.parse(v) : null; },
   setJSON: (k, v, ttl) => redis.set(k, JSON.stringify(v), ttl),
 
+  // Atomic rate limiting using INCR+EXPIRE in one pipeline to avoid race conditions
   rateLimit: async (key, maxRequests, windowSec) => {
-    const current = await client.incr(`rl:${key}`);
-    if (current === 1) await client.expire(`rl:${key}`, windowSec);
+    const rlKey = `rl:${key}`;
+    const results = await client.multi()
+      .incr(rlKey)
+      .expire(rlKey, windowSec, 'NX')
+      .exec();
+    const current = results[0];
     return current <= maxRequests;
   },
 
@@ -58,6 +63,31 @@ const redis = {
     await client.setEx(`cache:${key}`, ttl, JSON.stringify(fresh));
     return fresh;
   },
+
+  // ─── Sorted sets (for call queue position tracking) ───
+  zAdd: (k, score, member) => client.zAdd(k, { score, value: member }),
+  zRem: (k, member) => client.zRem(k, member),
+  zRank: (k, member) => client.zRank(k, member),
+  zCard: (k) => client.zCard(k),
+  zRange: (k, start, end) => client.zRange(k, start, end),
+  zRangeWithScores: (k, start, end) => client.zRangeWithScores(k, start, end),
+
+  // ─── Sets (for agent tracking) ───
+  sAdd: (k, ...members) => client.sAdd(k, members),
+  sRem: (k, ...members) => client.sRem(k, members),
+  sMembers: (k) => client.sMembers(k),
+  sCard: (k) => client.sCard(k),
+
+  // ─── Key expiry ───
+  expire: (k, seconds) => client.expire(k, seconds),
+
+  // ─── Hash (for caller metadata) ───
+  hSet: (k, field, value) => client.hSet(k, field, value),
+  hGetAll: (k) => client.hGetAll(k),
+  hDel: (k, ...fields) => client.hDel(k, fields),
+
+  // ─── List trim (for bounded duration lists) ───
+  lTrim: (k, start, end) => client.lTrim(k, start, end),
 };
 
 module.exports = { redis };

@@ -8,8 +8,8 @@ const { rateLimit } = require('../middleware/rate-limit');
 
 const router = Router();
 
-// Agent login — rate limited to prevent brute force
-router.post('/login', rateLimit({ maxRequests: 10, windowSec: 60, keyFn: (req) => `login:${req.ip}` }),
+// Agent login — rate limited to prevent brute force (5 attempts per minute per IP)
+router.post('/login', rateLimit({ maxRequests: 5, windowSec: 60, keyFn: (req) => `login:${req.ip}` }),
   validate({
     username: { required: true, type: 'string', minLength: 2, maxLength: 100 },
     password: { required: true, type: 'string', minLength: 4, maxLength: 200 },

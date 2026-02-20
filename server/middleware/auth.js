@@ -38,8 +38,8 @@ function requireAgent(req, res, next) {
 function requireApiKey(req, res, next) {
   const key = req.headers['x-api-key'] || req.query.apiKey;
   if (!key || key !== process.env.WIDGET_API_KEY) {
-    // In development, allow without key
-    if (process.env.NODE_ENV === 'development') return next();
+    // In development, allow without key ONLY if explicitly opted in
+    if (process.env.NODE_ENV === 'development' && process.env.DEV_SKIP_AUTH === 'true') return next();
     return res.status(403).json({ error: 'Invalid API key' });
   }
   next();

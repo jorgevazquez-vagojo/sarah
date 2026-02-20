@@ -38,6 +38,31 @@ describe('Security Headers Middleware', () => {
     expect(res.setHeader).toHaveBeenCalledWith('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
   });
 
+  test('sets X-Permitted-Cross-Domain-Policies', () => {
+    securityHeaders(req, res, next);
+    expect(res.setHeader).toHaveBeenCalledWith('X-Permitted-Cross-Domain-Policies', 'none');
+  });
+
+  test('sets Cross-Origin-Opener-Policy', () => {
+    securityHeaders(req, res, next);
+    expect(res.setHeader).toHaveBeenCalledWith('Cross-Origin-Opener-Policy', 'same-origin');
+  });
+
+  test('sets Cross-Origin-Resource-Policy', () => {
+    securityHeaders(req, res, next);
+    expect(res.setHeader).toHaveBeenCalledWith('Cross-Origin-Resource-Policy', 'same-origin');
+  });
+
+  test('sets X-DNS-Prefetch-Control', () => {
+    securityHeaders(req, res, next);
+    expect(res.setHeader).toHaveBeenCalledWith('X-DNS-Prefetch-Control', 'off');
+  });
+
+  test('sets Origin-Agent-Cluster', () => {
+    securityHeaders(req, res, next);
+    expect(res.setHeader).toHaveBeenCalledWith('Origin-Agent-Cluster', '?1');
+  });
+
   test('calls next()', () => {
     securityHeaders(req, res, next);
     expect(next).toHaveBeenCalledTimes(1);

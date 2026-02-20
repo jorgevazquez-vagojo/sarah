@@ -169,9 +169,29 @@ describe('Auth', () => {
   describe('requireApiKey middleware', () => {
     const { requireApiKey } = require('../middleware/auth');
 
-    test('allows in development mode without key', () => {
+    test('rejects in development mode without key when DEV_SKIP_AUTH is not set', () => {
       const originalEnv = process.env.NODE_ENV;
+      const originalSkip = process.env.DEV_SKIP_AUTH;
       process.env.NODE_ENV = 'development';
+      delete process.env.DEV_SKIP_AUTH;
+
+      const req = { headers: {}, query: {} };
+      const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
+      const next = jest.fn();
+
+      requireApiKey(req, res, next);
+
+      expect(res.status).toHaveBeenCalledWith(403);
+      expect(next).not.toHaveBeenCalled();
+      process.env.NODE_ENV = originalEnv;
+      if (originalSkip !== undefined) process.env.DEV_SKIP_AUTH = originalSkip;
+    });
+
+    test('allows in development mode without key when DEV_SKIP_AUTH=true', () => {
+      const originalEnv = process.env.NODE_ENV;
+      const originalSkip = process.env.DEV_SKIP_AUTH;
+      process.env.NODE_ENV = 'development';
+      process.env.DEV_SKIP_AUTH = 'true';
 
       const req = { headers: {}, query: {} };
       const res = { status: jest.fn().mockReturnThis(), json: jest.fn() };
@@ -181,6 +201,8 @@ describe('Auth', () => {
 
       expect(next).toHaveBeenCalled();
       process.env.NODE_ENV = originalEnv;
+      if (originalSkip !== undefined) process.env.DEV_SKIP_AUTH = originalSkip;
+      else delete process.env.DEV_SKIP_AUTH;
     });
 
     test('rejects in production without key', () => {

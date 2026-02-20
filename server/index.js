@@ -11,19 +11,25 @@ const { loadLanguages } = require('./utils/i18n');
 const { loadKnowledgeFiles, seedKnowledgeToDB } = require('./services/knowledge-base');
 const { corsMiddleware } = require('./middleware/cors');
 const { securityHeaders } = require('./middleware/security-headers');
+const { csrfProtection } = require('./middleware/csrf');
+const { requestId } = require('./middleware/request-id');
 const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
 
 const app = express();
 const server = http.createServer(app);
 
 // ─── Middleware ───
+app.use(requestId);
 app.use(securityHeaders);
 app.use(corsMiddleware);
 app.use(express.json({ limit: '100kb' }));
+app.use(csrfProtection);
 
 // ─── Static files ───
 app.use('/widget', express.static(path.join(__dirname, 'public', 'widget')));
 app.use('/dashboard', express.static(path.join(__dirname, 'public', 'dashboard')));
+app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
+app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // ─── robots.txt (disallow all — staging only) ───
@@ -38,11 +44,13 @@ app.use('/api/chat', require('./routes/chat'));
 app.use('/api/leads', require('./routes/leads'));
 app.use('/api/agents', require('./routes/agents'));
 app.use('/api/calls', require('./routes/call'));
+app.use('/api/callbacks', require('./routes/callbacks'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/training', require('./routes/training'));
 app.use('/api/ai-caller', require('./routes/ai-caller'));
+app.use('/api/wallboard', require('./routes/wallboard'));
 
 // ─── WebSocket upgrade handling ───
 const wssChat = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024 });
@@ -228,6 +236,11 @@ app.get('/widget/test.html', (_req, res) => {
   <script src="/widget/loader.js" async></script>
 </body>
 </html>`);
+});
+
+// ─── Dashboard SPA catch-all (for client-side routing, e.g. /dashboard/wallboard) ───
+app.get('/dashboard/*', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'dashboard', 'index.html'));
 });
 
 // ─── Corporate landing page (root) ───

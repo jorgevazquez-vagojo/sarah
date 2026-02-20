@@ -2,6 +2,7 @@
 - **NO pedir confirmacion**: el usuario da aprobacion general para proceder. Ejecutar directamente sin preguntar "procedo?", "confirmas?", etc.
 - Comunicacion en espanol, codigo en ingles.
 - Git remotes: `origin` (GitHub jorgevazquez-vagojo) y `gitlab` (git.redegal.net jorge.vazquez)
+- **Auto-guardado**: al acercarse al limite de contexto, guardar estado en `~/.claude/projects/-Users-jorgevazquez/memory/session-state.md` (ver `~/.claude/CLAUDE.md` para formato completo)
 
 # Redegal Chatbot + WebPhone Widget
 

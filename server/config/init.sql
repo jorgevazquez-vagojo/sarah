@@ -376,6 +376,29 @@ CREATE TABLE kb_scrape_log (
 
 CREATE INDEX idx_scrape_url ON kb_scrape_log(url, scraped_at DESC);
 
+-- ─── Scheduled Callbacks (Calendly-style callback scheduling) ───
+CREATE TABLE callbacks (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    visitor_id VARCHAR(64) NOT NULL,
+    conversation_id UUID REFERENCES conversations(id),
+    phone VARCHAR(32) NOT NULL,
+    name VARCHAR(100),
+    scheduled_date DATE NOT NULL,
+    time_slot VARCHAR(20) NOT NULL,   -- 'morning', 'midday', 'afternoon'
+    time_range VARCHAR(20) NOT NULL,  -- '09:00-12:00'
+    business_line VARCHAR(30),
+    language VARCHAR(5) DEFAULT 'es',
+    note TEXT,
+    status VARCHAR(20) DEFAULT 'pending', -- pending, confirmed, completed, missed, cancelled
+    agent_id UUID REFERENCES agents(id),
+    completed_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_callbacks_date_status ON callbacks(scheduled_date, status);
+CREATE INDEX idx_callbacks_business_line ON callbacks(business_line);
+
 -- ═══════════════════════════════════════════════════════════════
 -- Default data
 -- ═══════════════════════════════════════════════════════════════

@@ -565,3 +565,118 @@
   background: var(--rc-info);
   color: white;
 }
+
+/* ─── Audio Quality Signal Bars ─── */
+@keyframes rc-signal-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Bounce animation for waiting dots (used in CallView) */
+@keyframes rc-bounce {
+  0%, 80%, 100% { transform: scale(0); }
+  40% { transform: scale(1); }
+}
+
+/* Call active glow pulse */
+@keyframes rc-call-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(16, 185, 129, 0); }
+}
+
+.rc-call-active-glow {
+  animation: rc-call-glow 2s ease-in-out infinite;
+}
+
+/* ─── Premium Call States Animations ─── */
+
+/* Gradient shimmer for idle phone icon */
+@keyframes rc-gradient-shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Expanding rings for calling state */
+@keyframes rc-ring-expand {
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* Phone vibrate/shake for ringing */
+@keyframes rc-phone-shake {
+  0%, 100% { transform: rotate(0deg); }
+  10% { transform: rotate(12deg); }
+  20% { transform: rotate(-10deg); }
+  30% { transform: rotate(8deg); }
+  40% { transform: rotate(-6deg); }
+  50% { transform: rotate(4deg); }
+  60% { transform: rotate(-2deg); }
+  70% { transform: rotate(0deg); }
+}
+
+/* Checkmark draw-in for ended state */
+@keyframes rc-checkmark-draw {
+  0% { stroke-dashoffset: 36; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* X mark draw-in for error state */
+@keyframes rc-x-draw {
+  0% { stroke-dashoffset: 34; }
+  100% { stroke-dashoffset: 0; }
+}
+
+/* Music note pulse for on-hold */
+@keyframes rc-music-pulse {
+  0%, 100% { opacity: 0.5; transform: translateY(0) scale(1); }
+  50% { opacity: 1; transform: translateY(-4px) scale(1.15); }
+}
+
+/* Queue dots animation */
+@keyframes rc-queue-pulse {
+  0%, 100% { opacity: 0.3; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+/* Mini waveform bars for connected state */
+@keyframes rc-waveform-bar {
+  0%, 100% { height: 4px; }
+  50% { height: var(--rc-waveform-h, 16px); }
+}
+
+/* Preflight check step fade in */
+@keyframes rc-preflight-step {
+  0% { opacity: 0; transform: translateX(-8px); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+/* Connected glow — green soft pulse */
+@keyframes rc-connected-glow {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.35); }
+  50% { box-shadow: 0 0 20px 6px rgba(16, 185, 129, 0.15); }
+}
+
+/* State transition — generic cross-fade */
+@keyframes rc-state-enter {
+  0% { opacity: 0; transform: translateY(10px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Pause overlay pulse for on-hold */
+@keyframes rc-pause-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+/* Circular spinner for preflight */
+@keyframes rc-circular-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* CSAT star hover glow */
+@keyframes rc-csat-star-glow {
+  0% { filter: brightness(1); }
+  50% { filter: brightness(1.3); }
+  100% { filter: brightness(1); }
+}

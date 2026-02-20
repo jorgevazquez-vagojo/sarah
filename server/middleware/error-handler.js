@@ -20,6 +20,7 @@ function errorHandler(err, req, res, _next) {
   const message = status < 500 ? err.message : 'Internal server error';
 
   logger.error(`${req.method} ${req.originalUrl} -> ${status}: ${err.message}`, {
+    requestId: req.requestId,
     stack: err.stack,
     body: req.body ? JSON.stringify(req.body).slice(0, 200) : undefined,
   });

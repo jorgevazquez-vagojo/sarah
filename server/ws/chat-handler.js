@@ -105,9 +105,12 @@ function initChatHandler(wss) {
       }
       try {
         const msg = JSON.parse(raw);
-        // Sanitize string content: max 2000 chars, strip control characters
+        // Sanitize string content: max 2000 chars, strip control characters and HTML tags
         if (typeof msg.content === 'string') {
-          msg.content = msg.content.slice(0, 2000).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '');
+          msg.content = msg.content
+            .slice(0, 2000)
+            .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+            .replace(/<[^>]*>/g, ''); // Strip HTML tags to prevent stored XSS
         }
         await handleMessage(ws, visitorId, msg);
       } catch (e) {

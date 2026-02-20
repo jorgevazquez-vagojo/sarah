@@ -1,6 +1,8 @@
 // WebRTC Click2Call client — real implementation using browser WebRTC API
 // Signaling goes through /ws/sip WebSocket, audio flows peer-to-peer
 
+import { AudioQualityMonitor } from './audio-quality';
+
 export interface SipConfig {
   wssUrl: string;
   domain: string;
@@ -15,6 +17,7 @@ export interface SipClient {
   mute: (muted: boolean) => void;
   onStateChange: (handler: (state: string) => void) => void;
   destroy: () => void;
+  getQualityMonitor: () => AudioQualityMonitor;
 }
 
 const ICE_SERVERS: RTCIceServer[] = [
@@ -29,6 +32,9 @@ export function createSipClient(config: SipConfig): SipClient {
   let localStream: MediaStream | null = null;
   let remoteAudio: HTMLAudioElement | null = null;
   let destroyed = false;
+
+  // Audio quality monitor instance
+  const qualityMonitor = new AudioQualityMonitor();
 
   function setState(state: string) {
     stateHandler?.(state);
@@ -54,7 +60,12 @@ export function createSipClient(config: SipConfig): SipClient {
       const s = pc.iceConnectionState;
       if (s === 'connected' || s === 'completed') {
         setState('active');
+        // Start audio quality monitoring when call connects
+        if (pc) {
+          qualityMonitor.start(pc, localStream || undefined);
+        }
       } else if (s === 'disconnected' || s === 'failed') {
+        qualityMonitor.stop();
         cleanup();
         setState('ended');
       }
@@ -90,6 +101,7 @@ export function createSipClient(config: SipConfig): SipClient {
           sendSignal('webrtc_offer', { sdp: offer.sdp });
         } catch (e) {
           console.error('Failed to create offer:', e);
+          qualityMonitor.stop();
           cleanup();
           setState('ended');
         }
@@ -122,6 +134,7 @@ export function createSipClient(config: SipConfig): SipClient {
 
       case 'call_ended':
       case 'call_rejected': {
+        qualityMonitor.stop();
         cleanup();
         setState('ended');
         break;
@@ -129,6 +142,7 @@ export function createSipClient(config: SipConfig): SipClient {
 
       case 'error': {
         console.error('Signaling error:', data.message);
+        qualityMonitor.stop();
         cleanup();
         setState('ended');
         break;
@@ -158,6 +172,7 @@ export function createSipClient(config: SipConfig): SipClient {
 
     ws.onclose = () => {
       if (!destroyed) {
+        qualityMonitor.stop();
         cleanup();
         setState('ended');
       }
@@ -167,6 +182,7 @@ export function createSipClient(config: SipConfig): SipClient {
   }
 
   function cleanup() {
+    qualityMonitor.stop();
     if (pc) {
       pc.close();
       pc = null;
@@ -192,7 +208,11 @@ export function createSipClient(config: SipConfig): SipClient {
       setState('registering');
       try {
         localStream = await navigator.mediaDevices.getUserMedia({
-          audio: true,
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+            autoGainControl: true,
+          },
           video: false,
         });
         connectSignaling();
@@ -210,6 +230,7 @@ export function createSipClient(config: SipConfig): SipClient {
     },
 
     hangup: () => {
+      qualityMonitor.stop();
       cleanup();
       setState('idle');
     },
@@ -228,8 +249,11 @@ export function createSipClient(config: SipConfig): SipClient {
 
     destroy: () => {
       destroyed = true;
+      qualityMonitor.stop();
       cleanup();
       stateHandler = null;
     },
+
+    getQualityMonitor: () => qualityMonitor,
   };
 }
