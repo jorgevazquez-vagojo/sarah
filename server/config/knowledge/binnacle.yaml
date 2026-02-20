@@ -1,7 +1,73 @@
 # Binnacle Data - Plataforma de Analitica Web y Business Intelligence
 # Sources:
 #   - https://www.binnacledata.com/es/
+#   - https://www.binnacledata.com/es/tarifas/
+#   - https://www.binnacledata.com/es/blog/clusterizacion-inteligente/
+#   - https://www.binnacledata.com/es/blog/smart-monitoring/
+#   - https://www.binnacledata.com/es/blog/analisis-de-productos/
 #   - https://www.redegal.com/es/servicios/analitica-digital/
+# Scraped: 2026-02-20
+
+# --- Branding ---
+branding:
+  company_name: "Binnacle Data"
+  alternative_name: "Binnacle"
+  legal_name: "BINNACLE"
+  nif: "B-32318354"
+  registered_address: "Rua Telleira 11 - Entresuelo, Ourense, Spain"
+  tagline: "Transformamos informacion en conocimiento para impulsar tu exito empresarial"
+  tagline_en: "We transform information into knowledge to drive your business success"
+  value_proposition: "Mide, monitoriza y mejora el rendimiento de tu negocio desde un solo lugar"
+  logo_url: "https://www.binnacledata.com/wp-content/uploads/2022/12/logo.png"
+  dashboard_image: "https://www.binnacledata.com/wp-content/uploads/2024/03/binnacle-intro-home-dashboard-PRO.png"
+  website: "https://www.binnacledata.com/es/"
+  colors:
+    primary: "#6636ce"      # Purple
+    secondary: "#373737"    # Dark gray
+    accent: "#000000"       # Black
+    background: "#ffffff"   # White
+  phone: "+34 988 54 98 58"
+  email: "info@binnacledata.com"
+  social:
+    linkedin: "https://www.linkedin.com/company/binnacle-data/"
+    youtube: "https://www.youtube.com/@BinnacleData"
+    instagram: "https://www.instagram.com/redegal_sl/"
+
+# --- Navigation Structure ---
+navigation:
+  main_menu:
+    - label: "Que es Binnacle?"
+      url: "/es/"
+    - label: "Tarifas"
+      url: "/es/tarifas/"
+    - label: "Recursos"
+      children:
+        - label: "Blog"
+          url: "/es/blog/"
+        - label: "Videos"
+          url: "/es/videos/"
+        - label: "Documentacion"
+          url: "/es/documentacion/"
+    - label: "No te pierdas"
+      children:
+        - label: "Analisis de Productos"
+          url: "/es/blog/analisis-de-productos/"
+        - label: "Smart Monitoring"
+          url: "/es/blog/smart-monitoring/"
+    - label: "Contacto"
+      url: "/es/contacto/"
+  languages:
+    - "ES"
+    - "EN"
+  footer:
+    - label: "Politica de Privacidad"
+      url: "/es/politica-de-privacidad/"
+    - label: "Terminos y Condiciones"
+      url: "/es/terminos-y-condiciones/"
+    - label: "Cookies"
+      url: "/es/cookies/"
+
+# --- Knowledge Entries ---
 entries:
   - title: "Que es Binnacle Data"
     category: producto
@@ -11,43 +77,175 @@ entries:
       Transforma informacion en conocimiento para impulsar el exito del negocio.
       Ofrece acceso a mas de 100 metricas de multiples fuentes en un solo lugar,
       conectando datos de comportamiento, conversiones, ventas e inversion publicitaria.
+      Su lema principal es: "Mide, monitoriza y mejora el rendimiento de tu negocio desde un solo lugar."
+      Nombre legal: BINNACLE, NIF B-32318354, con sede en Rua Telleira 11, Ourense, Espana.
 
   - title: "Funcionalidades principales de Binnacle Data"
     category: producto
     content: |
       1. Integracion de datos: acceso a +100 metricas de multiples fuentes en un solo lugar.
          Conecta datos de comportamiento, conversiones, ventas e inversion publicitaria.
-      2. Monitorizacion con IA: analisis automatico de +30 metricas en 10 tipos de elementos.
-         Detecta anomalias y genera notificaciones con insights y recomendaciones.
-         Monitoriza productos, categorias, campanas, landing pages, fuentes de trafico,
-         rankings SEO y compras.
+      2. Monitorizacion con IA (Smart Monitoring): analisis automatico de +30 metricas en
+         10 tipos de elementos (productos, categorias, campanas, landing pages, fuentes de trafico,
+         rankings SEO, compras, etc). Detecta anomalias y genera notificaciones con insights
+         y recomendaciones. Analiza 20 metricas diferentes para identificar cambios de tendencia.
       3. Insights de e-commerce: rendimiento de producto y calidad de cliente.
-         Recuperacion y fidelizacion de clientes.
+         Recuperacion y fidelizacion de clientes. Analisis RFM y LTV por cohortes.
       4. Dashboards y reporting: datos ordenados y accionables en dashboards personalizados.
          Interpretacion clara de datos para toma de decisiones.
+      5. Comparativa de plataformas publicitarias: medicion unificada de Google Ads, Meta Ads
+         y Microsoft Ads en un mismo entorno.
+      6. Analisis de productos: combina datos de GA4, backoffice y Google Merchant para
+         identificar productos con buen o mal rendimiento en multiples aspectos.
+
+  - title: "Smart Monitoring - Monitorizacion Inteligente"
+    category: funcionalidad
+    content: |
+      Smart Monitoring es la funcionalidad proactiva de Binnacle Data que monitoriza
+      automaticamente productos, campanas, busquedas SEO, paginas y otras metricas.
+      Caracteristicas clave:
+      - Monitoriza automaticamente sin intervencion manual.
+      - Analiza 20 metricas diferentes para identificar cambios relevantes de tendencia.
+      - Detecta tendencias al alza y a la baja.
+      Beneficios:
+      - Alertas proactivas: recibes notificaciones sobre cambios significativos.
+      - Decision agil: reacciona y toma decisiones tacticas de forma rapida.
+      - Deteccion de oportunidades: capitaliza el impulso positivo.
+      - Deteccion de problemas: alertas tempranas para contener metricas en declive.
+      No necesitas buscar los problemas; Binnacle los encuentra por ti.
+
+  - title: "Analisis de Productos"
+    category: funcionalidad
+    content: |
+      El paquete de Analisis de Productos de Binnacle Data combina datos de multiples fuentes:
+      - GA4 (Google Analytics 4)
+      - Sistemas backoffice (e-commerce)
+      - Google Merchant Center
+      Proporciona dashboards de Performance Insights que identifican que productos funcionan
+      bien o mal en diversos aspectos y combinaciones, ofreciendo informacion directamente
+      accionable para trabajar tanto tacticamente como estrategicamente.
+
+  - title: "Clusterizacion Inteligente - Boostic.cloud"
+    category: funcionalidad
+    content: |
+      La Clusterizacion Inteligente es una funcionalidad de Boostic.cloud (producto hermano
+      de Binnacle, tambien de Redegal) que transforma la gestion de catalogos e-commerce.
+      Ofrece analisis y segmentacion automatizada de catalogos usando datos reales y actualizados
+      de rendimiento por categorias, marcas y etiquetas personalizadas.
+      Ventajas clave:
+      - Agrupacion inteligente de productos basada en interacciones, ventas, clics, costes
+        publicitarios y visibilidad organica.
+      - Optimizacion SEM/SEO: prioriza productos de alto rendimiento y reduce gasto en
+        productos que no convierten.
+      - Analisis granular por categoria, marca o producto individual.
+      Fuentes de datos integradas:
+      - Google Analytics 4, Google Ads, plataformas e-commerce (Shopify, PrestaShop, Magento)
+        y Google Merchant Center.
+      Cada producto recibe evaluacion detallada con 17 metricas clave incluyendo clics,
+      conversiones, costes publicitarios, informacion de marca, categorizacion, etiquetas
+      personalizadas y niveles de stock.
+
+  - title: "Clusters de Productos - Clasificacion"
+    category: funcionalidad
+    content: |
+      La Clusterizacion Inteligente clasifica productos en 6 clusters:
+      1. Champions: productos de alta facturacion con potencial de engagement medio-alto.
+         Requieren inversion media-alta en medios de pago.
+      2. Hidden Potential (Potencial Oculto): fuerte rendimiento en facturacion con margen
+         de mejora en captacion de engagement. Algunos venden sin inversion publicitaria.
+      3. Conversion Opportunities (Oportunidades de Conversion): alto potencial
+         (impresiones, clics, adiciones al carrito) pero ventas debiles. Necesitan ajustes
+         en pricing, campanas, SEO o paginas de producto.
+      4. Inactive Assets (Activos Inactivos): actividad de ventas minima o nula y trafico
+         negligible durante el periodo de analisis.
+      5. Outliers (Valores Atipicos): metricas de rendimiento extremas; productos de alto
+         coste que no convierten o items con costes por clic elevados sin ventas.
+      6. Back Catalog (Catalogo Secundario): productos no bestsellers que representan
+         volumen significativo del catalogo con rendimiento individual moderado-bajo.
+      La clasificacion se basa en 3 ejes: potencial de conversion (carrito + impresiones),
+      potencial SEO (impresiones y clics organicos) y rentabilidad (ventas, ingresos y gasto).
+      Los umbrales son dinamicos y reflejan las caracteristicas especificas de cada catalogo.
+
+  - title: "Caso de exito - Clusterizacion Inteligente"
+    category: caso_exito
+    content: |
+      Un retailer e-commerce con mas de 300.000 referencias de productos logro con
+      la Clusterizacion Inteligente de Boostic.cloud:
+      - +64% de incremento en clics capturados.
+      - +40% de mejora en eventos de adicion al carrito.
+      - -50% de reduccion en gasto publicitario en productos que no convierten.
+      Estos resultados demuestran el impacto directo de la segmentacion inteligente
+      en la optimizacion de campanas SEM y rendimiento e-commerce.
+
+  - title: "Casos de uso de la Clusterizacion"
+    category: funcionalidad
+    content: |
+      1. Optimizacion de campanas SEM: identificacion de ROAS, ajustes de posicionamiento,
+         deteccion de problemas de visibilidad organica, integracion con Google Ads para
+         segmentacion automatizada basada en datos con inclusion/exclusion de productos por cluster.
+      2. Estrategias SEO: analisis de clusters Hidden Potential y Conversion Opportunities
+         para identificar oportunidades de crecimiento organico. Optimizacion de titulos,
+         descripciones y contenido para mejorar trafico y conversion.
+      3. Gestion de inventario y cross-selling: analisis del Back Catalog para planificacion
+         de inventario y oportunidades de promocion de productos complementarios.
 
   - title: "Integraciones de Binnacle Data"
     category: producto
     content: |
-      - Google Ads.
-      - Meta Ads (Facebook/Instagram).
-      - Microsoft Ads.
-      - Google Analytics.
-      - Plataformas e-commerce y fuentes de datos de ventas.
-      Permite la centralizacion de multiples fuentes de datos publicitarios y de negocio.
+      Fuentes de datos publicitarios:
+      - Google Ads
+      - Meta Ads (Facebook/Instagram)
+      - Microsoft Ads (Bing Ads)
+      Fuentes de analitica:
+      - Google Analytics 4 (GA4)
+      - Google Search Console
+      Plataformas e-commerce:
+      - Magento
+      - PrestaShop
+      - Shopify
+      - E-commerce personalizado (custom)
+      Otras fuentes:
+      - Google Merchant Center
+      - Sistemas backoffice
+      - Soporte para +30 fuentes de datos en plan personalizado
+      - Fuentes de datos personalizadas (custom)
 
-  - title: "Precio de Binnacle Data"
-    category: producto
+  - title: "Planes y precios de Binnacle Data"
+    category: precio
     content: |
-      Binnacle Data tiene un precio de entrada desde 99 EUR/mes con funcionalidad escalonada
-      segun el plan contratado.
+      Binnacle Data ofrece 3 planes:
+      1. Plan Marketing - Desde 99 EUR/mes (con escalado por volumen):
+         - Seguimiento de tu negocio en un solo lugar.
+         - Monitorizacion activa con IA.
+         - Integraciones: GA4, Google Search Console, Google Ads, Meta Ads, Bing Ads.
+      2. Plan E-commerce - Desde 299 EUR/mes + fee de configuracion:
+         - Todo lo del plan Marketing mas:
+         - Analisis avanzado de productos.
+         - Analisis RFM (Recency, Frequency, Monetary).
+         - Metricas de Life Time Value (LTV) y recurrencia de compra.
+         - Atribucion basada en datos (data-driven attribution).
+         - Integraciones e-commerce: Magento, PrestaShop, Shopify, custom.
+      3. Plan Personalizado - Precio a consultar:
+         - Todo lo del plan E-commerce mas:
+         - Gestion avanzada y dashboards personalizados.
+         - Soporte para +30 fuentes de datos.
+         - Fuentes de datos personalizadas.
+         - Procesamiento de datos custom y analisis cruzados.
+      Todos los planes incluyen solicitud de demo gratuita.
 
   - title: "Resultados demostrados de Binnacle Data"
-    category: producto
+    category: caso_exito
     content: |
-      - Recupera hasta el 80% del tiempo dedicado a consultar multiples fuentes de datos.
-      - Usuarios reportan +30% de incremento en ventas en contextos e-commerce.
-      - Monitorizacion automatica de +30 metricas.
+      Metricas demostradas de la plataforma:
+      - Ahorro del 80% del tiempo dedicado a consultar multiples fuentes de datos.
+      - +30% de incremento en ventas en contextos e-commerce.
+      - +100 metricas accesibles en un solo lugar.
+      - +30 metricas monitorizadas automaticamente.
+      - 10 tipos de elementos rastreados (productos, campanas, landings, SEO, conversiones...).
+      Caso de exito con clusterizacion (retailer +300K productos):
+      - +64% en clics capturados.
+      - +40% en adiciones al carrito.
+      - -50% en gasto publicitario en productos que no convierten.
 
   - title: "Servicio de Analitica Digital de Redegal"
     category: servicio
@@ -71,6 +269,8 @@ entries:
       - Empresas que gestionan multiples canales publicitarios.
       - Organizaciones que buscan analitica centralizada.
       - Equipos de marketing que necesitan datos unificados y accionables.
+      - Retailers con grandes catalogos de productos (+300K referencias).
+      - Empresas con presencia en Google Ads, Meta Ads y Microsoft Ads.
 
   - title: "Diferencial de Binnacle Data"
     category: ventajas
@@ -81,3 +281,60 @@ entries:
       - Ahorro de hasta 80% del tiempo de consulta de datos.
       - Precio accesible desde 99 EUR/mes.
       - Monitorizacion proactiva: no hay que buscar los problemas, Binnacle los encuentra.
+      - Clusterizacion inteligente de productos con umbrales dinamicos.
+      - Exportacion a Google Ads mediante feed complementario.
+      - Analisis RFM y LTV por cohortes de clientes.
+      - Atribucion basada en datos (data-driven attribution).
+      - Soporte multilingue (ES/EN).
+
+  - title: "Recursos educativos de Binnacle Data"
+    category: recursos
+    content: |
+      Binnacle Data ofrece multiples recursos educativos:
+      Blog con articulos especializados:
+      - Clusterizacion Inteligente para catalogos e-commerce (Abr 2025).
+      - Smart Monitoring y Analisis integrado de Productos (Dic 2023).
+      - Analisis RFM en marketing: guia practica (Jun 2023).
+      - Como lograr un modelo de atribucion personalizado (Mar 2023).
+      Videos (pildoras y webinars):
+      - Analisis de Productos.
+      - Smart Monitoring.
+      - Checking Daily.
+      - LTV por cohortes de clientes.
+      Documentacion:
+      - Manual de Referencia (PDF).
+
+  - title: "Contacto con Binnacle Data"
+    category: contacto
+    content: |
+      Telefono: +34 988 54 98 58
+      Email: info@binnacledata.com
+      Direccion: Rua Telleira 11 - Entresuelo, Ourense, Espana
+      Web: https://www.binnacledata.com/es/
+      LinkedIn: https://www.linkedin.com/company/binnacle-data/
+      YouTube: https://www.youtube.com/@BinnacleData
+      Instagram: https://www.instagram.com/redegal_sl/
+      Para solicitar una demo gratuita, visita la web o llama al telefono indicado.
+      El formulario de contacto solicita: nombre completo, email corporativo,
+      nombre de la empresa, telefono, y aceptacion de politica de privacidad.
+
+  - title: "Analisis RFM en Binnacle Data"
+    category: funcionalidad
+    content: |
+      Binnacle Data incluye analisis RFM (Recency, Frequency, Monetary) en el plan E-commerce.
+      RFM es una metodologia de segmentacion de clientes que clasifica segun:
+      - Recency: cuando fue la ultima compra del cliente.
+      - Frequency: con que frecuencia compra el cliente.
+      - Monetary: cuanto gasta el cliente.
+      Permite identificar clientes de alto valor, clientes en riesgo de abandono,
+      y oportunidades de fidelizacion y recuperacion. Disponible como guia practica
+      en el blog de Binnacle Data.
+
+  - title: "Atribucion de datos en Binnacle Data"
+    category: funcionalidad
+    content: |
+      Binnacle Data ofrece modelos de atribucion basados en datos (data-driven attribution)
+      en el plan E-commerce y superior. Permite entender que canales y touchpoints
+      contribuyen realmente a las conversiones, superando las limitaciones de modelos
+      de atribucion simplistas (ultimo clic, primer clic). El blog incluye una guia
+      sobre como lograr un modelo de atribucion personalizado.
