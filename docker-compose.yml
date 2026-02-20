@@ -34,6 +34,7 @@ services:
     env_file: .env
     environment:
       PORT: 9456
+      BIND_HOST: 0.0.0.0
       POSTGRES_HOST: postgres
       REDIS_HOST: redis
     depends_on:
@@ -42,23 +43,9 @@ services:
       redis:
         condition: service_healthy
     volumes:
-      - widget_dist:/app/public/widget
-      - dashboard_dist:/app/public/dashboard
-
-  widget-build:
-    build: ./widget
-    volumes:
-      - widget_dist:/app/dist
-    command: npm run build
-
-  dashboard-build:
-    build: ./dashboard
-    volumes:
-      - dashboard_dist:/app/dist
-    command: npm run build
+      - ./widget/dist:/app/public/widget:ro
+      - ./dashboard/dist:/app/public/dashboard:ro
 
 volumes:
   pgdata:
   redisdata:
-  widget_dist:
-  dashboard_dist:

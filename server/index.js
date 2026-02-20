@@ -255,7 +255,7 @@ async function start() {
 
   seedKnowledgeToDB().catch((e) => logger.warn('Knowledge seed error:', e.message));
 
-  const HOST = '127.0.0.1';
+  const HOST = process.env.BIND_HOST || '127.0.0.1';
   server.listen(PORT, HOST, () => {
     logger.info(`Redegal Web + Chatbot running on http://${HOST}:${PORT}`);
     logger.info(`Dashboard: http://${HOST}:${PORT}/dashboard`);
