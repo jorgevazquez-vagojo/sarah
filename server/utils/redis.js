@@ -1,9 +1,13 @@
 const { createClient } = require('redis');
 const { logger } = require('./logger');
 
-const client = createClient({
-  url: `redis://:${process.env.REDIS_PASSWORD}@${process.env.REDIS_HOST || 'redis'}:6379`,
-});
+const redisHost = process.env.REDIS_HOST || 'redis';
+const redisPassword = process.env.REDIS_PASSWORD || '';
+const redisUrl = redisPassword
+  ? `redis://:${redisPassword}@${redisHost}:6379`
+  : `redis://${redisHost}:6379`;
+
+const client = createClient({ url: redisUrl });
 
 client.on('error', (err) => logger.error('Redis error:', err));
 

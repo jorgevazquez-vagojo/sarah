@@ -1,0 +1,1080 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow, noarchive, nosnippet">
+  <meta name="googlebot" content="noindex, nofollow">
+  <title>Redegal — A Smart Digital Company</title>
+  <meta name="description" content="Consultora full digital ecommerce. 20+ anos impulsando negocios digitales.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    /* Reset & Variables */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --r-primary: #007fff;
+      --r-primary-dark: #0066cc;
+      --r-primary-light: #4da3ff;
+      --r-primary-glow: rgba(0, 127, 255, 0.15);
+      --r-accent: #6366f1;
+      --r-accent-light: #818cf8;
+      --r-black: #0a0a0a;
+      --r-white: #ffffff;
+      --r-dark: #111111;
+      --r-gray-900: #1a1a1a;
+      --r-gray-800: #2a2a2a;
+      --r-gray-700: #3a3a3a;
+      --r-gray-600: #555555;
+      --r-gray-500: #777777;
+      --r-gray-400: #999999;
+      --r-gray-300: #bbbbbb;
+      --r-gray-200: #e0e0e0;
+      --r-gray-100: #f0f0f0;
+      --r-gray-50: #f8f8f8;
+      --r-success: #10b981;
+      --r-warning: #fdcb6e;
+      --r-error: #ff6b6b;
+      --font-display: 'Montserrat', -apple-system, sans-serif;
+      --font-body: 'Inter', -apple-system, sans-serif;
+      --container: 1280px;
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-spring: cubic-bezier(0.25, 1.15, 0.5, 1);
+      --shadow-sm: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+      --shadow-md: 0 4px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,0.12), 0 4px 16px rgba(0,0,0,0.06);
+      --shadow-xl: 0 24px 80px rgba(0,0,0,0.16), 0 8px 32px rgba(0,0,0,0.08);
+      --shadow-glow: 0 0 48px var(--r-primary-glow);
+    }
+
+    html { scroll-behavior: smooth; -webkit-font-smoothing: antialiased; }
+    body {
+      font-family: var(--font-body);
+      color: var(--r-gray-800);
+      background: var(--r-white);
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: var(--r-gray-300); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--r-primary); }
+
+    /* Utility */
+    .container { max-width: var(--container); margin: 0 auto; padding: 0 24px; }
+    .container-wide { max-width: 1440px; margin: 0 auto; padding: 0 24px; }
+    .section { padding: clamp(60px, 10vw, 140px) 0; }
+    .section-dark { background: var(--r-dark); color: var(--r-white); }
+    .section-gray { background: var(--r-gray-50); }
+    .text-center { text-align: center; }
+    .text-gradient {
+      background: linear-gradient(135deg, var(--r-primary), var(--r-accent));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Typography */
+    h1, h2, h3, h4, h5 { font-family: var(--font-display); font-weight: 700; line-height: 1.15; }
+    h1 { font-size: clamp(2.5rem, 6vw, 4.5rem); font-weight: 900; letter-spacing: -0.03em; }
+    h2 { font-size: clamp(2rem, 4vw, 3.2rem); font-weight: 800; letter-spacing: -0.02em; }
+    h3 { font-size: clamp(1.2rem, 2vw, 1.5rem); font-weight: 700; }
+    p { font-size: 1.05rem; color: var(--r-gray-600); }
+    .subtitle { font-size: clamp(1.1rem, 2vw, 1.3rem); color: var(--r-gray-500); max-width: 700px; margin: 0 auto; }
+    .section-label {
+      display: inline-block;
+      font-family: var(--font-display);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--r-primary);
+      margin-bottom: 16px;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 14px 32px;
+      border-radius: 50px;
+      font-family: var(--font-display);
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      transition: all 0.4s var(--ease-out);
+    }
+    .btn-primary {
+      background: var(--r-primary);
+      color: var(--r-white);
+      box-shadow: 0 4px 20px rgba(0, 127, 255, 0.3);
+    }
+    .btn-primary:hover {
+      background: var(--r-primary-dark);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0, 127, 255, 0.4);
+    }
+    .btn-outline {
+      background: transparent;
+      color: var(--r-primary);
+      border: 2px solid var(--r-primary);
+    }
+    .btn-outline:hover {
+      background: var(--r-primary);
+      color: var(--r-white);
+      transform: translateY(-2px);
+    }
+    .btn-white {
+      background: var(--r-white);
+      color: var(--r-dark);
+    }
+    .btn-white:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+    /* Header */
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,0.92);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(0,0,0,0.06);
+      transition: all 0.4s var(--ease-out);
+    }
+    header.scrolled { box-shadow: var(--shadow-md); }
+    .header-inner {
+      max-width: var(--container);
+      margin: 0 auto;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 80px;
+    }
+    .logo {
+      font-family: var(--font-display);
+      font-size: 1.6rem;
+      font-weight: 900;
+      color: var(--r-dark);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+    .logo span { color: var(--r-primary); }
+    .stock-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: var(--r-gray-50);
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--r-gray-600);
+      margin-left: 12px;
+    }
+    .stock-badge .ticker { color: var(--r-success); font-weight: 700; }
+    nav { display: flex; align-items: center; gap: 8px; }
+    nav a {
+      padding: 8px 16px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--r-gray-700);
+      text-decoration: none;
+      border-radius: 8px;
+      transition: all 0.3s var(--ease-out);
+    }
+    nav a:hover { color: var(--r-primary); background: var(--r-primary-glow); }
+    .nav-cta {
+      padding: 10px 24px !important;
+      background: var(--r-primary) !important;
+      color: var(--r-white) !important;
+      border-radius: 50px !important;
+      font-weight: 600 !important;
+    }
+    .nav-cta:hover { background: var(--r-primary-dark) !important; transform: translateY(-1px); }
+
+    /* Mobile menu */
+    .menu-toggle { display: none; background: none; border: none; cursor: pointer; padding: 8px; }
+    .menu-toggle span {
+      display: block; width: 24px; height: 2px; background: var(--r-dark);
+      margin: 5px 0; transition: 0.3s;
+    }
+
+    @media (max-width: 1024px) {
+      .menu-toggle { display: block; }
+      nav {
+        position: fixed; top: 80px; left: 0; right: 0; bottom: 0;
+        background: var(--r-white);
+        flex-direction: column;
+        padding: 40px 24px;
+        gap: 8px;
+        transform: translateX(100%);
+        transition: transform 0.4s var(--ease-out);
+      }
+      nav.open { transform: translateX(0); }
+      nav a { font-size: 1.1rem; padding: 12px 16px; width: 100%; }
+    }
+
+    /* Hero */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+      padding-top: 80px;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 80vw;
+      height: 80vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--r-primary-glow) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero::after {
+      content: '';
+      position: absolute;
+      bottom: -40%;
+      left: -20%;
+      width: 60vw;
+      height: 60vw;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(99, 102, 241, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-content { position: relative; z-index: 1; max-width: 800px; }
+    .hero h1 { margin-bottom: 24px; color: var(--r-dark); }
+    .hero p { font-size: clamp(1.1rem, 2vw, 1.35rem); color: var(--r-gray-500); margin-bottom: 40px; max-width: 600px; }
+    .hero-actions { display: flex; gap: 16px; flex-wrap: wrap; }
+    .hero-stats {
+      display: flex;
+      gap: 48px;
+      margin-top: 80px;
+      padding-top: 40px;
+      border-top: 1px solid var(--r-gray-200);
+    }
+    .hero-stat-number {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 900;
+      color: var(--r-dark);
+      line-height: 1;
+    }
+    .hero-stat-label { font-size: 0.9rem; color: var(--r-gray-500); margin-top: 4px; }
+
+    /* Services Grid */
+    .services-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .service-card {
+      padding: 32px;
+      border-radius: 16px;
+      background: var(--r-white);
+      border: 1px solid var(--r-gray-100);
+      transition: all 0.5s var(--ease-spring);
+      cursor: default;
+    }
+    .service-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: transparent;
+    }
+    .service-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      background: linear-gradient(135deg, var(--r-primary-glow), rgba(99, 102, 241, 0.1));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      margin-bottom: 20px;
+    }
+    .service-card h3 { margin-bottom: 12px; color: var(--r-dark); }
+    .service-card p { font-size: 0.95rem; line-height: 1.6; }
+
+    /* Products (Binnacle + Boostic) */
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+      gap: 32px;
+      margin-top: 48px;
+    }
+    .product-card {
+      padding: 48px 40px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, var(--r-dark) 0%, var(--r-gray-900) 100%);
+      color: var(--r-white);
+      position: relative;
+      overflow: hidden;
+    }
+    .product-card::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -30%;
+      width: 300px;
+      height: 300px;
+      border-radius: 50%;
+      background: radial-gradient(circle, var(--r-primary-glow) 0%, transparent 70%);
+    }
+    .product-card .content { position: relative; z-index: 1; }
+    .product-badge {
+      display: inline-block;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 20px;
+    }
+    .product-card.binnacle .product-badge { background: rgba(16, 185, 129, 0.2); color: var(--r-success); }
+    .product-card.boostic .product-badge { background: rgba(99, 102, 241, 0.2); color: var(--r-accent-light); }
+    .product-card h3 { font-size: 1.8rem; margin-bottom: 16px; }
+    .product-card p { color: var(--r-gray-400); margin-bottom: 24px; }
+    .product-features { list-style: none; margin-bottom: 32px; }
+    .product-features li {
+      padding: 6px 0;
+      font-size: 0.95rem;
+      color: var(--r-gray-300);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .product-features li::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--r-primary); flex-shrink: 0; }
+    .product-price {
+      font-family: var(--font-display);
+      font-size: 0.9rem;
+      color: var(--r-gray-400);
+    }
+    .product-price strong { font-size: 2rem; color: var(--r-white); }
+
+    /* Clients */
+    .clients-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .client-pill {
+      padding: 12px 24px;
+      border-radius: 50px;
+      background: var(--r-white);
+      border: 1px solid var(--r-gray-200);
+      font-weight: 600;
+      font-size: 0.9rem;
+      color: var(--r-gray-700);
+      transition: all 0.3s var(--ease-out);
+    }
+    .client-pill:hover {
+      border-color: var(--r-primary);
+      color: var(--r-primary);
+      box-shadow: 0 4px 16px var(--r-primary-glow);
+    }
+
+    /* About Numbers */
+    .about-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 32px;
+      margin-top: 48px;
+    }
+    .about-stat {
+      text-align: center;
+      padding: 32px 16px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
+    }
+    .about-stat-number {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      font-weight: 900;
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+    .about-stat:nth-child(1) .about-stat-number { color: var(--r-primary-light); }
+    .about-stat:nth-child(2) .about-stat-number { color: var(--r-accent-light); }
+    .about-stat:nth-child(3) .about-stat-number { color: var(--r-success); }
+    .about-stat:nth-child(4) .about-stat-number { color: var(--r-warning); }
+    .about-stat-label { font-size: 0.9rem; color: var(--r-gray-400); }
+    @media (max-width: 768px) { .about-grid { grid-template-columns: repeat(2, 1fr); } }
+
+    /* Values */
+    .values-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .value-card {
+      padding: 28px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.08);
+      transition: all 0.4s var(--ease-out);
+    }
+    .value-card:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+    .value-card h3 { color: var(--r-white); margin-bottom: 8px; font-size: 1.1rem; }
+    .value-card p { font-size: 0.9rem; color: var(--r-gray-400); }
+
+    /* Partners */
+    .partners-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 48px;
+    }
+    .partner-badge {
+      padding: 10px 20px;
+      border-radius: 8px;
+      background: var(--r-gray-50);
+      border: 1px solid var(--r-gray-200);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--r-gray-600);
+    }
+
+    /* Offices */
+    .offices-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 24px;
+      margin-top: 48px;
+    }
+    .office-card {
+      padding: 24px;
+      border-radius: 12px;
+      background: var(--r-white);
+      border: 1px solid var(--r-gray-100);
+    }
+    .office-card h4 {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--r-dark);
+      margin-bottom: 8px;
+    }
+    .office-card p { font-size: 0.85rem; color: var(--r-gray-500); margin-bottom: 4px; }
+    .office-hq { border-color: var(--r-primary); box-shadow: 0 0 0 1px var(--r-primary); }
+
+    /* Contact Form */
+    .contact-form {
+      max-width: 600px;
+      margin: 48px auto 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+    .contact-form input, .contact-form select, .contact-form textarea {
+      padding: 14px 20px;
+      border-radius: 12px;
+      border: 1px solid var(--r-gray-200);
+      font-family: var(--font-body);
+      font-size: 0.95rem;
+      background: var(--r-white);
+      transition: border-color 0.3s;
+      outline: none;
+    }
+    .contact-form input:focus, .contact-form select:focus, .contact-form textarea:focus {
+      border-color: var(--r-primary);
+      box-shadow: 0 0 0 3px var(--r-primary-glow);
+    }
+    .contact-form textarea { min-height: 120px; resize: vertical; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .form-row { grid-template-columns: 1fr; } }
+
+    /* Footer */
+    footer {
+      background: var(--r-black);
+      color: var(--r-gray-400);
+      padding: 60px 0 32px;
+    }
+    .footer-top {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr;
+      gap: 40px;
+      padding-bottom: 40px;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+    .footer-brand .logo { font-size: 1.3rem; }
+    .footer-brand p { margin-top: 12px; font-size: 0.9rem; color: var(--r-gray-500); max-width: 280px; }
+    .footer-col h4 {
+      font-family: var(--font-display);
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--r-gray-300);
+      margin-bottom: 16px;
+    }
+    .footer-col a {
+      display: block;
+      padding: 4px 0;
+      font-size: 0.9rem;
+      color: var(--r-gray-500);
+      text-decoration: none;
+      transition: color 0.3s;
+    }
+    .footer-col a:hover { color: var(--r-primary-light); }
+    .footer-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 32px;
+      font-size: 0.8rem;
+    }
+    .social-links { display: flex; gap: 16px; }
+    .social-links a { color: var(--r-gray-500); text-decoration: none; font-size: 0.85rem; transition: color 0.3s; }
+    .social-links a:hover { color: var(--r-primary-light); }
+
+    @media (max-width: 768px) {
+      .footer-top { grid-template-columns: 1fr; }
+      .footer-bottom { flex-direction: column; gap: 16px; text-align: center; }
+      .hero-stats { flex-direction: column; gap: 24px; }
+      .products-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: 0.1s; }
+    .reveal-delay-2 { transition-delay: 0.2s; }
+    .reveal-delay-3 { transition-delay: 0.3s; }
+
+    /* Staging banner */
+    .staging-banner {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 9999;
+      padding: 8px 16px;
+      border-radius: 8px;
+      background: rgba(255, 107, 107, 0.9);
+      color: white;
+      font-size: 0.75rem;
+      font-weight: 600;
+      backdrop-filter: blur(10px);
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Staging indicator -->
+  <div class="staging-banner">STAGING — No indexado</div>
+
+  <!-- Header -->
+  <header id="header">
+    <div class="header-inner">
+      <div style="display:flex;align-items:center;">
+        <a href="#" class="logo">Rede<span>gal</span></a>
+        <span class="stock-badge">BME:RDG <span class="ticker">7.20 EUR</span></span>
+      </div>
+      <button class="menu-toggle" onclick="document.querySelector('nav').classList.toggle('open')" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+      <nav>
+        <a href="#servicios">Servicios</a>
+        <a href="#productos">Productos</a>
+        <a href="#clientes">Clientes</a>
+        <a href="#nosotros">Nosotros</a>
+        <a href="#contacto" class="nav-cta">Hablamos?</a>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <p class="section-label">A Smart Digital Company</p>
+        <h1>Tenemos lo que necesitas para <span class="text-gradient">impulsar tu negocio digital</span></h1>
+        <p>Desde pymes hasta grandes empresas que cotizan en las principales bolsas del mundo. 20 anos creando increibles experiencias digitales.</p>
+        <div class="hero-actions">
+          <a href="#contacto" class="btn btn-primary">Hablamos? &rarr;</a>
+          <a href="#servicios" class="btn btn-outline">Ver servicios</a>
+        </div>
+        <div class="hero-stats">
+          <div>
+            <div class="hero-stat-number">20+</div>
+            <div class="hero-stat-label">anos de experiencia</div>
+          </div>
+          <div>
+            <div class="hero-stat-number">200+</div>
+            <div class="hero-stat-label">clientes activos</div>
+          </div>
+          <div>
+            <div class="hero-stat-number">160+</div>
+            <div class="hero-stat-label">profesionales</div>
+          </div>
+          <div>
+            <div class="hero-stat-number">5</div>
+            <div class="hero-stat-label">oficinas globales</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Services -->
+  <section id="servicios" class="section section-gray">
+    <div class="container">
+      <div class="text-center reveal">
+        <p class="section-label">Servicios</p>
+        <h2>Soluciones transversales para tu <span class="text-gradient">estrategia digital</span></h2>
+        <p class="subtitle">Consultora full digital con expertise en desarrollo, marketing, analitica y diseno.</p>
+      </div>
+      <div class="services-grid">
+        <div class="service-card reveal">
+          <div class="service-icon">&#x1F6D2;</div>
+          <h3>eCommerce</h3>
+          <p>Especialistas en Magento, Shopify, PrestaShop, BigCommerce y WooCommerce. Soluciones omnicanal que convierten.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-1">
+          <div class="service-icon">&#x1F310;</div>
+          <h3>Desarrollo Web</h3>
+          <p>Java, PHP, Node.js, Angular, Vue.js, React. Presencia web atractiva y usable que hace las delicias de tus clientes.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-2">
+          <div class="service-icon">&#x1F4F1;</div>
+          <h3>Apps Moviles</h3>
+          <p>Desarrollo nativo e hibrido para iOS, Android y Huawei. Experiencia increible en la palma de la mano.</p>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">&#x1F50D;</div>
+          <h3>SEO + IA</h3>
+          <p>Posiciona tu marca como fuente de informacion para LLMs (ChatGPT, Gemini). El SEO ha evolucionado y nosotros contigo.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-1">
+          <div class="service-icon">&#x1F4E2;</div>
+          <h3>Publicidad Online</h3>
+          <p>Google Ads, Meta, programatica. Planificamos, gestionamos y optimizamos tus campanas para maximo ROI.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-2">
+          <div class="service-icon">&#x1F4CA;</div>
+          <h3>Analitica Digital</h3>
+          <p>Leemos e interpretamos los datos para que tomes mejores decisiones. GA4, Looker Studio, dashboards custom.</p>
+        </div>
+        <div class="service-card reveal">
+          <div class="service-icon">&#x2709;</div>
+          <h3>Email Marketing</h3>
+          <p>Mailchimp, HubSpot, Klaviyo, ActiveCampaign, Salesforce MC. Automatizacion inteligente y lead scoring.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-1">
+          <div class="service-icon">&#x1F3AC;</div>
+          <h3>Contenidos y Audiovisual</h3>
+          <p>Estrategia de contenidos, redes sociales, fotografia, video, Reels, TikTok. Creatividad que conecta y convierte.</p>
+        </div>
+        <div class="service-card reveal reveal-delay-2">
+          <div class="service-icon">&#x1F6CD;</div>
+          <h3>Marketplaces</h3>
+          <p>Amazon, Mercado Libre, eBay, Aliexpress. Gestion integral de cuentas y optimizacion de rendimiento.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section id="productos" class="section">
+    <div class="container">
+      <div class="text-center reveal">
+        <p class="section-label">Productos Propios</p>
+        <h2>Tecnologia creada por <span class="text-gradient">Redegal</span></h2>
+        <p class="subtitle">Plataformas propias que potencian los resultados de nuestros clientes.</p>
+      </div>
+      <div class="products-grid">
+        <div class="product-card binnacle reveal">
+          <div class="content">
+            <span class="product-badge">Analytics & BI</span>
+            <h3>Binnacle Data</h3>
+            <p>Plataforma de web analytics con +100 metricas de multiples fuentes en un solo lugar.</p>
+            <ul class="product-features">
+              <li>Monitorizacion automatica de +30 metricas</li>
+              <li>Insights y recomendaciones por IA</li>
+              <li>Integracion con Google Ads, Meta, Microsoft</li>
+              <li>Deteccion de anomalias en tiempo real</li>
+              <li>+30% incremento en ventas eCommerce</li>
+            </ul>
+            <p class="product-price">Desde <strong>99 EUR</strong>/mes</p>
+          </div>
+        </div>
+        <div class="product-card boostic reveal reveal-delay-1">
+          <div class="content">
+            <span class="product-badge">Predictive Analytics</span>
+            <h3>Boostic Cloud</h3>
+            <p>Analisis predictivo inteligente que maximiza el ROI de tu inversion publicitaria.</p>
+            <ul class="product-features">
+              <li>+15-30% ROI en inversion publicitaria</li>
+              <li>+10 horas/semana ahorradas</li>
+              <li>Clustering automatico de productos por ROI</li>
+              <li>Conecta GA4, Google Ads, Meta, SEO</li>
+              <li>Exporta tags inteligentes a feeds</li>
+            </ul>
+            <p class="product-price">Solicita <strong>demo</strong> gratuita</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Clients -->
+  <section id="clientes" class="section section-gray">
+    <div class="container text-center">
+      <div class="reveal">
+        <p class="section-label">Clientes</p>
+        <h2>Confian en nosotros</h2>
+        <p class="subtitle">Grandes marcas nacionales e internacionales que han depositado su confianza en Redegal.</p>
+      </div>
+      <div class="clients-grid reveal">
+        <span class="client-pill">ABANCA</span>
+        <span class="client-pill">Adolfo Dominguez</span>
+        <span class="client-pill">Under Armour</span>
+        <span class="client-pill">Pescanova</span>
+        <span class="client-pill">Lacoste</span>
+        <span class="client-pill">Pedro Garcia</span>
+        <span class="client-pill">Chopo</span>
+        <span class="client-pill">Milenio</span>
+        <span class="client-pill">McCain</span>
+        <span class="client-pill">Oney</span>
+        <span class="client-pill">Gocco</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- About (Dark) -->
+  <section id="nosotros" class="section section-dark">
+    <div class="container">
+      <div class="text-center reveal">
+        <p class="section-label" style="color:var(--r-primary-light)">Quienes Somos</p>
+        <h2>Mas que una consultora,<br>un <span class="text-gradient">equipo para el exito</span></h2>
+        <p class="subtitle" style="color:var(--r-gray-400)">Fundada en 2004 en Ourense. Cotizamos en BME Growth. Presencia en Espana y Mexico.</p>
+      </div>
+      <div class="about-grid reveal">
+        <div class="about-stat">
+          <div class="about-stat-number">20+</div>
+          <div class="about-stat-label">Anos de experiencia</div>
+        </div>
+        <div class="about-stat">
+          <div class="about-stat-number">138M</div>
+          <div class="about-stat-label">EUR ingresos 2024</div>
+        </div>
+        <div class="about-stat">
+          <div class="about-stat-number">160+</div>
+          <div class="about-stat-label">Profesionales</div>
+        </div>
+        <div class="about-stat">
+          <div class="about-stat-number">5</div>
+          <div class="about-stat-label">Oficinas globales</div>
+        </div>
+      </div>
+
+      <!-- Values -->
+      <div style="margin-top:80px;" class="reveal">
+        <h3 style="text-align:center;font-size:1.5rem;margin-bottom:8px;">Nuestros Valores</h3>
+      </div>
+      <div class="values-grid">
+        <div class="value-card reveal">
+          <h3>Enfocados en las personas</h3>
+          <p>Atraer y retener talento. Las personas estan en el centro de nuestras decisiones.</p>
+        </div>
+        <div class="value-card reveal reveal-delay-1">
+          <h3>Orientados al cliente</h3>
+          <p>Alineados con los resultados del cliente, entregando siempre lo mejor del equipo.</p>
+        </div>
+        <div class="value-card reveal reveal-delay-2">
+          <h3>Comprometidos</h3>
+          <p>Orientados a soluciones, fiables y consistentes en todo lo que hacemos.</p>
+        </div>
+        <div class="value-card reveal">
+          <h3>Flexibles</h3>
+          <p>Nos adaptamos a los cambios y buscamos continuamente nuevas tendencias.</p>
+        </div>
+        <div class="value-card reveal reveal-delay-1">
+          <h3>Honestos</h3>
+          <p>Confianza, empatia y respeto hacia clientes y equipo. Siempre transparentes.</p>
+        </div>
+        <div class="value-card reveal reveal-delay-2">
+          <h3>Pasion</h3>
+          <p>El impulso por innovar y romper estandares. Nos apasiona lo que hacemos.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Partners -->
+  <section class="section">
+    <div class="container text-center">
+      <div class="reveal">
+        <p class="section-label">Certificaciones</p>
+        <h2>Partners tecnologicos</h2>
+      </div>
+      <div class="partners-grid reveal">
+        <span class="partner-badge">Google Partner Premier 2025</span>
+        <span class="partner-badge">Meta Partner</span>
+        <span class="partner-badge">Microsoft Partner</span>
+        <span class="partner-badge">Adobe Solution Partner</span>
+        <span class="partner-badge">Salesforce Partner</span>
+        <span class="partner-badge">Shopify Partner</span>
+        <span class="partner-badge">BigCommerce Partner</span>
+        <span class="partner-badge">Mailchimp Partner</span>
+        <span class="partner-badge">Connectif Partner</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Offices -->
+  <section class="section section-gray">
+    <div class="container">
+      <div class="text-center reveal">
+        <p class="section-label">Oficinas</p>
+        <h2>Presencia global</h2>
+      </div>
+      <div class="offices-grid reveal">
+        <div class="office-card office-hq">
+          <h4>Ourense (HQ)</h4>
+          <p>Avda. de Santiago, 9 Bajo</p>
+          <p>32001 Ourense, Espana</p>
+          <p style="color:var(--r-primary);margin-top:8px;">(+34) 988 549 858</p>
+        </div>
+        <div class="office-card">
+          <h4>A Coruna</h4>
+          <p>Avda. de Linares Rivas, 56 Bajo</p>
+          <p>15005 A Coruna, Espana</p>
+        </div>
+        <div class="office-card">
+          <h4>Madrid</h4>
+          <p>Paseo de la Castellana, 163</p>
+          <p>28046 Madrid, Espana</p>
+          <p style="color:var(--r-primary);margin-top:8px;">(+34) 910 800 966</p>
+        </div>
+        <div class="office-card">
+          <h4>Barcelona</h4>
+          <p>Placa Gal-la Placidia, 1-3</p>
+          <p>08006 Barcelona, Espana</p>
+        </div>
+        <div class="office-card">
+          <h4>Ciudad de Mexico</h4>
+          <p>Plaza Villa Madrid No. 1, Piso 8</p>
+          <p>Col. Roma Norte, 06700 CDMX</p>
+          <p style="color:var(--r-primary);margin-top:8px;">(+52) 55 8526 3862</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contacto" class="section">
+    <div class="container">
+      <div class="text-center reveal">
+        <p class="section-label">Contacto</p>
+        <h2>Hablamos?</h2>
+        <p class="subtitle">Estamos deseando conocer mas sobre tu negocio digital. Cuentanos que necesitas.</p>
+      </div>
+      <form class="contact-form reveal" onsubmit="event.preventDefault(); alert('Formulario enviado (staging)');">
+        <div class="form-row">
+          <input type="text" placeholder="Nombre" required>
+          <input type="text" placeholder="Apellidos" required>
+        </div>
+        <div class="form-row">
+          <input type="email" placeholder="Email" required>
+          <input type="tel" placeholder="Telefono">
+        </div>
+        <input type="text" placeholder="Empresa">
+        <select>
+          <option value="">Que necesitas?</option>
+          <option>Desarrollo / eCommerce</option>
+          <option>Marketing / SEO / Paid Media</option>
+          <option>Analitica / Binnacle Data</option>
+          <option>Apps Moviles</option>
+          <option>Estrategia Digital Integral</option>
+        </select>
+        <textarea placeholder="Cuentanos sobre tu proyecto..."></textarea>
+        <button type="submit" class="btn btn-primary" style="align-self:center;">Enviar mensaje &rarr;</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <a href="#" class="logo">Rede<span>gal</span></a>
+          <p>Consultora full digital ecommerce. 20+ anos impulsando negocios digitales desde Espana y Mexico.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Servicios</h4>
+          <a href="#servicios">eCommerce</a>
+          <a href="#servicios">SEO + IA</a>
+          <a href="#servicios">Publicidad Online</a>
+          <a href="#servicios">Desarrollo Web</a>
+          <a href="#servicios">Apps Moviles</a>
+          <a href="#servicios">Analitica Digital</a>
+        </div>
+        <div class="footer-col">
+          <h4>Productos</h4>
+          <a href="#productos">Binnacle Data</a>
+          <a href="#productos">Boostic Cloud</a>
+        </div>
+        <div class="footer-col">
+          <h4>Empresa</h4>
+          <a href="#nosotros">Quienes Somos</a>
+          <a href="#clientes">Clientes</a>
+          <a href="#contacto">Contacto</a>
+          <a href="#">Talento</a>
+          <a href="#">Inversores</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>&copy; 2026 Redegal S.A. Todos los derechos reservados.</span>
+        <div class="social-links">
+          <a href="#">LinkedIn</a>
+          <a href="#">X</a>
+          <a href="#">Instagram</a>
+          <a href="#">YouTube</a>
+          <a href="#">TikTok</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Chatbot Widget (Shadow DOM, full integration) -->
+  <script>
+    window.RedegalChatbot = {
+      baseUrl: window.location.origin + '/widget',
+      apiUrl: 'ws://' + window.location.host + '/ws/chat',
+      configUrl: window.location.origin + '/api/config/widget',
+      language: 'auto',
+      primaryColor: '#007fff',
+      theme: 'light'
+    };
+  </script>
+  <script>
+    // Shadow DOM widget loader (inline — avoids extra HTTP request)
+    (function () {
+      var cfg = window.RedegalChatbot || {};
+      var baseUrl = cfg.baseUrl || '';
+
+      // Create Shadow DOM container
+      var host = document.createElement('div');
+      host.id = 'redegal-chatbot-host';
+      host.style.cssText = 'position:fixed;bottom:0;right:0;z-index:2147483647;';
+      document.body.appendChild(host);
+
+      var shadow = host.attachShadow({ mode: 'open' });
+
+      // Load widget CSS into shadow
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = baseUrl + '/widget.css';
+      shadow.appendChild(link);
+
+      // Mount point inside shadow
+      var mount = document.createElement('div');
+      mount.id = 'redegal-chatbot-root';
+      shadow.appendChild(mount);
+
+      // Load widget JS
+      var script = document.createElement('script');
+      script.src = baseUrl + '/widget.js';
+      script.onload = function () {
+        var init = window.__redegalWidgetInit;
+        if (init) init(mount, cfg);
+      };
+      document.head.appendChild(script);
+    })();
+  </script>
+
+  <!-- Page Scripts -->
+  <script>
+    // Header scroll effect
+    var header = document.getElementById('header');
+    window.addEventListener('scroll', function () {
+      header.classList.toggle('scrolled', window.scrollY > 20);
+    });
+
+    // Reveal on scroll (IntersectionObserver)
+    var observer = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+    document.querySelectorAll('.reveal').forEach(function (el) { observer.observe(el); });
+
+    // Close mobile menu on link click
+    document.querySelectorAll('nav a').forEach(function (a) {
+      a.addEventListener('click', function () { document.querySelector('nav').classList.remove('open'); });
+    });
+
+    // Smooth scroll for anchor links
+    document.querySelectorAll('a[href^="#"]').forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var target = document.querySelector(a.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      });
+    });
+
+    // Counter animation for stats
+    function animateCounter(el, target, suffix) {
+      suffix = suffix || '';
+      var duration = 2000;
+      var start = performance.now();
+      var numTarget = parseInt(target);
+
+      function update(now) {
+        var elapsed = now - start;
+        var progress = Math.min(elapsed / duration, 1);
+        var eased = 1 - Math.pow(1 - progress, 3);
+        var current = Math.round(numTarget * eased);
+        el.textContent = current + suffix;
+        if (progress < 1) requestAnimationFrame(update);
+      }
+      requestAnimationFrame(update);
+    }
+
+    // Observe stat numbers for counter animation
+    var statObserver = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          var text = entry.target.textContent;
+          var match = text.match(/(\d+)(.*)/);
+          if (match) animateCounter(entry.target, match[1], match[2]);
+          statObserver.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    document.querySelectorAll('.hero-stat-number, .about-stat-number').forEach(function (el) {
+      statObserver.observe(el);
+    });
+  </script>
+</body>
+</html>

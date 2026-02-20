@@ -6,16 +6,19 @@ function securityHeaders(req, res, next) {
   res.setHeader('X-XSS-Protection', '0'); // Modern browsers use CSP instead
   res.setHeader('Permissions-Policy', 'camera=(), microphone=(self), geolocation=()');
 
+  // noindex — staging/tunnel only
+  res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+
   if (process.env.NODE_ENV === 'production') {
     res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   }
 
-  // CSP: allow inline styles (Shadow DOM needs them), widget script, WebSocket connections
+  // CSP: allow inline scripts/styles for the corporate page + widget Shadow DOM
   const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
   const connectSrc = ["'self'", 'wss:', 'ws:', ...allowedOrigins].join(' ');
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
-    "script-src 'self'",
+    "script-src 'self' 'unsafe-inline'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     `connect-src ${connectSrc}`,

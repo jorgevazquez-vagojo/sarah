@@ -1,3 +1,5 @@
+require('dotenv').config({ path: require('path').resolve(__dirname, '..', '.env') });
+
 const http = require('http');
 const express = require('express');
 const path = require('path');
@@ -23,6 +25,11 @@ app.use(express.json({ limit: '15mb' }));
 app.use('/widget', express.static(path.join(__dirname, 'public', 'widget')));
 app.use('/dashboard', express.static(path.join(__dirname, 'public', 'dashboard')));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+// ─── robots.txt (disallow all — staging only) ───
+app.get('/robots.txt', (_req, res) => {
+  res.type('text/plain').send('User-agent: *\nDisallow: /\n');
+});
 
 // ─── REST Routes ───
 app.use(require('./routes/health'));
@@ -213,6 +220,11 @@ app.get('/widget/test.html', (_req, res) => {
 </html>`);
 });
 
+// ─── Corporate landing page (root) ───
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
 // ─── Error handling (must be AFTER all routes) ───
 app.use(notFoundHandler);
 app.use(errorHandler);
@@ -243,11 +255,12 @@ async function start() {
 
   seedKnowledgeToDB().catch((e) => logger.warn('Knowledge seed error:', e.message));
 
-  server.listen(PORT, () => {
-    logger.info(`Redegal Chatbot server running on port ${PORT}`);
-    logger.info(`Test page: http://localhost:${PORT}/widget/test.html`);
-    logger.info(`Dashboard: http://localhost:${PORT}/dashboard`);
-    logger.info(`Health: http://localhost:${PORT}/health`);
+  const HOST = '127.0.0.1';
+  server.listen(PORT, HOST, () => {
+    logger.info(`Redegal Web + Chatbot running on http://${HOST}:${PORT}`);
+    logger.info(`Dashboard: http://${HOST}:${PORT}/dashboard`);
+    logger.info(`Health: http://${HOST}:${PORT}/health`);
+    logger.info(`Only accessible via localhost / SSH tunnel`);
   });
 }
 
