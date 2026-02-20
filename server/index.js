@@ -34,6 +34,7 @@ app.use('/api/calls', require('./routes/call'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/settings', require('./routes/settings'));
+app.use('/api/training', require('./routes/training'));
 
 // ─── WebSocket upgrade handling ───
 const wssChat = new WebSocketServer({ noServer: true });
@@ -70,6 +71,10 @@ initSipClick2Call();
 // ─── Email notifications ───
 const { initEmail } = require('./services/email');
 initEmail();
+
+// ─── KB Auto-Updater (scrape redegal.com every 24h) ───
+const { initScraper } = require('./services/kb-scraper');
+initScraper();
 
 // ─── Transcript export ───
 const { asyncRoute } = require('./middleware/error-handler');

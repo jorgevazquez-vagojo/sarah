@@ -14,6 +14,7 @@ const { dispatchToCRM } = require('../integrations/crm');
 
 const { evaluateTriggers } = require('../services/proactive-triggers');
 const { notifyEscalation, notifyCallRequest, sendConversationSummary } = require('../services/email');
+const { recordBotResponse, processCSATForLearning } = require('../services/learning');
 
 // Map of visitorId -> ws
 const visitors = new Map();
@@ -348,11 +349,18 @@ async function handleChat(ws, visitorId, msg) {
   const richContent = buildRichReply(msg.content, response, detectedLine || conv.business_line, language);
 
   // Save bot message + webhook
-  await db.saveMessage({
+  const botMsg = await db.saveMessage({
     conversationId: conv.id, sender: 'bot', content: response,
     metadata: richContent ? { richContent } : {},
   });
   triggerWebhooks('message.sent', { conversationId: conv.id, sender: 'bot', content: response }).catch(() => {});
+
+  // Record for learning/training review
+  recordBotResponse({
+    conversationId: conv.id, messageId: botMsg.id,
+    visitorMessage: msg.content, aiResponse: response,
+    provider: 'auto', businessLine: detectedLine || conv.business_line, language,
+  }).catch(() => {});
 
   send(ws, 'typing', { isTyping: false });
   send(ws, 'message', {
@@ -608,6 +616,11 @@ async function handleCsat(ws, visitorId, msg) {
     data: { rating: msg.rating, comment: msg.comment },
   }).catch(() => {});
   triggerWebhooks('csat.submitted', { conversationId: conv?.id, visitorId, rating: msg.rating, comment: msg.comment }).catch(() => {});
+
+  // Auto-learn from high CSAT conversations
+  if (conv?.id) {
+    processCSATForLearning(conv.id, msg.rating).catch(() => {});
+  }
 
   send(ws, 'message', {
     sender: 'system',

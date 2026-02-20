@@ -58,4 +58,24 @@ async function searchKnowledge(query, businessLine, language) {
     .slice(0, 5);
 }
 
-module.exports = { loadKnowledgeFiles, seedKnowledgeToDB, getContextForLine, searchKnowledge };
+// ─── Vector search (RAG) using pgvector embeddings ───
+async function vectorSearchKnowledge(query, businessLine, limit = 3) {
+  const { generateEmbedding } = require('./embeddings');
+  const embedding = await generateEmbedding(query);
+  if (!embedding) return [];
+
+  const embeddingStr = `[${embedding.join(',')}]`;
+  const { rows } = await db.query(
+    `SELECT title, content, business_line,
+            1 - (embedding <=> $1::vector) AS similarity
+     FROM knowledge_entries
+     WHERE embedding IS NOT NULL
+       AND ($2::text IS NULL OR business_line = $2)
+     ORDER BY embedding <=> $1::vector
+     LIMIT $3`,
+    [embeddingStr, businessLine || null, limit]
+  );
+  return rows.filter((r) => r.similarity > 0.5);
+}
+
+module.exports = { loadKnowledgeFiles, seedKnowledgeToDB, getContextForLine, searchKnowledge, vectorSearchKnowledge };

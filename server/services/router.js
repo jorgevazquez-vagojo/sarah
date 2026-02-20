@@ -1,5 +1,6 @@
 const { aiComplete } = require('./ai');
-const { getContextForLine, searchKnowledge } = require('./knowledge-base');
+const { getContextForLine, searchKnowledge, vectorSearchKnowledge } = require('./knowledge-base');
+const { findLearnedResponses } = require('./learning');
 const { t } = require('../utils/i18n');
 const { logger } = require('../utils/logger');
 
@@ -36,25 +37,54 @@ LÍNEA DE NEGOCIO: {{business_line_context}}
 BASE DE CONOCIMIENTO:
 {{knowledge}}
 
+{{learned_context}}
+
 REGLAS:
 1. Responde solo con información de la base de conocimiento. Si no sabes algo, di que consultarás con el equipo.
 2. Si el visitante muestra interés comercial, sugiere amablemente dejar sus datos de contacto.
 3. Si pide hablar con alguien, ofrece conectar con un agente o programar una llamada.
 4. No inventes datos, cifras ni nombres de clientes específicos que no estén en la base de conocimiento.
-5. Máximo 3-4 párrafos cortos por respuesta.`;
+5. Máximo 3-4 párrafos cortos por respuesta.
+6. Si hay respuestas aprendidas de interacciones previas, úsalas como referencia para el tono y contenido.`;
 
 const LANGUAGE_NAMES = { es: 'español', gl: 'gallego', en: 'inglés', pt: 'portugués' };
 
 async function generateResponse({ message, language, businessLine, conversationHistory }) {
   const line = businessLine || detectBusinessLine(message) || 'general';
   const context = getContextForLine(line);
+
+  // Full-text search (existing)
   const kbResults = await searchKnowledge(message, line === 'general' ? null : line, language);
   const extraKb = kbResults.map((r) => `- ${r.title}: ${r.content || ''}`).join('\n');
+
+  // RAG: vector search on knowledge base
+  let vectorKb = '';
+  try {
+    const vectorResults = await vectorSearchKnowledge(message, line === 'general' ? null : line, 3);
+    if (vectorResults.length > 0) {
+      vectorKb = '\n\nBÚSQUEDA SEMÁNTICA:\n' + vectorResults.map((r) => `- ${r.title}: ${r.content}`).join('\n');
+    }
+  } catch (e) {
+    logger.debug('Vector KB search unavailable:', e.message);
+  }
+
+  // RAG: learned responses from feedback loop
+  let learnedContext = '';
+  try {
+    const learned = await findLearnedResponses(message, line === 'general' ? null : line, 3);
+    if (learned.length > 0) {
+      learnedContext = 'RESPUESTAS APRENDIDAS (referencia de interacciones previas exitosas):\n' +
+        learned.map((r) => `- Pregunta similar: "${r.visitor_pattern}"\n  Respuesta exitosa: "${r.ideal_response}"`).join('\n');
+    }
+  } catch (e) {
+    logger.debug('Learned responses unavailable:', e.message);
+  }
 
   const systemPrompt = SYSTEM_PROMPT_TEMPLATE
     .replace('{{language_name}}', LANGUAGE_NAMES[language] || 'español')
     .replace('{{business_line_context}}', line !== 'general' ? `Estás atendiendo consultas sobre ${line.toUpperCase()}.` : 'No se ha identificado línea de negocio específica aún.')
-    .replace('{{knowledge}}', context + (extraKb ? `\n\nRESULTADOS DE BÚSQUEDA:\n${extraKb}` : ''));
+    .replace('{{knowledge}}', context + (extraKb ? `\n\nRESULTADOS DE BÚSQUEDA:\n${extraKb}` : '') + vectorKb)
+    .replace('{{learned_context}}', learnedContext);
 
   const historyText = (conversationHistory || [])
     .slice(-6)

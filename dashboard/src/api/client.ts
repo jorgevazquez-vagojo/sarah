@@ -79,6 +79,18 @@ export const api = {
     request('/settings/test-smtp', { method: 'POST', body: JSON.stringify(data) }),
   testSip: (data: { domain: string; port: string; extension: string; password: string }) =>
     request('/settings/test-sip', { method: 'POST', body: JSON.stringify(data) }),
+
+  // Training / Learning
+  getTrainingStats: () => request('/training/stats'),
+  getTrainingResponses: (params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/training/responses${qs}`);
+  },
+  submitFeedback: (id: string, data: { feedback: string; correctedResponse?: string; notes?: string }) =>
+    request(`/training/responses/${id}/feedback`, { method: 'POST', body: JSON.stringify(data) }),
+  getScrapeHistory: () => request('/training/scrape-history'),
+  triggerScrape: () => request('/training/scrape', { method: 'POST' }),
+  triggerEmbedKb: () => request('/training/embed-kb', { method: 'POST' }),
 };
 
 export function createAgentWS(token: string): WebSocket {

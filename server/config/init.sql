@@ -4,6 +4,7 @@
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+CREATE EXTENSION IF NOT EXISTS "vector";
 
 -- ─── Widget Tenants (multi-tenant support) ───
 CREATE TABLE tenants (
@@ -164,9 +165,15 @@ CREATE TABLE knowledge_entries (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Embedding column for RAG (768-dim = Gemini text-embedding-004)
+ALTER TABLE knowledge_entries ADD COLUMN IF NOT EXISTS embedding vector(768);
+ALTER TABLE knowledge_entries ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'yaml';
+
 CREATE INDEX idx_knowledge_line ON knowledge_entries(business_line);
 CREATE INDEX idx_knowledge_ts ON knowledge_entries
     USING GIN (to_tsvector('simple', title || ' ' || content));
+CREATE INDEX idx_knowledge_embedding ON knowledge_entries
+    USING ivfflat (embedding vector_cosine_ops) WITH (lists = 20);
 
 -- ─── File Uploads ───
 CREATE TABLE file_uploads (
@@ -278,6 +285,66 @@ CREATE TABLE config (
     value JSONB NOT NULL,
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- ─── Response Feedback (agent training) ───
+CREATE TABLE response_feedback (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    conversation_id UUID REFERENCES conversations(id) ON DELETE CASCADE,
+    message_id UUID REFERENCES messages(id) ON DELETE CASCADE,
+    visitor_message TEXT NOT NULL,
+    ai_response TEXT NOT NULL,
+    ai_provider VARCHAR(20),
+    business_line VARCHAR(32),
+    language VARCHAR(5),
+    feedback VARCHAR(10) CHECK (feedback IN ('good', 'bad')),
+    corrected_response TEXT,
+    notes TEXT,
+    reviewed_by UUID REFERENCES agents(id),
+    reviewed_at TIMESTAMPTZ,
+    auto_learned BOOLEAN DEFAULT false,
+    csat_rating INTEGER,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_feedback_status ON response_feedback(feedback);
+CREATE INDEX idx_feedback_line ON response_feedback(business_line);
+CREATE INDEX idx_feedback_created ON response_feedback(created_at DESC);
+CREATE INDEX idx_feedback_unreviewed ON response_feedback(reviewed_at) WHERE reviewed_at IS NULL;
+
+-- ─── Learned Responses (auto-incorporated from high CSAT + good feedback) ───
+CREATE TABLE learned_responses (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    source_feedback_id UUID REFERENCES response_feedback(id),
+    visitor_pattern TEXT NOT NULL,
+    ideal_response TEXT NOT NULL,
+    business_line VARCHAR(32),
+    language VARCHAR(5) DEFAULT 'es',
+    embedding vector(768),
+    confidence REAL DEFAULT 0.5,
+    use_count INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_learned_active ON learned_responses(is_active, business_line);
+CREATE INDEX idx_learned_embedding ON learned_responses
+    USING ivfflat (embedding vector_cosine_ops) WITH (lists = 20);
+
+-- ─── KB Scrape Log (track auto-updates from redegal.com) ───
+CREATE TABLE kb_scrape_log (
+    id SERIAL PRIMARY KEY,
+    url VARCHAR(1000) NOT NULL,
+    title VARCHAR(500),
+    content_hash VARCHAR(64),
+    entries_added INTEGER DEFAULT 0,
+    entries_updated INTEGER DEFAULT 0,
+    status VARCHAR(20) DEFAULT 'success',
+    error_message TEXT,
+    scraped_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+CREATE INDEX idx_scrape_url ON kb_scrape_log(url, scraped_at DESC);
 
 -- ═══════════════════════════════════════════════════════════════
 -- Default data
