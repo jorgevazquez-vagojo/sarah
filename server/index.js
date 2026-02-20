@@ -35,6 +35,7 @@ app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/upload', require('./routes/upload'));
 app.use('/api/settings', require('./routes/settings'));
 app.use('/api/training', require('./routes/training'));
+app.use('/api/ai-caller', require('./routes/ai-caller'));
 
 // ─── WebSocket upgrade handling ───
 const wssChat = new WebSocketServer({ noServer: true });

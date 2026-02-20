@@ -2,8 +2,12 @@
 /**
  * Bidirectional SIP Call Agent — calls a number and has a real conversation.
  *
- * Flow: Call → TTS greeting → listen RTP → detect silence → STT (Gemini) →
- *       AI response (Gemini) → TTS → send RTP → repeat
+ * Flow: Call → TTS greeting → listen RTP → detect silence → STT →
+ *       AI response → TTS → send RTP → repeat
+ *
+ * AI providers (with automatic fallback):
+ *   STT chain:          Gemini → OpenAI Whisper → error
+ *   Conversation chain: Claude → Gemini → OpenAI → error
  */
 
 const dgram = require('dgram');
@@ -19,6 +23,9 @@ const SIP_CONFIG = {
   port: 5060,
   extension: '108',
   password: '0H1Yq88OTjLBlcL',
+  aiProvider: 'claude', // 'claude' | 'gemini' | 'openai'
+  anthropicKey: process.env.ANTHROPIC_API_KEY || '',
+  openaiKey: process.env.OPENAI_API_KEY || '',
   geminiKey: 'AIzaSyAHi2GO_pduYWahfQ06vdbH3iVxWVTd4I4',
   ttsVoice: 'Mónica',
   maxTurns: 8,
@@ -510,48 +517,13 @@ function ulawToWav(ulawData) {
   return Buffer.concat([wavHeader, pcmData]);
 }
 
-// ─── Gemini API: Speech-to-Text ───
-async function speechToText(audioBuffer) {
-  const wavBuffer = ulawToWav(audioBuffer);
-  const audioBase64 = wavBuffer.toString('base64');
+// ═══════════════════════════════════════════════════
+// MULTI-PROVIDER AI SYSTEM
+// STT chain:          Gemini → OpenAI Whisper → error
+// Conversation chain: Claude → Gemini → OpenAI → error
+// ═══════════════════════════════════════════════════
 
-  const body = JSON.stringify({
-    contents: [{
-      parts: [
-        { inline_data: { mime_type: 'audio/wav', data: audioBase64 } },
-        { text: 'Transcribe this audio exactly. Only output the transcription, nothing else. If you cannot understand it, output "[inaudible]". The audio is in Spanish.' }
-      ]
-    }],
-    generationConfig: { temperature: 0, maxOutputTokens: 200 }
-  });
-
-  return geminiRequest('gemini-2.5-flash', body);
-}
-
-// ─── Gemini API: Generate sales response ───
-async function generateResponse(userText, conversationHistory) {
-  const messages = [
-    { role: 'user', parts: [{ text: CONFIG.systemPrompt }] },
-    { role: 'model', parts: [{ text: 'Entendido. Soy Jorge del departamento comercial de Redegal. Estoy listo para la llamada.' }] },
-  ];
-
-  for (const turn of conversationHistory) {
-    messages.push({ role: 'user', parts: [{ text: `[El cliente dice]: ${turn.user}` }] });
-    if (turn.assistant) {
-      messages.push({ role: 'model', parts: [{ text: turn.assistant }] });
-    }
-  }
-
-  messages.push({ role: 'user', parts: [{ text: `[El cliente dice]: ${userText}` }] });
-
-  const body = JSON.stringify({
-    contents: messages,
-    generationConfig: { temperature: 0.7, maxOutputTokens: 150 }
-  });
-
-  return geminiRequest('gemini-2.5-flash', body);
-}
-
+// ─── Gemini: single request ───
 function geminiRequestOnce(model, body) {
   return new Promise((resolve, reject) => {
     const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${SIP_CONFIG.geminiKey}`;
@@ -588,21 +560,311 @@ function geminiRequestOnce(model, body) {
   });
 }
 
-// Retry wrapper for 429 rate limits
-async function geminiRequest(model, body) {
-  for (let attempt = 0; attempt < 3; attempt++) {
+// ─── Claude (Anthropic): single request ───
+function claudeRequestOnce(messages, { maxTokens = 150, temperature = 0.7 } = {}) {
+  return new Promise((resolve, reject) => {
+    if (!SIP_CONFIG.anthropicKey) {
+      reject(new Error('Claude: ANTHROPIC_API_KEY not configured'));
+      return;
+    }
+    const body = JSON.stringify({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: maxTokens,
+      messages,
+    });
+
+    const req = https.request({
+      hostname: 'api.anthropic.com',
+      path: '/v1/messages',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': SIP_CONFIG.anthropicKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', (c) => data += c);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.error) {
+            const err = new Error(`Claude ${json.error.type}: ${json.error.message?.substring(0, 100)}`);
+            err.code = res.statusCode;
+            reject(err);
+            return;
+          }
+          const text = json.content?.[0]?.text || '';
+          resolve(text.trim());
+        } catch (e) {
+          reject(new Error(`Claude parse error: ${e.message}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(20000, () => { req.destroy(); reject(new Error('Claude timeout')); });
+    req.write(body);
+    req.end();
+  });
+}
+
+// ─── OpenAI: chat completion (single request) ───
+function openaiChatOnce(messages, { maxTokens = 150, temperature = 0.7 } = {}) {
+  return new Promise((resolve, reject) => {
+    if (!SIP_CONFIG.openaiKey) {
+      reject(new Error('OpenAI: OPENAI_API_KEY not configured'));
+      return;
+    }
+    const body = JSON.stringify({
+      model: 'gpt-4o-mini',
+      max_tokens: maxTokens,
+      temperature,
+      messages,
+    });
+
+    const req = https.request({
+      hostname: 'api.openai.com',
+      path: '/v1/chat/completions',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${SIP_CONFIG.openaiKey}`,
+        'Content-Length': Buffer.byteLength(body),
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', (c) => data += c);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.error) {
+            const err = new Error(`OpenAI ${json.error.type}: ${json.error.message?.substring(0, 100)}`);
+            err.code = res.statusCode;
+            reject(err);
+            return;
+          }
+          const text = json.choices?.[0]?.message?.content || '';
+          resolve(text.trim());
+        } catch (e) {
+          reject(new Error(`OpenAI parse error: ${e.message}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(15000, () => { req.destroy(); reject(new Error('OpenAI timeout')); });
+    req.write(body);
+    req.end();
+  });
+}
+
+// ─── OpenAI Whisper: STT (multipart form data) ───
+function openaiWhisperOnce(wavBuffer) {
+  return new Promise((resolve, reject) => {
+    if (!SIP_CONFIG.openaiKey) {
+      reject(new Error('OpenAI Whisper: OPENAI_API_KEY not configured'));
+      return;
+    }
+    const boundary = '----FormBoundary' + crypto.randomBytes(8).toString('hex');
+    const parts = [];
+
+    // model field
+    parts.push(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="model"\r\n\r\n` +
+      `whisper-1\r\n`
+    );
+    // language field
+    parts.push(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="language"\r\n\r\n` +
+      `es\r\n`
+    );
+    // file field
+    parts.push(
+      `--${boundary}\r\n` +
+      `Content-Disposition: form-data; name="file"; filename="audio.wav"\r\n` +
+      `Content-Type: audio/wav\r\n\r\n`
+    );
+
+    const header = Buffer.from(parts.join(''));
+    const footer = Buffer.from(`\r\n--${boundary}--\r\n`);
+    const bodyBuffer = Buffer.concat([header, wavBuffer, footer]);
+
+    const req = https.request({
+      hostname: 'api.openai.com',
+      path: '/v1/audio/transcriptions',
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${SIP_CONFIG.openaiKey}`,
+        'Content-Type': `multipart/form-data; boundary=${boundary}`,
+        'Content-Length': bodyBuffer.length,
+      },
+    }, (res) => {
+      let data = '';
+      res.on('data', (c) => data += c);
+      res.on('end', () => {
+        try {
+          const json = JSON.parse(data);
+          if (json.error) {
+            const err = new Error(`Whisper ${json.error.type}: ${json.error.message?.substring(0, 100)}`);
+            err.code = res.statusCode;
+            reject(err);
+            return;
+          }
+          resolve((json.text || '').trim());
+        } catch (e) {
+          reject(new Error(`Whisper parse error: ${e.message}`));
+        }
+      });
+    });
+    req.on('error', reject);
+    req.setTimeout(20000, () => { req.destroy(); reject(new Error('Whisper timeout')); });
+    req.write(bodyBuffer);
+    req.end();
+  });
+}
+
+// ─── Retryable check: should we fallback on this error? ───
+function isRetryableError(err) {
+  const code = err.code;
+  if (code === 429 || code === 500 || code === 502 || code === 503) return true;
+  if (err.message && (err.message.includes('timeout') || err.message.includes('not configured'))) return true;
+  return false;
+}
+
+// ─── Unified STT: Gemini → OpenAI Whisper → error ───
+async function transcribeAudio(wavBase64, wavBuffer) {
+  const sttChain = ['gemini', 'openai'];
+
+  for (let i = 0; i < sttChain.length; i++) {
+    const provider = sttChain[i];
     try {
-      return await geminiRequestOnce(model, body);
-    } catch (e) {
-      if (e.code === 429 && attempt < 2) {
-        const waitSec = 5 * (attempt + 1);
-        log('⏳', `Gemini 429, esperando ${waitSec}s...`);
-        await new Promise(r => setTimeout(r, waitSec * 1000));
+      if (provider === 'gemini') {
+        log('🔤', `STT [gemini]...`);
+        const body = JSON.stringify({
+          contents: [{
+            parts: [
+              { inline_data: { mime_type: 'audio/wav', data: wavBase64 } },
+              { text: 'Transcribe this audio exactly. Only output the transcription, nothing else. If you cannot understand it, output "[inaudible]". The audio is in Spanish.' }
+            ]
+          }],
+          generationConfig: { temperature: 0, maxOutputTokens: 200 }
+        });
+        return await geminiRequestOnce('gemini-2.5-flash', body);
+      }
+
+      if (provider === 'openai') {
+        log('🔤', `STT [openai whisper]...`);
+        return await openaiWhisperOnce(wavBuffer);
+      }
+    } catch (err) {
+      log('⚠️', `STT [${provider}] failed: ${err.message}`);
+      if (i < sttChain.length - 1 && isRetryableError(err)) {
+        log('🔄', `STT fallback → ${sttChain[i + 1]}`);
         continue;
       }
-      throw e;
+      throw err;
     }
   }
+  throw new Error('All STT providers failed');
+}
+
+// ─── Unified conversation AI: Claude → Gemini → OpenAI → error ───
+async function callAI(prompt, { systemPrompt = '', conversationHistory = [], maxTokens = 150, temperature = 0.7 } = {}) {
+  const convChain = ['claude', 'gemini', 'openai'];
+  // Put configured provider first in chain
+  const preferred = SIP_CONFIG.aiProvider || 'claude';
+  const idx = convChain.indexOf(preferred);
+  if (idx > 0) {
+    convChain.splice(idx, 1);
+    convChain.unshift(preferred);
+  }
+
+  for (let i = 0; i < convChain.length; i++) {
+    const provider = convChain[i];
+    try {
+      if (provider === 'claude') {
+        log('🤖', `AI [claude]...`);
+        const messages = [];
+        // System prompt as first user message + assistant ack (Claude API pattern)
+        if (systemPrompt) {
+          messages.push({ role: 'user', content: systemPrompt });
+          messages.push({ role: 'assistant', content: 'Entendido. Soy Jorge del departamento comercial de Redegal. Estoy listo para la llamada.' });
+        }
+        for (const turn of conversationHistory) {
+          messages.push({ role: 'user', content: `[El cliente dice]: ${turn.user}` });
+          if (turn.assistant) {
+            messages.push({ role: 'assistant', content: turn.assistant });
+          }
+        }
+        messages.push({ role: 'user', content: `[El cliente dice]: ${prompt}` });
+        return await claudeRequestOnce(messages, { maxTokens, temperature });
+      }
+
+      if (provider === 'gemini') {
+        log('🤖', `AI [gemini]...`);
+        const geminiMessages = [];
+        if (systemPrompt) {
+          geminiMessages.push({ role: 'user', parts: [{ text: systemPrompt }] });
+          geminiMessages.push({ role: 'model', parts: [{ text: 'Entendido. Soy Jorge del departamento comercial de Redegal. Estoy listo para la llamada.' }] });
+        }
+        for (const turn of conversationHistory) {
+          geminiMessages.push({ role: 'user', parts: [{ text: `[El cliente dice]: ${turn.user}` }] });
+          if (turn.assistant) {
+            geminiMessages.push({ role: 'model', parts: [{ text: turn.assistant }] });
+          }
+        }
+        geminiMessages.push({ role: 'user', parts: [{ text: `[El cliente dice]: ${prompt}` }] });
+        const body = JSON.stringify({
+          contents: geminiMessages,
+          generationConfig: { temperature, maxOutputTokens: maxTokens }
+        });
+        return await geminiRequestOnce('gemini-2.5-flash', body);
+      }
+
+      if (provider === 'openai') {
+        log('🤖', `AI [openai]...`);
+        const openaiMessages = [];
+        if (systemPrompt) {
+          openaiMessages.push({ role: 'system', content: systemPrompt });
+        }
+        for (const turn of conversationHistory) {
+          openaiMessages.push({ role: 'user', content: `[El cliente dice]: ${turn.user}` });
+          if (turn.assistant) {
+            openaiMessages.push({ role: 'assistant', content: turn.assistant });
+          }
+        }
+        openaiMessages.push({ role: 'user', content: `[El cliente dice]: ${prompt}` });
+        return await openaiChatOnce(openaiMessages, { maxTokens, temperature });
+      }
+    } catch (err) {
+      log('⚠️', `AI [${provider}] failed: ${err.message}`);
+      if (i < convChain.length - 1 && isRetryableError(err)) {
+        log('🔄', `AI fallback → ${convChain[i + 1]}`);
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw new Error('All AI providers failed');
+}
+
+// ─── Speech-to-Text (uses transcribeAudio with fallback chain) ───
+async function speechToText(audioBuffer) {
+  const wavBuffer = ulawToWav(audioBuffer);
+  const audioBase64 = wavBuffer.toString('base64');
+  return transcribeAudio(audioBase64, wavBuffer);
+}
+
+// ─── Generate sales response (uses callAI with fallback chain) ───
+async function generateResponse(userText, conversationHistory) {
+  return callAI(userText, {
+    systemPrompt: CONFIG.systemPrompt,
+    conversationHistory,
+    maxTokens: 150,
+    temperature: 0.7,
+  });
 }
 
 // ═══════════════════════════════════════════════════
