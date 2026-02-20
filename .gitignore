@@ -1,5 +1,18 @@
 node_modules/
 dist/
-.env
 *.log
 .DS_Store
+
+# --- Environment files (NEVER commit secrets) ---
+.env
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.*.local
+.env.production.local
+.env.staging.local
+.env.development.local
+
+# --- Keep example/template only ---
+!.env.example

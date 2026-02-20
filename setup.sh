@@ -25,7 +25,7 @@ echo " |_| \\_\\___|\\__,_|\\___|\\__, |\\__,_|_|  \\____|_| |_|\\__,_|\\__|_.__
 echo "                       |___/                                                  "
 echo -e "${NC}"
 echo "  Chatbot IA + WebPhone VoIP Widget"
-echo "  12 idiomas | 4 lineas de negocio | CRM | Webhooks"
+echo "  4 idiomas | 4 lineas de negocio | CRM | Webhooks"
 echo ""
 
 # ─── 1. Check prerequisites ───

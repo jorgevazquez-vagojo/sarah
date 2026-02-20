@@ -495,7 +495,7 @@ function HeaderBtn({ onClick, children, color }: { onClick: () => void; children
 // WELCOME VIEW (Intercom-style home screen)
 // ──────────────────────────────────────────────────────────
 function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine, onOpenHelp }: {
-  theme: ThemeConfig; t: (k: string) => string; darkMode: boolean;
+  theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string; darkMode: boolean;
   onStartChat: () => void; onSelectLine: (l: string) => void; onOpenHelp: () => void;
 }) {
   return (
@@ -558,7 +558,7 @@ function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine, onOpenHelp
         onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--rc-primary)'; e.currentTarget.style.color = 'var(--rc-primary)'; }}
         onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--rc-border)'; e.currentTarget.style.color = 'var(--rc-text-secondary)'; }}
       >
-        {I.book} {t('help_center') || 'Centro de ayuda'}
+        {I.book} {t('help_center')}
       </button>
     </div>
   );
@@ -568,7 +568,7 @@ function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine, onOpenHelp
 // CHAT VIEW
 // ──────────────────────────────────────────────────────────
 function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, onCsat, isBusinessHours, onQuickReply, onUpload, onLeadForm, onHelp }: {
-  theme: ThemeConfig; t: (k: string) => string; messages: ChatMessage[]; isTyping: boolean;
+  theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string; messages: ChatMessage[]; isTyping: boolean;
   onSend: (m: string) => void; onEscalate: () => void; onCall: () => void; onCsat: () => void; isBusinessHours: boolean;
   onQuickReply?: (v: string) => void; onUpload?: (f: File) => Promise<any>; onLeadForm?: () => void; onHelp?: () => void;
 }) {
@@ -585,7 +585,7 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
     const file = e.target.files?.[0];
     if (!file || !onUpload) return;
     if (file.size > (features.maxFileSize || 10485760)) {
-      alert('File too large');
+      alert(t('file_too_large'));
       return;
     }
     setUploading(true);
@@ -825,7 +825,7 @@ function RichContentBlock({ content, theme, onQuickReply }: {
 // HELP CENTER VIEW (in-widget KB search)
 // ──────────────────────────────────────────────────────────
 function HelpCenterView({ theme, t, kbResults, onSearch, onBack, onStartChat }: {
-  theme: ThemeConfig; t: (k: string) => string;
+  theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string;
   kbResults: { id: number; title: string; content: string; category?: string; businessLine?: string }[];
   onSearch: (q: string) => void; onBack: () => void; onStartChat: (q: string) => void;
 }) {
@@ -851,7 +851,7 @@ function HelpCenterView({ theme, t, kbResults, onSearch, onBack, onStartChat }: 
             </svg>
           </button>
           <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
-            {t('help_center') || 'Centro de ayuda'}
+            {t('help_center')}
           </h4>
         </div>
         <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8 }}>
@@ -890,7 +890,7 @@ function HelpCenterView({ theme, t, kbResults, onSearch, onBack, onStartChat }: 
         {kbResults.length === 0 && query.length === 0 && (
           <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--rc-text-secondary)' }}>
             <div style={{ fontSize: 36, marginBottom: 12 }}>📚</div>
-            <p style={{ fontSize: 13, lineHeight: 1.5 }}>{t('help_center_intro') || 'Busca en nuestra base de conocimiento para encontrar respuestas rápidas.'}</p>
+            <p style={{ fontSize: 13, lineHeight: 1.5 }}>{t('help_center_intro')}</p>
           </div>
         )}
         {kbResults.map((r) => (
@@ -933,7 +933,7 @@ function HelpCenterView({ theme, t, kbResults, onSearch, onBack, onStartChat }: 
                   color: 'var(--rc-primary)', background: 'none', border: 'none',
                   cursor: 'pointer', padding: 0,
                 }}>
-                  💬 {t('ask_more') || 'Preguntar más sobre esto'}
+                  💬 {t('ask_more')}
                 </button>
               </div>
             )}
@@ -948,7 +948,7 @@ function HelpCenterView({ theme, t, kbResults, onSearch, onBack, onStartChat }: 
 // LEAD FORM VIEW (standalone form from rich message action)
 // ──────────────────────────────────────────────────────────
 function LeadFormView({ theme, t, onSubmit, onBack }: {
-  theme: ThemeConfig; t: (k: string) => string;
+  theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string;
   onSubmit: (data: { name: string; email: string; phone?: string; company?: string }) => void; onBack: () => void;
 }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', company: '' });
@@ -980,7 +980,7 @@ function LeadFormView({ theme, t, onSubmit, onBack }: {
           marginTop: 16, fontSize: 13, color: 'var(--rc-primary)', background: 'none',
           border: 'none', cursor: 'pointer', fontWeight: 600,
         }}>
-          ← {t('back_to_chat') || 'Volver al chat'}
+          ← {t('back_to_chat')}
         </button>
       </div>
     );
@@ -998,11 +998,11 @@ function LeadFormView({ theme, t, onSubmit, onBack }: {
           </svg>
         </button>
         <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
-          {t('lead_form_title') || 'Solicitar información'}
+          {t('lead_form_title')}
         </h4>
       </div>
       <p style={{ fontSize: 13, color: 'var(--rc-text-secondary)', marginBottom: 16, lineHeight: 1.4 }}>
-        {t('lead_form_subtitle') || 'Déjanos tus datos y un experto se pondrá en contacto contigo.'}
+        {t('lead_form_subtitle')}
       </p>
       <form onSubmit={handle} style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
         <input type="text" required placeholder={t('offline_form_name') || 'Nombre *'}
@@ -1011,7 +1011,7 @@ function LeadFormView({ theme, t, onSubmit, onBack }: {
         <input type="email" required placeholder={t('offline_form_email') || 'Email *'}
           className="rc-input rc-input-focus"
           value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
-        <input type="tel" placeholder={t('offline_form_phone') || 'Teléfono'}
+        <input type="tel" placeholder={t('offline_form_phone')}
           className="rc-input rc-input-focus"
           value={form.phone} onChange={e => setForm({ ...form, phone: e.target.value })} />
         <input type="text" placeholder={t('lead_form_company') || 'Empresa'}
@@ -1162,7 +1162,7 @@ function MessageBubble({ message: msg, isGrouped }: { message: ChatMessage; isGr
 // ──────────────────────────────────────────────────────────
 // OFFLINE FORM
 // ──────────────────────────────────────────────────────────
-function OfflineFormView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string) => string; onSubmit: (d: any) => void }) {
+function OfflineFormView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string; onSubmit: (d: any) => void }) {
   const [form, setForm] = useState({ name: '', email: '', phone: '', message: '' });
   const [submitted, setSubmitted] = useState(false);
 
@@ -1229,7 +1229,7 @@ function OfflineFormView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: st
 // ──────────────────────────────────────────────────────────
 // CSAT VIEW
 // ──────────────────────────────────────────────────────────
-function CsatView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string) => string; onSubmit: (rating: number, comment?: string) => void }) {
+function CsatView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string; onSubmit: (rating: number, comment?: string) => void }) {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -1282,7 +1282,7 @@ function CsatView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string) =
 // ──────────────────────────────────────────────────────────
 // SIGNAL BARS — Real-time audio quality indicator (like mobile signal)
 // ──────────────────────────────────────────────────────────
-function SignalBars({ signal, mos }: { signal: 1 | 2 | 3 | 4 | 5; mos?: number }) {
+function SignalBars({ signal, mos, t }: { signal: 1 | 2 | 3 | 4 | 5; mos?: number; t: (k: string, vars?: Record<string, string>) => string }) {
   const color = signal >= 4 ? 'var(--rc-success)' : signal === 3 ? 'var(--rc-warning)' : 'var(--rc-error)';
   const barHeights = [4, 7, 10, 13, 16];
   return (
@@ -1291,7 +1291,7 @@ function SignalBars({ signal, mos }: { signal: 1 | 2 | 3 | 4 | 5; mos?: number }
       padding: '4px 6px', borderRadius: 8,
       background: 'rgba(0,0,0,0.06)',
     }}
-      title={mos !== undefined ? `MOS: ${mos}/5.0` : 'Calidad de audio'}
+      title={mos !== undefined ? `MOS: ${mos}/5.0` : t('call_audio_quality')}
     >
       {barHeights.map((h, i) => (
         <div key={i} style={{
@@ -1349,7 +1349,7 @@ function CallTimer({ active }: { active: boolean }) {
 // ──────────────────────────────────────────────────────────
 // QUALITY WARNING BANNER
 // ──────────────────────────────────────────────────────────
-function QualityWarningBanner({ warnings }: { warnings: string[] }) {
+function QualityWarningBanner({ warnings, t }: { warnings: string[]; t: (k: string, vars?: Record<string, string>) => string }) {
   if (warnings.length === 0) return null;
 
   const hasNoAudio = warnings.includes('no-audio');
@@ -1367,7 +1367,7 @@ function QualityWarningBanner({ warnings }: { warnings: string[] }) {
           color: hasSevere ? 'var(--rc-error)' : '#92400E',
           transition: 'all 0.3s ease',
         }}>
-          {hasSevere ? 'Conexion mala' : 'Conexion inestable'}
+          {hasSevere ? t('call_connection_poor') : t('call_connection_unstable')}
         </div>
       )}
       {/* Mic/audio warning */}
@@ -1384,7 +1384,7 @@ function QualityWarningBanner({ warnings }: { warnings: string[] }) {
             <path d="M17 16.95A7 7 0 015 12v-2m14 0v2c0 .67-.1 1.32-.27 1.93"/>
             <line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/>
           </svg>
-          <span>No detectamos tu voz. Comprueba el microfono.</span>
+          <span>{t('call_no_voice_detected')}</span>
         </div>
       )}
     </div>
@@ -1426,7 +1426,7 @@ function AudioWaveform() {
 // ──────────────────────────────────────────────────────────
 // INLINE CSAT — Stars rating for ended state
 // ──────────────────────────────────────────────────────────
-function InlineCsat({ onSubmit }: { onSubmit: (rating: number, comment?: string) => void }) {
+function InlineCsat({ onSubmit, t }: { onSubmit: (rating: number, comment?: string) => void; t: (k: string, vars?: Record<string, string>) => string }) {
   const [rating, setRating] = useState(0);
   const [hover, setHover] = useState(0);
   const [submitted, setSubmitted] = useState(false);
@@ -1434,7 +1434,7 @@ function InlineCsat({ onSubmit }: { onSubmit: (rating: number, comment?: string)
   if (submitted) {
     return (
       <div style={{ textAlign: 'center', animation: 'rc-state-enter 0.35s var(--rc-ease-out-expo) forwards' }}>
-        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--rc-success)', margin: 0 }}>Gracias por tu valoracion</p>
+        <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--rc-success)', margin: 0 }}>{t('call_csat_thanks')}</p>
       </div>
     );
   }
@@ -1446,7 +1446,7 @@ function InlineCsat({ onSubmit }: { onSubmit: (rating: number, comment?: string)
       animationDelay: '0.6s', opacity: 0,
     }}>
       <p style={{ fontSize: 12, fontWeight: 600, color: 'var(--rc-text-secondary)', margin: 0 }}>
-        Como fue tu experiencia?
+        {t('call_csat_question')}
       </p>
       <div style={{ display: 'flex', gap: 4 }}>
         {[1, 2, 3, 4, 5].map(n => (
@@ -1477,7 +1477,7 @@ type CallViewState = 'idle' | 'preflight' | 'calling' | 'ringing' | 'queued' | '
 // ──────────────────────────────────────────────────────────
 function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMuted, onToggleMute, onHangup, qualityMetrics, qualitySignal, qualityWarnings, queuePosition, estimatedWait, onHold, callEnded, callDuration, onSubmitCsat, onRetry }: {
   theme: ThemeConfig;
-  t: (k: string) => string;
+  t: (k: string, vars?: Record<string, string>) => string;
   callStatus: { callId?: string; status: string; message?: string };
   onRequestCall: (phone: string) => void;
   onBack: () => void;
@@ -1764,11 +1764,11 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
   const renderStateContent = () => {
     switch (state) {
       case 'preflight': {
-        const steps = ['Microfono', 'Conexion', 'Servidor'];
+        const steps = [t('call_preflight_mic'), t('call_preflight_connection'), t('call_preflight_server')];
         return (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, width: '100%', maxWidth: 200 }}>
             <p style={{ fontSize: 14, fontWeight: 700, color: 'var(--rc-text)', margin: '0 0 4px', textAlign: 'center' }}>
-              Verificando conexion...
+              {t('call_preflight_verifying')}
             </p>
             {steps.map((step, i) => (
               <div key={step} style={{
@@ -1799,10 +1799,10 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
         return (
           <>
             <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
-              Llamando...
+              {t('call_calling')}
             </p>
             <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0, fontWeight: 500 }}>
-              Espere un momento
+              {t('call_please_wait')}
             </p>
           </>
         );
@@ -1811,12 +1811,12 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
         return (
           <>
             <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
-              Conectando llamada...
+              {t('call_connecting')}
             </p>
             <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0, fontWeight: 500 }}>
               {callStatus.status === 'ringing'
-                ? 'Recibiras una llamada en tu telefono'
-                : 'Estableciendo conexion'}
+                ? t('call_will_receive')
+                : t('call_establishing')}
             </p>
           </>
         );
@@ -1825,12 +1825,12 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
         return (
           <>
             <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
-              En cola
+              {t('call_queued')}
             </p>
             <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0, fontWeight: 500, lineHeight: 1.5 }}>
-              {queuePosition !== undefined && `Posicion ${queuePosition}`}
+              {queuePosition !== undefined && t('call_queue_position', { position: String(queuePosition) })}
               {queuePosition !== undefined && estimatedWait && ' — '}
-              {estimatedWait && `Tiempo estimado: ~${estimatedWait}`}
+              {estimatedWait && t('call_estimated_wait', { time: estimatedWait })}
             </p>
             {/* Animated progress dots */}
             <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
@@ -1852,18 +1852,18 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
             {/* Signal bars — top right */}
             {qualitySignal !== undefined && (
               <div style={{ position: 'absolute', top: 16, right: 20 }}>
-                <SignalBars signal={qualitySignal} mos={qualityMetrics?.mos} />
+                <SignalBars signal={qualitySignal} mos={qualityMetrics?.mos} t={t} />
               </div>
             )}
             <CallTimer active={true} />
             <p style={{ fontSize: 12, color: 'var(--rc-text-secondary)', margin: 0, fontWeight: 500 }}>
-              Llamada en curso
+              {t('call_in_progress')}
             </p>
             {/* Waveform visualization */}
             <AudioWaveform />
             {/* Quality warnings */}
             {qualityWarnings && qualityWarnings.length > 0 && (
-              <QualityWarningBanner warnings={qualityWarnings} />
+              <QualityWarningBanner warnings={qualityWarnings} t={t} />
             )}
             {/* Call controls — mute + hangup */}
             <div style={{ display: 'flex', gap: 16, marginTop: 4 }}>
@@ -1876,7 +1876,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
                   transition: 'all 0.2s ease',
                   boxShadow: 'var(--rc-shadow-sm)',
                 }}
-                  title={isMuted ? 'Activar microfono' : 'Silenciar microfono'}
+                  title={isMuted ? t('call_unmute_mic') : t('call_mute_mic')}
                 >
                   {isMuted ? (
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -1903,7 +1903,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
                   transition: 'all 0.2s ease',
                   boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
                 }}
-                  title="Colgar"
+                  title={t('call_hangup')}
                 >
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.11 2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91"/>
@@ -1919,10 +1919,10 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
         return (
           <>
             <p style={{ fontSize: 15, fontWeight: 700, color: '#92400E', margin: 0 }}>
-              En espera...
+              {t('call_on_hold')}
             </p>
             <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', margin: 0, fontWeight: 500 }}>
-              El agente te atendera en un momento
+              {t('call_agent_soon')}
             </p>
             {/* Hangup still available */}
             {onHangup && (
@@ -1934,7 +1934,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
                 transition: 'all 0.2s ease',
                 boxShadow: '0 2px 8px rgba(239,68,68,0.3)',
               }}
-                title="Colgar"
+                title={t('call_hangup')}
               >
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M10.68 13.31a16 16 0 003.41 2.6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6A19.79 19.79 0 012.12 4.11 2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91"/>
@@ -1950,7 +1950,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
         return (
           <>
             <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
-              Llamada finalizada
+              {t('call_ended')}
             </p>
             {duration > 0 && (
               <p style={{
@@ -1962,7 +1962,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
             )}
             {/* Inline CSAT */}
             {onSubmitCsat && (
-              <InlineCsat onSubmit={onSubmitCsat} />
+              <InlineCsat onSubmit={onSubmitCsat} t={t} />
             )}
           </>
         );
@@ -1972,7 +1972,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
         return (
           <>
             <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-error)', margin: 0 }}>
-              Error de conexion
+              {t('call_error')}
             </p>
             {callStatus.message && (
               <p style={{
@@ -1993,7 +1993,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
                   boxShadow: '0 2px 8px rgba(0,127,255,0.25)',
                   transition: 'all 0.2s ease',
                 }}>
-                  Reintentar
+                  {t('call_retry')}
                 </button>
               )}
               <button onClick={onBack} style={{
@@ -2002,7 +2002,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
                 color: 'var(--rc-text)', fontSize: 13, fontWeight: 600, cursor: 'pointer',
                 transition: 'all 0.2s ease',
               }}>
-                Usar callback telefonico
+                {t('call_use_callback')}
               </button>
             </div>
           </>
@@ -2025,10 +2025,10 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
 
         <div>
           <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>
-            Te llamamos
+            {t('call_we_call_you')}
           </p>
           <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
-            Introduce tu telefono y te devolvemos la llamada en segundos
+            {t('call_enter_phone')}
           </p>
           <span style={{
             display: 'inline-block', marginTop: 6, padding: '2px 10px', borderRadius: 20,
@@ -2037,7 +2037,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
             background: `linear-gradient(135deg, ${theme.colors.gradientFrom}22, ${theme.colors.gradientTo}22)`,
             color: 'var(--rc-primary)', border: '1px solid var(--rc-primary)',
             opacity: 0.7,
-          }}>Version Beta</span>
+          }}>{t('call_version_beta')}</span>
         </div>
 
         <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -2076,7 +2076,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
             boxShadow: phone.replace(/[^\d+]/g, '').length >= 6 ? '0 2px 10px rgba(0,127,255,0.25)' : 'none',
             transition: 'all 0.25s',
           }}>
-            Llamadme ahora
+            {t('call_call_me_now')}
           </button>
         </form>
 
@@ -2087,7 +2087,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
           onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
         >
-          ← Volver al chat
+          {t('call_back_to_chat')}
         </button>
       </div>
     );
@@ -2116,7 +2116,7 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
           onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
         >
-          ← Volver al chat
+          {t('call_back_to_chat')}
         </button>
       )}
     </div>

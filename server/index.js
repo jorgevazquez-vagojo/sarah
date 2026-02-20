@@ -166,12 +166,12 @@ app.get('/widget/test.html', (_req, res) => {
 <body>
   <div class="demo-page">
     <h1>Redegal Chatbot</h1>
-    <p>Widget premium con chatbot IA, webphone VoIP, 12 idiomas y configuracion completa. Prueba el widget en la esquina inferior derecha.</p>
+    <p>Widget premium con chatbot IA, webphone VoIP, 4 idiomas y configuracion completa. Prueba el widget en la esquina inferior derecha.</p>
 
     <div class="cards">
       <div class="card">
-        <h3>12 Idiomas</h3>
-        <p>Deteccion automatica + selector manual. ES, EN, PT, FR, DE, IT, NL, ZH, JA, KO, AR, GL</p>
+        <h3>4 Idiomas</h3>
+        <p>Deteccion automatica + selector manual. ES, EN, PT, GL</p>
       </div>
       <div class="card">
         <h3>4 Lineas de Negocio</h3>
@@ -207,14 +207,6 @@ app.get('/widget/test.html', (_req, res) => {
           <option value="es">Espanol</option>
           <option value="en">English</option>
           <option value="pt">Portugues</option>
-          <option value="fr">Francais</option>
-          <option value="de">Deutsch</option>
-          <option value="it">Italiano</option>
-          <option value="nl">Nederlands</option>
-          <option value="zh">中文</option>
-          <option value="ja">日本語</option>
-          <option value="ko">한국어</option>
-          <option value="ar">العربية</option>
           <option value="gl">Galego</option>
         </select>
       </div>

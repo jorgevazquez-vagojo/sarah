@@ -178,7 +178,7 @@ const db = {
   // ─── Knowledge ───
   searchKnowledge: async (query, businessLine, language, limit = 5) => {
     // Map language codes to PostgreSQL text search configurations
-    const TS_CONFIGS = { es: 'spanish', en: 'english', pt: 'portuguese', fr: 'french', de: 'german', it: 'italian', nl: 'dutch' };
+    const TS_CONFIGS = { es: 'spanish', en: 'english', pt: 'portuguese' };
     const tsConfig = TS_CONFIGS[language] || 'simple';
     const r = await pool.query(
       `SELECT id, business_line, category, title, content, tags

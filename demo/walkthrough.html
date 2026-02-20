@@ -1,0 +1,1480 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redegal Chatbot - Guia de Instalacion y Configuracion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --red:#E30613;--red-dark:#B8050F;--slate:#0F172A;--slate-2:#1E293B;
+  --gray:#64748B;--light:#F8FAFC;--white:#FFF;--border:#E2E8F0;
+  --green:#10B981;--blue:#3B82F6;--purple:#8B5CF6;--orange:#F59E0B;
+  --teal:#00d4aa;--accent:#6c5ce7;
+  --font:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono','Fira Code',monospace;
+}
+html,body{height:100%;font-family:var(--font);background:#000;color:#fff;overflow:hidden}
+
+/* ── Presentation Container ── */
+#app{height:100%;display:flex;flex-direction:column}
+#stage{flex:1;position:relative;overflow:hidden}
+
+/* ── Slides ── */
+.slide{
+  position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  opacity:0;transform:scale(0.95);transition:all 0.6s cubic-bezier(0.4,0,0.2,1);
+  pointer-events:none;padding:40px;
+}
+.slide.active{opacity:1;transform:scale(1);pointer-events:auto}
+.slide.exit{opacity:0;transform:scale(1.05)}
+
+/* ── Slide Layouts ── */
+.slide-center{flex-direction:column;text-align:center;gap:28px}
+.slide-split{display:flex;gap:48px;align-items:center;max-width:1200px}
+.slide-split .text-side{flex:1;text-align:left}
+.slide-split .visual-side{flex:1;display:flex;justify-content:center;align-items:center}
+
+/* ── Typography ── */
+h1{font-size:56px;font-weight:900;letter-spacing:-0.03em;line-height:1.1}
+h2{font-size:42px;font-weight:800;letter-spacing:-0.02em;line-height:1.15}
+h3{font-size:28px;font-weight:700;letter-spacing:-0.01em}
+.subtitle{font-size:20px;color:#94A3B8;font-weight:400;line-height:1.6;max-width:600px}
+.gradient-text{background:linear-gradient(135deg,var(--teal),var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.gradient-text-red{background:linear-gradient(135deg,var(--red),#FF6B6B);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.tag{font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.12em;color:var(--teal);margin-bottom:8px}
+
+/* ── Terminal Mockup ── */
+.terminal{
+  width:680px;border-radius:16px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.6);
+  background:#0D1117;font-family:var(--mono);
+}
+.terminal-bar{
+  background:#161B22;padding:12px 16px;display:flex;align-items:center;gap:8px;
+  border-bottom:1px solid rgba(255,255,255,0.06);
+}
+.terminal-dot{width:12px;height:12px;border-radius:50%}
+.terminal-dot.r{background:#FF5F57}.terminal-dot.y{background:#FEBC2E}.terminal-dot.g{background:#28C840}
+.terminal-title{flex:1;text-align:center;font-size:12px;color:#8B949E;font-weight:500}
+.terminal-body{padding:20px 22px;font-size:13px;line-height:2;color:#C9D1D9}
+.terminal-body .prompt{color:var(--teal);font-weight:600}
+.terminal-body .cmd{color:#F0F6FC;font-weight:500}
+.terminal-body .comment{color:#8B949E;font-style:italic}
+.terminal-body .success{color:var(--green);font-weight:600}
+.terminal-body .dim{color:#484F58}
+
+/* ── Wizard Mockup ── */
+.wizard{
+  width:520px;border-radius:16px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:var(--white);
+}
+.wizard-header{
+  background:linear-gradient(135deg,var(--teal),var(--accent));
+  padding:20px 24px;color:white;
+}
+.wizard-steps{display:flex;gap:4px;margin-top:12px}
+.wizard-step{
+  flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,0.3);
+}
+.wizard-step.done{background:white}
+.wizard-step.current{background:white;box-shadow:0 0 8px rgba(255,255,255,0.5)}
+.wizard-body{padding:24px}
+.wizard-field{margin-bottom:16px}
+.wizard-field label{font-size:12px;font-weight:600;color:var(--slate);display:block;margin-bottom:6px}
+.wizard-field .wz-input{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:13px;font-family:var(--font);color:var(--slate);background:var(--light);
+}
+.wizard-field .wz-select{
+  width:100%;padding:10px 14px;border:1.5px solid var(--border);border-radius:10px;
+  font-size:13px;font-family:var(--font);color:var(--slate);background:var(--light);
+  appearance:none;
+}
+.wizard-footer{padding:0 24px 20px;display:flex;justify-content:flex-end;gap:8px}
+.wz-btn{
+  padding:10px 24px;border-radius:10px;border:none;font-size:13px;font-weight:600;
+  font-family:var(--font);cursor:pointer;
+}
+.wz-btn-primary{background:linear-gradient(135deg,var(--teal),var(--accent));color:white}
+.wz-btn-secondary{background:var(--light);color:var(--slate);border:1px solid var(--border)}
+
+/* ── Dashboard Mockup ── */
+.dash-mock{
+  width:620px;border-radius:16px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:#0B1120;
+  transform:perspective(1000px) rotateY(3deg) rotateX(1deg);
+  transition:transform 0.5s;
+}
+.dash-mock:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg)}
+.dm-sidebar{width:56px;background:#0F172A;position:absolute;left:0;top:0;bottom:0;display:flex;flex-direction:column;align-items:center;padding:14px 0;gap:12px;border-right:1px solid rgba(255,255,255,0.06)}
+.dm-nav{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background 0.2s;font-size:14px;color:#64748B}
+.dm-nav:hover,.dm-nav.active{background:rgba(0,212,170,0.12)}
+.dm-nav.active{color:var(--teal)}
+.dm-main{margin-left:56px;min-height:360px}
+.dm-topbar{padding:14px 20px;border-bottom:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;align-items:center}
+.dm-topbar h3{font-size:15px;font-weight:700;color:#F1F5F9}
+.dm-topbar .dm-status{font-size:11px;color:#94A3B8;display:flex;align-items:center;gap:6px}
+.dm-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.dm-content{padding:16px 20px}
+
+/* ── Login Form ── */
+.login-mock{
+  width:420px;border-radius:20px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:linear-gradient(180deg,#0B1120 0%,#111827 100%);
+  padding:40px 32px;text-align:center;
+}
+.login-logo{
+  width:64px;height:64px;border-radius:18px;margin:0 auto 20px;
+  background:linear-gradient(135deg,var(--teal),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:900;color:white;
+}
+.login-field{margin-bottom:14px;text-align:left}
+.login-field label{font-size:11px;font-weight:600;color:#94A3B8;display:block;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.06em}
+.login-input{
+  width:100%;padding:12px 16px;border:1.5px solid rgba(255,255,255,0.08);border-radius:12px;
+  font-size:13px;font-family:var(--font);background:rgba(255,255,255,0.04);color:#E2E8F0;
+}
+.login-btn{
+  width:100%;padding:14px;border-radius:12px;border:none;font-size:14px;font-weight:700;
+  color:white;cursor:pointer;font-family:var(--font);margin-top:8px;
+  background:linear-gradient(135deg,var(--teal),var(--accent));
+}
+
+/* ── Queue cards ── */
+.q-card{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+  border-radius:12px;padding:12px 16px;margin-bottom:8px;display:flex;align-items:center;gap:12px;
+}
+.q-avatar{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.q-info{flex:1}
+.q-info .q-id{font-size:12px;font-weight:600;color:#E2E8F0}
+.q-info .q-msg{font-size:11px;color:#64748B;margin-top:2px}
+.q-badge{font-size:10px;font-weight:600;padding:3px 8px;border-radius:6px}
+
+/* ── Settings Mockup ── */
+.settings-mock{
+  width:600px;border-radius:16px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:#0B1120;
+  position:relative;min-height:380px;
+}
+.settings-tabs{display:flex;gap:0;border-bottom:1px solid rgba(255,255,255,0.06);margin-left:56px}
+.settings-tab{
+  padding:12px 18px;font-size:12px;font-weight:600;color:#64748B;
+  border-bottom:2px solid transparent;cursor:pointer;
+}
+.settings-tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+.settings-content{margin-left:56px;padding:20px}
+
+/* ── Color Picker ── */
+.color-row{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+.color-swatch{width:36px;height:36px;border-radius:10px;border:2px solid rgba(255,255,255,0.1)}
+.color-hex{font-size:13px;font-weight:600;color:#E2E8F0;font-family:var(--mono)}
+
+/* ── Toggle Switch ── */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,0.04)}
+.toggle-label{font-size:13px;font-weight:500;color:#E2E8F0}
+.toggle-sub{font-size:11px;color:#64748B}
+.toggle-switch{
+  width:44px;height:24px;border-radius:12px;background:var(--teal);
+  position:relative;flex-shrink:0;
+}
+.toggle-switch.off{background:rgba(255,255,255,0.1)}
+.toggle-switch::after{
+  content:'';position:absolute;width:20px;height:20px;border-radius:50%;
+  background:white;top:2px;right:2px;transition:0.2s;
+}
+.toggle-switch.off::after{right:auto;left:2px}
+
+/* ── Canned Response Card ── */
+.canned-card{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+  border-radius:10px;padding:12px 16px;margin-bottom:8px;
+}
+.canned-shortcut{font-size:12px;font-weight:700;color:var(--teal);font-family:var(--mono)}
+.canned-text{font-size:12px;color:#94A3B8;margin-top:4px;line-height:1.5}
+
+/* ── Webhook Card ── */
+.webhook-card{
+  background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+  border-radius:10px;padding:14px 16px;margin-bottom:8px;
+}
+.webhook-url{font-size:11px;font-family:var(--mono);color:var(--blue)}
+.webhook-events{display:flex;gap:4px;flex-wrap:wrap;margin-top:8px}
+.webhook-event{font-size:10px;padding:3px 8px;border-radius:5px;background:rgba(59,130,246,0.12);color:var(--blue);font-weight:600}
+
+/* ── Widget Mockup ── */
+.widget-mock{
+  width:380px;border-radius:20px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:var(--white);
+  transform:perspective(1000px) rotateY(-5deg) rotateX(2deg);
+  transition:transform 0.5s;
+}
+.widget-mock:hover{transform:perspective(1000px) rotateY(0deg) rotateX(0deg)}
+.wm-header{
+  background:linear-gradient(135deg,var(--teal),var(--accent));
+  padding:16px 18px;display:flex;align-items:center;gap:12px;
+  position:relative;overflow:hidden;
+}
+.wm-header::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(circle at 80% 20%,rgba(255,255,255,0.12),transparent 60%);
+}
+.wm-header .logo{
+  width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.2);
+  display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;
+  position:relative;z-index:1;
+}
+.wm-header .info{position:relative;z-index:1}
+.wm-header .name{font-weight:700;font-size:14px}
+.wm-header .status{font-size:11px;opacity:0.8;display:flex;align-items:center;gap:5px}
+.wm-header .dot{width:7px;height:7px;border-radius:50%;background:#34D399;box-shadow:0 0 6px #34D399}
+.wm-body{padding:16px;min-height:280px;display:flex;flex-direction:column;gap:10px;background:var(--light)}
+.wm-input{
+  padding:12px 16px;display:flex;gap:8px;border-top:1px solid var(--border);background:var(--white);
+  align-items:center;
+}
+.wm-input input{
+  flex:1;padding:10px 16px;border:1.5px solid var(--border);border-radius:24px;
+  font-size:13px;font-family:var(--font);outline:none;background:var(--light);color:var(--slate);
+}
+.wm-input .send-btn{
+  width:38px;height:38px;border-radius:50%;border:none;cursor:pointer;
+  background:linear-gradient(135deg,var(--teal),var(--accent));
+  display:flex;align-items:center;justify-content:center;color:white;
+}
+
+/* ── Chat Bubbles ── */
+.bubble{max-width:80%;padding:10px 16px;border-radius:18px;font-size:13px;line-height:1.5;animation:bubbleIn 0.4s ease-out}
+.bubble-bot{
+  background:var(--white);color:var(--slate);border:1px solid var(--border);
+  border-bottom-left-radius:6px;align-self:flex-start;
+}
+.bubble-user{
+  background:linear-gradient(135deg,var(--teal),var(--accent));color:white;
+  border-bottom-right-radius:6px;align-self:flex-end;
+  box-shadow:0 2px 8px rgba(0,212,170,0.2);
+}
+.bubble-system{
+  font-size:11px;color:var(--gray);background:var(--white);
+  padding:5px 14px;border-radius:24px;align-self:center;
+}
+.bubble-time{font-size:9px;color:#94A3B8;margin-top:3px}
+
+@keyframes bubbleIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Quick Reply chips ── */
+.qr-row{display:flex;gap:6px;flex-wrap:wrap;padding:4px 0}
+.qr-chip{
+  font-size:12px;font-weight:500;padding:7px 14px;border-radius:20px;
+  border:1.5px solid var(--teal);color:var(--teal);background:rgba(0,212,170,0.05);
+  cursor:pointer;transition:all 0.2s;font-family:var(--font);
+}
+.qr-chip:hover{background:var(--teal);color:white}
+
+/* ── Web Page Mockup ── */
+.webpage-mock{
+  width:720px;border-radius:16px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:var(--white);position:relative;
+}
+.webpage-nav{
+  background:var(--white);padding:12px 20px;display:flex;align-items:center;gap:16px;
+  border-bottom:1px solid var(--border);
+}
+.webpage-logo{font-size:18px;font-weight:900;color:var(--slate)}
+.webpage-links{display:flex;gap:14px;flex:1}
+.webpage-link{font-size:12px;color:var(--gray);font-weight:500;cursor:pointer}
+.webpage-body{
+  min-height:380px;padding:40px;
+  background:linear-gradient(135deg,#0F172A 0%,#1E293B 50%,#0F172A 100%);
+  position:relative;
+}
+.webpage-hero{text-align:center;color:white}
+.webpage-hero h2{font-size:28px;font-weight:800;margin-bottom:8px}
+.webpage-hero p{font-size:14px;color:#94A3B8}
+
+/* ── FAB (Floating Action Button) ── */
+.fab{
+  position:absolute;bottom:20px;right:20px;
+  width:56px;height:56px;border-radius:50%;
+  background:linear-gradient(135deg,var(--teal),var(--accent));
+  display:flex;align-items:center;justify-content:center;
+  color:white;font-size:24px;
+  box-shadow:0 4px 20px rgba(0,212,170,0.4);
+  cursor:pointer;
+}
+.fab-pulse{
+  position:absolute;bottom:14px;right:14px;
+  width:68px;height:68px;border-radius:50%;
+  border:2px solid var(--teal);opacity:0.4;
+  animation:fabPulse 2s infinite;
+}
+@keyframes fabPulse{0%{transform:scale(1);opacity:0.4}100%{transform:scale(1.3);opacity:0}}
+
+/* ── Language Banner ── */
+.lang-banner{
+  display:flex;align-items:center;gap:8px;padding:8px 14px;
+  background:rgba(59,130,246,0.08);border:1px solid rgba(59,130,246,0.15);
+  border-radius:10px;font-size:12px;color:var(--blue);font-weight:600;
+  align-self:center;
+}
+
+/* ── Phone/Call Mockup ── */
+.call-mock{
+  width:380px;border-radius:20px;overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,0.5);
+  background:var(--white);
+}
+.call-header{
+  background:linear-gradient(135deg,var(--green),#059669);
+  padding:16px 18px;display:flex;align-items:center;gap:12px;color:white;
+}
+
+/* ── Preflight Steps ── */
+.preflight-steps{display:flex;flex-direction:column;gap:10px;width:100%;padding:16px}
+.pf-step{
+  display:flex;align-items:center;gap:12px;padding:12px 14px;
+  background:var(--light);border:1px solid var(--border);
+  border-radius:10px;
+}
+.pf-check{
+  width:24px;height:24px;border-radius:50%;
+  background:var(--green);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;flex-shrink:0;
+}
+.pf-label{font-size:13px;font-weight:600;color:var(--slate)}
+.pf-sub{font-size:10px;color:var(--gray)}
+
+/* ── Call Active ── */
+.call-active{
+  padding:32px;text-align:center;
+  background:linear-gradient(180deg,#F0FDF4 0%,var(--white) 100%);
+}
+.call-icon{
+  width:72px;height:72px;border-radius:50%;margin:0 auto 16px;
+  background:var(--green);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:32px;
+  box-shadow:0 0 30px rgba(16,185,129,0.3);
+}
+.call-timer{font-size:36px;font-weight:800;color:var(--slate);font-family:var(--mono)}
+.call-status-text{font-size:13px;color:var(--green);font-weight:600;margin-top:4px}
+.signal-bars{display:flex;align-items:flex-end;gap:3px;height:24px;justify-content:center;margin-top:12px}
+.signal-bar{width:6px;border-radius:2px;background:var(--green)}
+.vu-meter{display:flex;gap:2px;align-items:flex-end;height:20px;justify-content:center;margin-top:8px}
+.vu-bar{width:4px;border-radius:1px;background:var(--teal)}
+.call-actions{display:flex;gap:16px;justify-content:center;margin-top:20px}
+.call-btn{
+  width:52px;height:52px;border-radius:50%;border:none;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.call-btn-mute{background:rgba(0,0,0,0.06);color:var(--slate)}
+.call-btn-hangup{background:var(--red);color:white}
+
+/* ── CSAT Stars ── */
+.csat-mock{
+  padding:32px;text-align:center;
+  background:linear-gradient(180deg,var(--light) 0%,var(--white) 100%);
+}
+.csat-check{
+  width:56px;height:56px;border-radius:50%;margin:0 auto 16px;
+  background:var(--green);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:28px;font-weight:700;
+}
+.csat-stars{display:flex;gap:8px;justify-content:center;margin:16px 0}
+.csat-star{font-size:32px;cursor:pointer}
+.csat-star.filled{color:#F59E0B}
+.csat-star.empty{color:#D1D5DB}
+
+/* ── Enriched Card (for chat) ── */
+.rich-card{
+  max-width:260px;border-radius:14px;overflow:hidden;
+  border:1px solid var(--border);background:white;
+  align-self:flex-start;
+}
+.rich-card-img{
+  height:80px;display:flex;align-items:center;justify-content:center;
+  color:white;font-size:24px;font-weight:700;
+}
+.rich-card-body{padding:10px 14px}
+.rich-card-title{font-size:13px;font-weight:700;color:var(--slate)}
+.rich-card-desc{font-size:11px;color:var(--gray);margin:3px 0 8px}
+.rich-card-btn{
+  display:inline-block;padding:6px 14px;border-radius:8px;font-size:11px;font-weight:600;
+  background:linear-gradient(135deg,var(--teal),var(--accent));color:white;cursor:pointer;
+}
+
+/* ── Controls ── */
+#controls{
+  display:flex;align-items:center;justify-content:center;gap:16px;
+  padding:16px 24px;background:rgba(255,255,255,0.03);
+  border-top:1px solid rgba(255,255,255,0.06);
+}
+.ctrl-btn{
+  padding:8px 24px;border-radius:10px;border:1px solid rgba(255,255,255,0.1);
+  background:rgba(255,255,255,0.05);color:#E2E8F0;cursor:pointer;
+  font-family:var(--font);font-size:13px;font-weight:600;
+  transition:all 0.2s;display:flex;align-items:center;gap:6px;
+}
+.ctrl-btn:hover{background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2)}
+.ctrl-btn.primary{background:var(--teal);border-color:var(--teal);color:white}
+.ctrl-btn.primary:hover{background:#00b894}
+.ctrl-btn:disabled{opacity:0.3;cursor:default}
+#progress{flex:1;max-width:400px;height:4px;border-radius:2px;background:rgba(255,255,255,0.06);overflow:hidden}
+#progress-bar{height:100%;background:linear-gradient(90deg,var(--teal),var(--accent));border-radius:2px;transition:width 0.4s}
+#slide-counter{font-size:12px;color:#64748B;font-weight:500;min-width:60px;text-align:center}
+#voice-status{font-size:11px;color:#64748B;position:absolute;right:24px}
+
+/* ── Animations ── */
+.animate-in{animation:fadeInUp 0.6s ease-out both}
+.animate-in-d1{animation-delay:0.1s}
+.animate-in-d2{animation-delay:0.2s}
+.animate-in-d3{animation-delay:0.3s}
+.animate-in-d4{animation-delay:0.4s}
+.animate-in-d5{animation-delay:0.5s}
+@keyframes fadeInUp{from{opacity:0;transform:translateY(24px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Req Grid ── */
+.req-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;max-width:700px;margin:0 auto}
+.req-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:14px;padding:24px 16px;text-align:center;
+}
+.req-card .req-icon{font-size:32px;margin-bottom:10px}
+.req-card h4{font-size:14px;font-weight:700;margin-bottom:4px}
+.req-card p{font-size:12px;color:#94A3B8;line-height:1.4}
+
+/* ── URL List ── */
+.url-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;max-width:700px;margin:0 auto}
+.url-card{
+  background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);
+  border-radius:12px;padding:16px 20px;display:flex;align-items:center;gap:14px;
+}
+.url-icon{
+  width:44px;height:44px;border-radius:12px;flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;font-size:20px;
+}
+.url-label{font-size:11px;color:#94A3B8;font-weight:500}
+.url-path{font-size:13px;font-weight:700;color:#E2E8F0;font-family:var(--mono)}
+
+/* ── Responsive ── */
+@media(max-width:768px){
+  h1{font-size:36px}h2{font-size:28px}
+  .slide{padding:20px}
+  .slide-split{flex-direction:column;gap:24px}
+  .widget-mock,.dash-mock,.terminal,.wizard,.login-mock,.settings-mock,.call-mock,.webpage-mock{width:100%;max-width:380px;transform:none}
+  .req-grid{grid-template-columns:1fr}
+  .url-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="stage">
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- ACT 1: INSTALLATION (Slides 1-5)             -->
+    <!-- ══════════════════════════════════════════════ -->
+
+    <!-- SLIDE 1: Title -->
+    <div class="slide slide-center active" data-narration="En esta guia vamos a instalar el chatbot en la web corporativa de Redegal, configurar el backoffice y hacer una prueba completa del sistema.">
+      <div class="animate-in">
+        <div class="tag">Walkthrough</div>
+        <h1>Guia de Instalacion y<br><span class="gradient-text">Configuracion</span></h1>
+        <p class="subtitle" style="margin:0 auto">Redegal Chatbot + WebPhone</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px">
+          <span style="font-size:13px;padding:8px 18px;border-radius:10px;background:rgba(0,212,170,0.1);color:var(--teal);font-weight:600">Instalacion</span>
+          <span style="font-size:13px;padding:8px 18px;border-radius:10px;background:rgba(108,92,231,0.1);color:var(--accent);font-weight:600">Backoffice</span>
+          <span style="font-size:13px;padding:8px 18px;border-radius:10px;background:rgba(16,185,129,0.1);color:var(--green);font-weight:600">Frontoffice</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 2: Requirements -->
+    <div class="slide slide-split" data-narration="Solo necesitamos Docker y Git instalados. El sistema se despliega con un unico comando.">
+      <div class="text-side">
+        <div class="tag animate-in">Paso 1</div>
+        <h2 class="animate-in animate-in-d1"><span class="gradient-text">Requisitos</span><br>del Sistema</h2>
+        <p class="subtitle animate-in animate-in-d2">Solo dos dependencias externas. Todo lo demas se gestiona automaticamente dentro de los contenedores Docker.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="terminal" style="width:480px">
+          <div class="terminal-bar">
+            <div class="terminal-dot r"></div>
+            <div class="terminal-dot y"></div>
+            <div class="terminal-dot g"></div>
+            <div class="terminal-title">requisitos.sh</div>
+          </div>
+          <div class="terminal-body" style="line-height:2.4">
+            <div><span class="comment"># Verificar requisitos</span></div>
+            <div><span class="prompt">$ </span><span class="cmd">docker --version</span></div>
+            <div><span class="dim">Docker 27.4.1</span> <span class="success">&#x2713;</span></div>
+            <div style="height:4px"></div>
+            <div><span class="prompt">$ </span><span class="cmd">git --version</span></div>
+            <div><span class="dim">git 2.47.0</span> <span class="success">&#x2713;</span></div>
+            <div style="height:4px"></div>
+            <div><span class="prompt">$ </span><span class="cmd">nslookup chat.redegal.com</span></div>
+            <div><span class="dim">37.27.92.122</span> <span class="success">&#x2713;</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 3: Installation Commands -->
+    <div class="slide slide-split" data-narration="Clonamos el repositorio, copiamos la configuracion de ejemplo y levantamos todo con Docker Compose. En menos de dos minutos tenemos PostgreSQL, Redis y el servidor Node corriendo.">
+      <div class="visual-side animate-in">
+        <div class="terminal">
+          <div class="terminal-bar">
+            <div class="terminal-dot r"></div>
+            <div class="terminal-dot y"></div>
+            <div class="terminal-dot g"></div>
+            <div class="terminal-title">instalacion</div>
+          </div>
+          <div class="terminal-body" style="line-height:2.2">
+            <div><span class="prompt">$ </span><span class="cmd">git clone https://github.com/redegal/chatbot.git</span></div>
+            <div><span class="dim">Cloning into 'chatbot'... done.</span></div>
+            <div style="height:4px"></div>
+            <div><span class="prompt">$ </span><span class="cmd">cd chatbot</span></div>
+            <div><span class="prompt">$ </span><span class="cmd">cp .env.example .env</span></div>
+            <div><span class="prompt">$ </span><span class="cmd">docker compose up --build</span></div>
+            <div style="height:8px"></div>
+            <div><span class="success">&#x2713;</span> <span class="dim">PostgreSQL 16 ready</span></div>
+            <div><span class="success">&#x2713;</span> <span class="dim">Redis 7 ready</span></div>
+            <div><span class="success">&#x2713;</span> <span class="dim">Server running on :3000</span></div>
+            <div><span class="success">&#x2713;</span> <span class="dim">Widget built (275 KB)</span></div>
+            <div><span class="success">&#x2713;</span> <span class="dim">Dashboard built (346 KB)</span></div>
+            <div style="height:6px"></div>
+            <div><span class="success" style="font-size:14px">Sistema listo en 1m 47s</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="tag animate-in">Paso 2</div>
+        <h2 class="animate-in animate-in-d1">Un Solo<br><span class="gradient-text">Comando</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Docker Compose orquesta los tres contenedores: base de datos, cache y servidor. El widget y el dashboard se compilan automaticamente.</p>
+        <div class="animate-in animate-in-d3" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(0,212,170,0.12);color:var(--teal);font-weight:600">PostgreSQL 16</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(227,6,19,0.12);color:var(--red);font-weight:600">Redis 7</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(108,92,231,0.12);color:var(--accent);font-weight:600">Node.js 20</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 4: Setup Wizard -->
+    <div class="slide slide-split" data-narration="Al acceder por primera vez, un asistente de configuracion guia paso a paso. Configuramos el correo para notificaciones, la centralita VoIP, el proveedor de inteligencia artificial, los colores corporativos y el horario de atencion.">
+      <div class="text-side">
+        <div class="tag animate-in">Paso 3</div>
+        <h2 class="animate-in animate-in-d1">Setup<br><span class="gradient-text">Wizard</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Cinco pasos guiados para configurar todo el sistema. Sin editar archivos de configuracion manualmente.</p>
+        <div class="animate-in animate-in-d3" style="margin-top:16px">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:24px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">1</span><span style="font-size:13px;color:#94A3B8">SMTP - Notificaciones</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:24px;border-radius:50%;background:var(--teal);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">2</span><span style="font-size:13px;color:#94A3B8">SIP/VoIP - Centralita</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:24px;border-radius:50%;background:var(--accent);color:white;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">3</span><span style="font-size:13px;color:#E2E8F0;font-weight:600">IA Provider</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.1);color:#64748B;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">4</span><span style="font-size:13px;color:#64748B">Branding</span></div>
+            <div style="display:flex;align-items:center;gap:10px"><span style="width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,0.1);color:#64748B;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700">5</span><span style="font-size:13px;color:#64748B">Horario</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="wizard">
+          <div class="wizard-header">
+            <div style="font-size:16px;font-weight:800">Configuracion Inicial</div>
+            <div style="font-size:12px;opacity:0.8;margin-top:2px">Paso 3 de 5 — Proveedor de IA</div>
+            <div class="wizard-steps">
+              <div class="wizard-step done"></div>
+              <div class="wizard-step done"></div>
+              <div class="wizard-step current"></div>
+              <div class="wizard-step"></div>
+              <div class="wizard-step"></div>
+            </div>
+          </div>
+          <div class="wizard-body">
+            <div class="wizard-field">
+              <label>Proveedor principal</label>
+              <div class="wz-select" style="display:flex;align-items:center;justify-content:space-between">
+                <span>Claude (Anthropic)</span>
+                <span style="color:var(--gray)">&#x25BC;</span>
+              </div>
+            </div>
+            <div class="wizard-field">
+              <label>API Key</label>
+              <div class="wz-input" style="color:var(--gray)">sk-ant-api03-*****...****</div>
+            </div>
+            <div class="wizard-field">
+              <label>Proveedor fallback (gratuito)</label>
+              <div class="wz-select" style="display:flex;align-items:center;justify-content:space-between">
+                <span>Gemini (Google)</span>
+                <span style="color:var(--gray)">&#x25BC;</span>
+              </div>
+            </div>
+            <div style="padding:10px 14px;border-radius:10px;background:rgba(16,185,129,0.06);border:1px solid rgba(16,185,129,0.15);font-size:12px;color:#059669;display:flex;align-items:center;gap:8px">
+              <span>&#x2713;</span> Conexion verificada con Anthropic API
+            </div>
+          </div>
+          <div class="wizard-footer">
+            <div class="wz-btn wz-btn-secondary">Atras</div>
+            <div class="wz-btn wz-btn-primary">Siguiente</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 5: Create Admin -->
+    <div class="slide slide-split" data-narration="Creamos el primer usuario administrador con acceso a todas las lineas de negocio y todos los idiomas.">
+      <div class="visual-side animate-in">
+        <div class="terminal" style="width:620px">
+          <div class="terminal-bar">
+            <div class="terminal-dot r"></div>
+            <div class="terminal-dot y"></div>
+            <div class="terminal-dot g"></div>
+            <div class="terminal-title">crear-admin.sh</div>
+          </div>
+          <div class="terminal-body" style="line-height:2.4">
+            <div><span class="comment"># Crear usuario administrador</span></div>
+            <div><span class="prompt">$ </span><span class="cmd">node scripts/create-agent.js \</span></div>
+            <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;admin admin123 "Admin" \</span></div>
+            <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;"es,en,pt,gl" \</span></div>
+            <div><span class="cmd">&nbsp;&nbsp;&nbsp;&nbsp;"boostic,tech,marketing,binnacle"</span></div>
+            <div style="height:8px"></div>
+            <div><span class="success">&#x2713;</span> <span class="dim">Agent created: </span><span style="color:#E2E8F0;font-weight:600">admin</span></div>
+            <div><span class="dim">&nbsp;&nbsp;Role: </span><span style="color:var(--teal)">admin</span></div>
+            <div><span class="dim">&nbsp;&nbsp;Languages: </span><span style="color:#E2E8F0">es, en, pt, gl</span></div>
+            <div><span class="dim">&nbsp;&nbsp;Business units: </span><span style="color:#E2E8F0">boostic, tech, marketing, binnacle</span></div>
+            <div style="height:8px"></div>
+            <div><span class="comment"># Acceder al dashboard</span></div>
+            <div><span class="prompt">$ </span><span class="cmd">open https://chat.redegal.com/dashboard</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="tag animate-in">Paso 4</div>
+        <h2 class="animate-in animate-in-d1">Crear<br><span class="gradient-text">Administrador</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Un script de linea de comandos crea el primer agente con rol admin, idiomas y lineas de negocio asignadas.</p>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- ACT 2: BACKOFFICE / DASHBOARD (Slides 6-10)  -->
+    <!-- ══════════════════════════════════════════════ -->
+
+    <!-- SLIDE 6: Login -->
+    <div class="slide slide-split" data-narration="Accedemos al dashboard en la ruta barra dashboard. La pantalla de login tiene tema oscuro profesional con el logo de la empresa.">
+      <div class="text-side">
+        <div class="tag animate-in">Backoffice</div>
+        <h2 class="animate-in animate-in-d1">Acceso al<br><span class="gradient-text">Dashboard</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Panel de administracion con tema oscuro profesional. Autenticacion segura con JWT y refresh tokens.</p>
+        <div class="animate-in animate-in-d3" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(0,212,170,0.12);color:var(--teal);font-weight:600">JWT Auth</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(108,92,231,0.12);color:var(--accent);font-weight:600">RBAC</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(59,130,246,0.12);color:var(--blue);font-weight:600">2FA Ready</span>
+        </div>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="login-mock">
+          <div class="login-logo">R</div>
+          <div style="font-size:20px;font-weight:800;color:#F1F5F9;margin-bottom:4px">Redegal</div>
+          <div style="font-size:12px;color:#64748B;margin-bottom:24px">Panel de Agentes</div>
+          <div class="login-field">
+            <label>Usuario</label>
+            <div class="login-input">admin</div>
+          </div>
+          <div class="login-field">
+            <label>Contrasena</label>
+            <div class="login-input" style="letter-spacing:4px">&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;&#x2022;</div>
+          </div>
+          <div class="login-btn">Iniciar Sesion</div>
+          <div style="font-size:11px;color:#64748B;margin-top:16px">chat.redegal.com/dashboard</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 7: Main Panel -->
+    <div class="slide slide-split" data-narration="El panel principal muestra la cola de conversaciones en tiempo real. Como acabamos de instalar, la cola esta vacia. En la sidebar tenemos acceso a leads, analiticas y configuracion.">
+      <div class="text-side">
+        <div class="tag animate-in">Dashboard</div>
+        <h2 class="animate-in animate-in-d1">Panel<br><span class="gradient-text">Principal</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Cola de conversaciones en tiempo real con WebSocket. Sidebar con navegacion a todas las secciones del backoffice.</p>
+        <div class="animate-in animate-in-d3" style="margin-top:16px;display:flex;flex-direction:column;gap:6px">
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#94A3B8">
+            <span style="font-size:16px">&#x1F4AC;</span> Conversaciones
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#94A3B8">
+            <span style="font-size:16px">&#x1F465;</span> Leads
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#94A3B8">
+            <span style="font-size:16px">&#x1F4CA;</span> Analytics
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;font-size:13px;color:#94A3B8">
+            <span style="font-size:16px">&#x2699;</span> Settings
+          </div>
+        </div>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="dash-mock" style="position:relative">
+          <div class="dm-sidebar">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+              <span style="font-size:14px;font-weight:900;color:white">R</span>
+            </div>
+            <div class="dm-nav active">&#x1F4AC;</div>
+            <div class="dm-nav">&#x1F465;</div>
+            <div class="dm-nav">&#x1F4CA;</div>
+            <div class="dm-nav">&#x2699;</div>
+          </div>
+          <div class="dm-main">
+            <div class="dm-topbar">
+              <div>
+                <h3>Conversaciones</h3>
+                <span style="font-size:10px;color:#64748B">0 en cola</span>
+              </div>
+              <div class="dm-status"><span class="dm-dot"></span> Conectado</div>
+            </div>
+            <div class="dm-content" style="display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:240px;text-align:center">
+              <div style="font-size:48px;margin-bottom:12px;opacity:0.3">&#x1F4AC;</div>
+              <div style="font-size:15px;font-weight:700;color:#E2E8F0">Sin conversaciones pendientes</div>
+              <div style="font-size:12px;color:#64748B;margin-top:4px">Las conversaciones apareceran aqui en tiempo real</div>
+              <div style="margin-top:16px;padding:8px 16px;border-radius:8px;background:rgba(0,212,170,0.08);font-size:12px;color:var(--teal);font-weight:600">
+                Estado: En linea
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 8: Settings - Widget Theme -->
+    <div class="slide slide-split" data-narration="En configuracion personalizamos el widget. Elegimos el color corporativo de Redegal, activamos las funcionalidades que necesitamos y configuramos el horario. Todos los cambios se aplican en tiempo real.">
+      <div class="text-side">
+        <div class="tag animate-in">Settings</div>
+        <h2 class="animate-in animate-in-d1">Widget<br><span class="gradient-text">Theme</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Personalizacion completa del widget sin tocar codigo. Colores, posicion, funcionalidades y horario de atencion.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="settings-mock">
+          <div class="dm-sidebar">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+              <span style="font-size:14px;font-weight:900;color:white">R</span>
+            </div>
+            <div class="dm-nav">&#x1F4AC;</div>
+            <div class="dm-nav">&#x1F465;</div>
+            <div class="dm-nav">&#x1F4CA;</div>
+            <div class="dm-nav active">&#x2699;</div>
+          </div>
+          <div class="settings-tabs">
+            <div class="settings-tab active">Widget Theme</div>
+            <div class="settings-tab">Canned</div>
+            <div class="settings-tab">Webhooks</div>
+            <div class="settings-tab">CRM</div>
+            <div class="settings-tab">System</div>
+          </div>
+          <div class="settings-content">
+            <div style="font-size:13px;font-weight:700;color:#E2E8F0;margin-bottom:12px">Apariencia</div>
+            <div class="color-row">
+              <div class="color-swatch" style="background:var(--teal)"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#E2E8F0">Color primario</div>
+                <div class="color-hex">#00d4aa</div>
+              </div>
+            </div>
+            <div class="color-row">
+              <div class="color-swatch" style="background:var(--accent)"></div>
+              <div>
+                <div style="font-size:12px;font-weight:600;color:#E2E8F0">Color acento</div>
+                <div class="color-hex">#6c5ce7</div>
+              </div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:#E2E8F0;margin:16px 0 10px">Funcionalidades</div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">VoIP / Click2Call</div><div class="toggle-sub">Llamadas WebRTC</div></div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">File Uploads</div><div class="toggle-sub">PDF, imagenes, docs</div></div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">CSAT Survey</div><div class="toggle-sub">Encuesta al cerrar</div></div>
+              <div class="toggle-switch"></div>
+            </div>
+            <div class="toggle-row">
+              <div><div class="toggle-label">Dark Mode</div><div class="toggle-sub">Tema oscuro widget</div></div>
+              <div class="toggle-switch off"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 9: Settings - Canned Responses -->
+    <div class="slide slide-split" data-narration="Las respuestas rapidas permiten a los agentes responder con shortcuts. Escriben barra hola y se expande automaticamente. Esto reduce el tiempo de respuesta drasticamente.">
+      <div class="visual-side animate-in">
+        <div class="settings-mock">
+          <div class="dm-sidebar">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+              <span style="font-size:14px;font-weight:900;color:white">R</span>
+            </div>
+            <div class="dm-nav">&#x1F4AC;</div>
+            <div class="dm-nav">&#x1F465;</div>
+            <div class="dm-nav">&#x1F4CA;</div>
+            <div class="dm-nav active">&#x2699;</div>
+          </div>
+          <div class="settings-tabs">
+            <div class="settings-tab">Widget Theme</div>
+            <div class="settings-tab active">Canned</div>
+            <div class="settings-tab">Webhooks</div>
+            <div class="settings-tab">CRM</div>
+            <div class="settings-tab">System</div>
+          </div>
+          <div class="settings-content">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px">
+              <div style="font-size:13px;font-weight:700;color:#E2E8F0">Respuestas Rapidas</div>
+              <div style="font-size:11px;padding:6px 14px;border-radius:8px;background:rgba(0,212,170,0.12);color:var(--teal);font-weight:600;cursor:pointer">+ Crear nueva</div>
+            </div>
+            <div class="canned-card">
+              <div class="canned-shortcut">/hola</div>
+              <div class="canned-text">Hola! Bienvenido a Redegal. Soy un agente del equipo de atencion. En que puedo ayudarte?</div>
+            </div>
+            <div class="canned-card">
+              <div class="canned-shortcut">/precio</div>
+              <div class="canned-text">Nuestros servicios se adaptan a las necesidades de cada proyecto. Te gustaria que un especialista prepare una propuesta personalizada?</div>
+            </div>
+            <div class="canned-card">
+              <div class="canned-shortcut">/demo</div>
+              <div class="canned-text">Puedo programar una demostracion personalizada con nuestro equipo. Que dia y hora te vendrian bien?</div>
+            </div>
+            <div class="canned-card">
+              <div class="canned-shortcut">/despedida</div>
+              <div class="canned-text">Gracias por contactar con Redegal. Si tienes mas preguntas, no dudes en escribirnos. Un saludo!</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="tag animate-in">Settings</div>
+        <h2 class="animate-in animate-in-d1">Respuestas<br><span class="gradient-text">Rapidas</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Shortcuts con barra + palabra clave que se expanden automaticamente. Los agentes escriben /hola y el texto completo se inserta al instante.</p>
+        <div class="animate-in animate-in-d3" style="margin-top:16px">
+          <div style="padding:12px 16px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)">
+            <div style="font-size:11px;color:var(--teal);font-weight:600;margin-bottom:4px">Ejemplo en vivo</div>
+            <div style="font-size:13px;color:#94A3B8;font-family:var(--mono)">
+              Agente escribe: <span style="color:var(--teal)">/hola</span><br>
+              <span style="color:#64748B">&#x2192;</span> <span style="color:#E2E8F0">Hola! Bienvenido a Redegal...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 10: Settings - Webhooks + CRM -->
+    <div class="slide slide-split" data-narration="Configuramos los webhooks para integrar con sistemas externos. Los eventos se firman con HMAC para garantizar la autenticidad. La integracion CRM envia leads automaticamente a Salesforce o HubSpot.">
+      <div class="text-side">
+        <div class="tag animate-in">Integraciones</div>
+        <h2 class="animate-in animate-in-d1">Webhooks<br>+ <span class="gradient-text">CRM</span></h2>
+        <p class="subtitle animate-in animate-in-d2">10 tipos de eventos con firma HMAC SHA-256. Integracion nativa con Salesforce, HubSpot, Zoho y Pipedrive.</p>
+        <div class="animate-in animate-in-d3" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(59,130,246,0.12);color:var(--blue);font-weight:600">Salesforce</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(245,158,11,0.12);color:var(--orange);font-weight:600">HubSpot</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(16,185,129,0.12);color:var(--green);font-weight:600">Zoho</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(139,92,246,0.12);color:var(--purple);font-weight:600">Pipedrive</span>
+        </div>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="settings-mock">
+          <div class="dm-sidebar">
+            <div style="width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;margin-bottom:10px">
+              <span style="font-size:14px;font-weight:900;color:white">R</span>
+            </div>
+            <div class="dm-nav">&#x1F4AC;</div>
+            <div class="dm-nav">&#x1F465;</div>
+            <div class="dm-nav">&#x1F4CA;</div>
+            <div class="dm-nav active">&#x2699;</div>
+          </div>
+          <div class="settings-tabs">
+            <div class="settings-tab">Widget Theme</div>
+            <div class="settings-tab">Canned</div>
+            <div class="settings-tab active">Webhooks</div>
+            <div class="settings-tab">CRM</div>
+            <div class="settings-tab">System</div>
+          </div>
+          <div class="settings-content">
+            <div style="font-size:13px;font-weight:700;color:#E2E8F0;margin-bottom:12px">Webhook Endpoints</div>
+            <div class="webhook-card">
+              <div style="display:flex;justify-content:space-between;align-items:center">
+                <div class="webhook-url">https://api.redegal.com/hooks/chatbot</div>
+                <div style="font-size:10px;padding:3px 8px;border-radius:5px;background:rgba(16,185,129,0.12);color:var(--green);font-weight:600">Activo</div>
+              </div>
+              <div style="font-size:10px;color:#64748B;margin-top:4px;font-family:var(--mono)">Secret: whsec_*****...****</div>
+              <div class="webhook-events">
+                <span class="webhook-event">conversation.created</span>
+                <span class="webhook-event">lead.created</span>
+                <span class="webhook-event">message.sent</span>
+                <span class="webhook-event">csat.submitted</span>
+              </div>
+            </div>
+            <div style="font-size:13px;font-weight:700;color:#E2E8F0;margin:16px 0 10px">CRM Integration</div>
+            <div style="display:flex;gap:8px">
+              <div style="flex:1;padding:14px;border-radius:10px;border:2px solid var(--teal);background:rgba(0,212,170,0.05);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x2601;</div>
+                <div style="font-size:12px;font-weight:700;color:#E2E8F0">Salesforce</div>
+                <div style="font-size:10px;color:var(--teal);font-weight:600;margin-top:2px">Conectado</div>
+              </div>
+              <div style="flex:1;padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4CA;</div>
+                <div style="font-size:12px;font-weight:600;color:#94A3B8">HubSpot</div>
+                <div style="font-size:10px;color:#64748B;margin-top:2px">Desconectado</div>
+              </div>
+              <div style="flex:1;padding:14px;border-radius:10px;border:1px solid rgba(255,255,255,0.06);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4C8;</div>
+                <div style="font-size:12px;font-weight:600;color:#94A3B8">Zoho</div>
+                <div style="font-size:10px;color:#64748B;margin-top:2px">Desconectado</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════════════════════════ -->
+    <!-- ACT 3: FRONTOFFICE / WIDGET TEST (Slides 11-18) -->
+    <!-- ══════════════════════════════════════════════ -->
+
+    <!-- SLIDE 11: Widget on Website -->
+    <div class="slide slide-center" data-narration="El widget aparece en la esquina inferior derecha de la web de Redegal. Un boton flotante con un sutil pulso de atencion invita al visitante a interactuar.">
+      <div class="animate-in">
+        <div class="tag">Frontoffice</div>
+        <h2>Widget en la<br><span class="gradient-text">Web Corporativa</span></h2>
+      </div>
+      <div class="animate-in animate-in-d1">
+        <div class="webpage-mock">
+          <div class="webpage-nav">
+            <div class="webpage-logo" style="display:flex;align-items:center;gap:8px">
+              <span style="width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--teal),var(--accent));display:inline-flex;align-items:center;justify-content:center;color:white;font-size:12px;font-weight:900">R</span>
+              Redegal
+            </div>
+            <div class="webpage-links">
+              <span class="webpage-link">Servicios</span>
+              <span class="webpage-link">Clientes</span>
+              <span class="webpage-link">Blog</span>
+              <span class="webpage-link">Inversores</span>
+              <span class="webpage-link">Contacto</span>
+            </div>
+            <div style="font-size:10px;color:var(--gray);padding:5px 10px;border-radius:6px;border:1px solid var(--border)">BME:RDG</div>
+          </div>
+          <div class="webpage-body">
+            <div class="webpage-hero">
+              <div style="font-size:12px;color:var(--teal);font-weight:700;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:12px">Digital Transformation</div>
+              <h2 style="color:white;font-size:32px">Impulsamos tu negocio<br>con <span style="color:var(--teal)">tecnologia</span></h2>
+              <p style="margin-top:8px">Boostic &middot; Binnacle &middot; Marketing Digital &middot; Tech</p>
+              <div style="margin-top:20px;display:flex;gap:12px;justify-content:center">
+                <span style="padding:10px 24px;border-radius:10px;background:var(--teal);color:white;font-size:13px;font-weight:600">Contactar</span>
+                <span style="padding:10px 24px;border-radius:10px;border:1px solid rgba(255,255,255,0.2);color:white;font-size:13px;font-weight:600">Ver servicios</span>
+              </div>
+            </div>
+            <div class="fab-pulse"></div>
+            <div class="fab">&#x1F4AC;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 12: Welcome Screen -->
+    <div class="slide slide-split" data-narration="Al hacer clic, se abre la pantalla de bienvenida con las cuatro lineas de negocio. El visitante puede elegir directamente el area que le interesa o simplemente escribir su consulta.">
+      <div class="text-side">
+        <div class="tag animate-in">Widget Abierto</div>
+        <h2 class="animate-in animate-in-d1">Pantalla de<br><span class="gradient-text">Bienvenida</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Cuatro lineas de negocio como botones de acceso directo. El visitante elige el area o empieza a chatear libremente.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="widget-mock">
+          <div class="wm-header">
+            <div class="logo">R</div>
+            <div class="info">
+              <div class="name">Redegal</div>
+              <div class="status"><span class="dot"></span> Online</div>
+            </div>
+          </div>
+          <div class="wm-body" style="align-items:center;padding:24px 18px;gap:14px">
+            <div style="width:48px;height:48px;border-radius:14px;background:rgba(0,212,170,0.08);display:flex;align-items:center;justify-content:center;font-size:24px">&#x1F4AC;</div>
+            <div style="font-size:18px;font-weight:800;color:var(--slate)">Hola, bienvenido</div>
+            <div style="font-size:13px;color:var(--gray);text-align:center">Como podemos ayudarte hoy?</div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;width:100%">
+              <div style="padding:14px;border-radius:12px;border:1.5px solid var(--border);text-align:center;cursor:pointer">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4C8;</div>
+                <div style="font-size:12px;font-weight:600;color:var(--slate)">Boostic</div>
+                <div style="font-size:10px;color:var(--gray)">SEO &amp; Growth</div>
+              </div>
+              <div style="padding:14px;border-radius:12px;border:1.5px solid var(--border);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4CA;</div>
+                <div style="font-size:12px;font-weight:600;color:var(--slate)">Binnacle</div>
+                <div style="font-size:10px;color:var(--gray)">BI &amp; Analytics</div>
+              </div>
+              <div style="padding:14px;border-radius:12px;border:1.5px solid var(--border);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4E3;</div>
+                <div style="font-size:12px;font-weight:600;color:var(--slate)">Marketing</div>
+                <div style="font-size:10px;color:var(--gray)">Digital Ads</div>
+              </div>
+              <div style="padding:14px;border-radius:12px;border:1.5px solid var(--border);text-align:center">
+                <div style="font-size:20px;margin-bottom:4px">&#x1F4BB;</div>
+                <div style="font-size:12px;font-weight:600;color:var(--slate)">Tech</div>
+                <div style="font-size:10px;color:var(--gray)">Development</div>
+              </div>
+            </div>
+          </div>
+          <div class="wm-input">
+            <input type="text" placeholder="Escribe tu mensaje..." disabled>
+            <div class="send-btn">&#x2191;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 13: AI Chat -->
+    <div class="slide slide-split" data-narration="La inteligencia artificial responde con conocimiento especifico de cada linea de negocio. Detecta que el visitante necesita SEO y le ofrece una auditoria. Los mensajes enriquecidos incluyen tarjetas con botones de accion.">
+      <div class="visual-side animate-in">
+        <div class="widget-mock">
+          <div class="wm-header">
+            <div class="logo">R</div>
+            <div class="info"><div class="name">Redegal</div><div class="status"><span class="dot"></span> Online</div></div>
+          </div>
+          <div class="wm-body" style="gap:8px">
+            <div class="bubble bubble-user">Necesito mejorar el SEO de mi tienda online</div>
+            <div class="bubble-time" style="text-align:right">14:32</div>
+            <div style="display:flex;gap:8px;align-items:flex-end">
+              <div style="width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;flex-shrink:0;font-weight:700">IA</div>
+              <div>
+                <div class="bubble bubble-bot">Encantado de ayudarte! Nuestro equipo <strong>Boostic</strong> esta especializado en SEO para eCommerce. Que plataforma utilizas? Shopify, WooCommerce, Magento...?</div>
+                <div class="bubble-time">14:32</div>
+              </div>
+            </div>
+            <div class="bubble bubble-user">Shopify</div>
+            <div class="bubble-time" style="text-align:right">14:33</div>
+            <!-- Rich card -->
+            <div class="rich-card">
+              <div class="rich-card-img" style="background:linear-gradient(135deg,var(--teal),var(--accent))">&#x1F50D; SEO</div>
+              <div class="rich-card-body">
+                <div class="rich-card-title">Auditoria SEO Shopify</div>
+                <div class="rich-card-desc">Analisis completo de tu tienda con plan de accion personalizado</div>
+                <div class="rich-card-btn">Solicitar auditoria</div>
+              </div>
+            </div>
+          </div>
+          <div class="wm-input">
+            <input type="text" placeholder="Escribe tu mensaje..." disabled>
+            <div class="send-btn">&#x2191;</div>
+          </div>
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="tag animate-in">Chat con IA</div>
+        <h2 class="animate-in animate-in-d1">Conversacion<br><span class="gradient-text">Inteligente</span></h2>
+        <p class="subtitle animate-in animate-in-d2">La IA detecta la intencion y ofrece soluciones especificas. Tarjetas enriquecidas con botones de accion directa.</p>
+        <div class="animate-in animate-in-d3" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(0,212,170,0.12);color:var(--teal);font-weight:600">Claude AI</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(108,92,231,0.12);color:var(--accent);font-weight:600">Knowledge Base</span>
+          <span style="font-size:11px;padding:6px 12px;border-radius:8px;background:rgba(59,130,246,0.12);color:var(--blue);font-weight:600">Rich Cards</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 14: Language Detection -->
+    <div class="slide slide-split" data-narration="Si el visitante escribe en otro idioma, el sistema lo detecta automaticamente y adapta todas las respuestas. Soportamos espanol, ingles, portugues y gallego.">
+      <div class="text-side">
+        <div class="tag animate-in">i18n</div>
+        <h2 class="animate-in animate-in-d1">Deteccion de<br><span class="gradient-text">Idioma</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Cambio automatico de idioma al detectar el primer mensaje del visitante. Toda la interfaz y las respuestas de la IA se adaptan.</p>
+        <div class="animate-in animate-in-d3" style="margin-top:16px;display:flex;gap:8px;flex-wrap:wrap">
+          <span style="font-size:12px;padding:6px 14px;border-radius:8px;background:rgba(0,212,170,0.12);color:var(--teal);font-weight:600">&#x1F1EA;&#x1F1F8; ES</span>
+          <span style="font-size:12px;padding:6px 14px;border-radius:8px;background:rgba(59,130,246,0.12);color:var(--blue);font-weight:600">&#x1F1EC;&#x1F1E7; EN</span>
+          <span style="font-size:12px;padding:6px 14px;border-radius:8px;background:rgba(16,185,129,0.12);color:var(--green);font-weight:600">&#x1F1F5;&#x1F1F9; PT</span>
+          <span style="font-size:12px;padding:6px 14px;border-radius:8px;background:rgba(139,92,246,0.12);color:var(--purple);font-weight:600">GL</span>
+        </div>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="widget-mock">
+          <div class="wm-header">
+            <div class="logo">R</div>
+            <div class="info"><div class="name">Redegal</div><div class="status"><span class="dot"></span> Online</div></div>
+          </div>
+          <div class="wm-body" style="gap:8px">
+            <div class="bubble bubble-user">I need help with my website performance</div>
+            <div class="bubble-time" style="text-align:right">15:01</div>
+            <div class="lang-banner">
+              <span>&#x1F310;</span> Language detected: English
+            </div>
+            <div style="display:flex;gap:8px;align-items:flex-end">
+              <div style="width:24px;height:24px;border-radius:7px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;color:white;font-size:10px;flex-shrink:0;font-weight:700">IA</div>
+              <div>
+                <div class="bubble bubble-bot">Hi! I'd be happy to help. Our <strong>Boostic</strong> team specializes in web performance optimization. What kind of issues are you experiencing?</div>
+                <div class="bubble-time">15:01</div>
+              </div>
+            </div>
+            <div class="qr-row">
+              <span class="qr-chip">Slow loading</span>
+              <span class="qr-chip">Core Web Vitals</span>
+              <span class="qr-chip">Talk to expert</span>
+            </div>
+          </div>
+          <div class="wm-input">
+            <input type="text" placeholder="Type your message..." disabled>
+            <div class="send-btn">&#x2191;</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 15: Click2Call Preflight -->
+    <div class="slide slide-split" data-narration="El visitante puede solicitar una llamada. Antes de conectar, el sistema ejecuta un test de conectividad verificando navegador, microfono y red. Si todo esta bien, la llamada se inicia automaticamente.">
+      <div class="visual-side animate-in">
+        <div class="call-mock">
+          <div class="call-header">
+            <span style="font-size:20px">&#x1F4DE;</span>
+            <div>
+              <div style="font-weight:700;font-size:14px">Click2Call</div>
+              <div style="font-size:11px;opacity:0.8">Test de conectividad</div>
+            </div>
+          </div>
+          <div class="preflight-steps">
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div>
+                <div class="pf-label" style="color:var(--slate)">Navegador compatible</div>
+                <div class="pf-sub">Chrome 120 — WebRTC soportado</div>
+              </div>
+            </div>
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div>
+                <div class="pf-label" style="color:var(--slate)">Microfono detectado</div>
+                <div class="pf-sub">Default Microphone — nivel OK</div>
+              </div>
+            </div>
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div>
+                <div class="pf-label" style="color:var(--slate)">Altavoz detectado</div>
+                <div class="pf-sub">Built-in Speakers — activo</div>
+              </div>
+            </div>
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div>
+                <div class="pf-label" style="color:var(--slate)">Conexion SIP</div>
+                <div class="pf-sub">Vozelia — registrado OK</div>
+              </div>
+            </div>
+            <div class="pf-step">
+              <div class="pf-check">&#x2713;</div>
+              <div>
+                <div class="pf-label" style="color:var(--slate)">Latencia de red</div>
+                <div class="pf-sub">32ms — calidad excelente</div>
+              </div>
+            </div>
+          </div>
+          <div style="padding:16px;text-align:center">
+            <div style="padding:14px;border-radius:12px;background:linear-gradient(135deg,var(--green),#059669);color:white;font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:8px;cursor:pointer">
+              <span>&#x1F4DE;</span> Llamadme ahora
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="tag animate-in">VoIP</div>
+        <h2 class="animate-in animate-in-d1">Test de<br><span class="gradient-text">Conectividad</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Cinco verificaciones automaticas antes de conectar: navegador, microfono, altavoz, SIP y latencia. Todo transparente para el visitante.</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 16: Active Call -->
+    <div class="slide slide-split" data-narration="Durante la llamada, el visitante ve un cronometro, indicador de calidad de conexion con barras de senal, y monitor de nivel de audio. Puede silenciar el microfono o colgar en cualquier momento.">
+      <div class="text-side">
+        <div class="tag animate-in">Llamada Activa</div>
+        <h2 class="animate-in animate-in-d1">VoIP<br><span class="gradient-text">WebRTC</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Llamada de voz directa desde el navegador. Cronometro, barras de senal, VU meter y controles de silencio.</p>
+      </div>
+      <div class="visual-side animate-in animate-in-d2">
+        <div class="call-mock">
+          <div class="call-header">
+            <span style="font-size:20px">&#x1F4DE;</span>
+            <div>
+              <div style="font-weight:700;font-size:14px">Redegal</div>
+              <div style="font-size:11px;opacity:0.8">Llamada en curso</div>
+            </div>
+            <div style="margin-left:auto;display:flex;align-items:flex-end;gap:2px;height:16px">
+              <div style="width:4px;height:4px;border-radius:1px;background:white"></div>
+              <div style="width:4px;height:8px;border-radius:1px;background:white"></div>
+              <div style="width:4px;height:12px;border-radius:1px;background:white"></div>
+              <div style="width:4px;height:16px;border-radius:1px;background:white"></div>
+              <div style="width:4px;height:12px;border-radius:1px;background:rgba(255,255,255,0.3)"></div>
+            </div>
+          </div>
+          <div class="call-active">
+            <div class="call-icon">&#x1F4DE;</div>
+            <div class="call-timer">02:34</div>
+            <div class="call-status-text">Conectado</div>
+            <div class="signal-bars">
+              <div class="signal-bar" style="height:6px"></div>
+              <div class="signal-bar" style="height:10px"></div>
+              <div class="signal-bar" style="height:14px"></div>
+              <div class="signal-bar" style="height:18px"></div>
+              <div class="signal-bar" style="height:12px;background:rgba(16,185,129,0.3)"></div>
+            </div>
+            <div class="vu-meter">
+              <div class="vu-bar" style="height:4px"></div>
+              <div class="vu-bar" style="height:10px"></div>
+              <div class="vu-bar" style="height:16px"></div>
+              <div class="vu-bar" style="height:12px"></div>
+              <div class="vu-bar" style="height:18px"></div>
+              <div class="vu-bar" style="height:8px"></div>
+              <div class="vu-bar" style="height:14px"></div>
+              <div class="vu-bar" style="height:6px"></div>
+            </div>
+            <div class="call-actions">
+              <div class="call-btn call-btn-mute" title="Silenciar">&#x1F507;</div>
+              <div class="call-btn call-btn-hangup" title="Colgar">&#x1F4F5;</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SLIDE 17: CSAT + End -->
+    <div class="slide slide-split" data-narration="Al terminar la llamada, el sistema pide una valoracion con estrellas. Esta puntuacion se vincula a la conversacion y aparece en las analiticas del dashboard. El visitante puede volver al chat para cualquier otra consulta.">
+      <div class="visual-side animate-in">
+        <div class="call-mock">
+          <div class="call-header" style="background:linear-gradient(135deg,var(--teal),var(--accent))">
+            <span style="font-size:20px">&#x1F4DE;</span>
+            <div>
+              <div style="font-weight:700;font-size:14px">Redegal</div>
+              <div style="font-size:11px;opacity:0.8">Llamada finalizada</div>
+            </div>
+          </div>
+          <div class="csat-mock">
+            <div class="csat-check">&#x2713;</div>
+            <div style="font-size:16px;font-weight:800;color:var(--slate)">Llamada finalizada</div>
+            <div style="font-size:13px;color:var(--gray);margin-top:4px">Duracion: 02:34</div>
+            <div style="font-size:14px;font-weight:600;color:var(--slate);margin-top:20px">Como fue tu experiencia?</div>
+            <div class="csat-stars">
+              <span class="csat-star filled">&#x2605;</span>
+              <span class="csat-star filled">&#x2605;</span>
+              <span class="csat-star filled">&#x2605;</span>
+              <span class="csat-star filled">&#x2605;</span>
+              <span class="csat-star empty">&#x2605;</span>
+            </div>
+            <div style="font-size:13px;color:var(--green);font-weight:600;margin-top:4px">Gracias por tu valoracion!</div>
+            <div style="margin-top:20px;padding:12px 24px;border-radius:10px;background:linear-gradient(135deg,var(--teal),var(--accent));color:white;font-size:13px;font-weight:600;display:inline-block;cursor:pointer">
+              Volver al chat
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="text-side">
+        <div class="tag animate-in">Feedback</div>
+        <h2 class="animate-in animate-in-d1">CSAT<br><span class="gradient-text">Survey</span></h2>
+        <p class="subtitle animate-in animate-in-d2">Valoracion por estrellas vinculada a la conversacion. Los datos aparecen en analytics del dashboard para seguimiento de calidad.</p>
+      </div>
+    </div>
+
+    <!-- SLIDE 18: Ready / URLs -->
+    <div class="slide slide-center" data-narration="El sistema esta listo. El widget se integra en cualquier pagina con dos lineas de codigo. El dashboard permite a los agentes gestionar conversaciones. El wallboard muestra metricas en tiempo real. Gracias por seguir esta guia.">
+      <div class="animate-in">
+        <div class="tag">Listo</div>
+        <h1>Sistema listo para<br><span class="gradient-text">produccion</span></h1>
+        <p class="subtitle" style="margin:0 auto">Todo configurado. Estas son las URLs principales del sistema.</p>
+      </div>
+      <div class="url-grid animate-in animate-in-d1">
+        <div class="url-card">
+          <div class="url-icon" style="background:rgba(0,212,170,0.12)">&#x1F4AC;</div>
+          <div>
+            <div class="url-label">Widget embebido</div>
+            <div class="url-path">redegal.com</div>
+          </div>
+        </div>
+        <div class="url-card">
+          <div class="url-icon" style="background:rgba(108,92,231,0.12)">&#x1F4CA;</div>
+          <div>
+            <div class="url-label">Panel de agentes</div>
+            <div class="url-path">/dashboard</div>
+          </div>
+        </div>
+        <div class="url-card">
+          <div class="url-icon" style="background:rgba(59,130,246,0.12)">&#x1F4FA;</div>
+          <div>
+            <div class="url-label">Metricas en vivo</div>
+            <div class="url-path">/dashboard/wallboard</div>
+          </div>
+        </div>
+        <div class="url-card">
+          <div class="url-icon" style="background:rgba(245,158,11,0.12)">&#x2699;</div>
+          <div>
+            <div class="url-label">Configuracion inicial</div>
+            <div class="url-path">/setup</div>
+          </div>
+        </div>
+      </div>
+      <div class="animate-in animate-in-d2" style="margin-top:24px;display:flex;align-items:center;gap:12px;justify-content:center">
+        <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,var(--teal),var(--accent));display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:900;color:white">R</div>
+        <div style="text-align:left">
+          <div style="font-size:18px;font-weight:800">Redegal</div>
+          <div style="font-size:12px;color:#94A3B8">BME:RDG | Digital Transformation</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Controls -->
+  <div id="controls">
+    <button class="ctrl-btn" id="btn-prev" disabled>&#x2190; Anterior</button>
+    <div id="progress"><div id="progress-bar" style="width:0%"></div></div>
+    <span id="slide-counter">1 / 18</span>
+    <button class="ctrl-btn primary" id="btn-next">Siguiente &#x2192;</button>
+    <button class="ctrl-btn" id="btn-auto">&#x25B6; Auto</button>
+    <span id="voice-status"></span>
+  </div>
+</div>
+
+<script>
+// ── Presentation Engine ──
+const slides = document.querySelectorAll('.slide');
+const totalSlides = slides.length;
+let current = 0;
+let autoTimer = null;
+let speaking = false;
+
+const btnPrev = document.getElementById('btn-prev');
+const btnNext = document.getElementById('btn-next');
+const btnAuto = document.getElementById('btn-auto');
+const progressBar = document.getElementById('progress-bar');
+const counter = document.getElementById('slide-counter');
+const voiceStatus = document.getElementById('voice-status');
+
+function updateUI() {
+  slides.forEach((s, i) => {
+    s.classList.remove('active', 'exit');
+    if (i === current) s.classList.add('active');
+  });
+  btnPrev.disabled = current === 0;
+  btnNext.disabled = current === totalSlides - 1;
+  counter.textContent = `${current + 1} / ${totalSlides}`;
+  progressBar.style.width = `${((current + 1) / totalSlides) * 100}%`;
+}
+
+function goTo(n) {
+  if (n < 0 || n >= totalSlides) return;
+  window.speechSynthesis.cancel();
+  speaking = false;
+  const prev = current;
+  current = n;
+  slides[prev]?.classList.add('exit');
+  updateUI();
+}
+
+function next() { goTo(current + 1); }
+function prev() { goTo(current - 1); }
+
+btnPrev.addEventListener('click', () => { stopAuto(); prev(); });
+btnNext.addEventListener('click', () => { stopAuto(); next(); });
+
+// Keyboard navigation
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); stopAuto(); next(); }
+  if (e.key === 'ArrowLeft') { e.preventDefault(); stopAuto(); prev(); }
+});
+
+// ── Microsoft TTS (Web Speech API) ──
+function getMicrosoftVoice() {
+  const voices = window.speechSynthesis.getVoices();
+  const prefs = [
+    'Microsoft Helena', 'Microsoft Laura', 'Microsoft Pablo', 'Microsoft Elvira',
+    'Microsoft Sabina', 'Helena', 'Laura', 'Pablo',
+  ];
+  for (const pref of prefs) {
+    const v = voices.find(v => v.name.includes(pref) && v.lang.startsWith('es'));
+    if (v) return v;
+  }
+  const esVoice = voices.find(v => v.lang.startsWith('es'));
+  if (esVoice) return esVoice;
+  return voices[0] || null;
+}
+
+function speak(text, onEnd) {
+  if (!window.speechSynthesis) { onEnd?.(); return; }
+  window.speechSynthesis.cancel();
+  const utter = new SpeechSynthesisUtterance(text);
+  const voice = getMicrosoftVoice();
+  if (voice) { utter.voice = voice; voiceStatus.textContent = `Voz: ${voice.name}`; }
+  utter.lang = 'es-ES';
+  utter.rate = 0.92;
+  utter.pitch = 1;
+  utter.volume = 1;
+  speaking = true;
+  utter.onend = () => { speaking = false; onEnd?.(); };
+  utter.onerror = () => { speaking = false; onEnd?.(); };
+  window.speechSynthesis.speak(utter);
+}
+
+// ── Auto Mode ──
+let autoRunning = false;
+
+function startAuto() {
+  autoRunning = true;
+  btnAuto.innerHTML = '&#x23F8; Pausar';
+  autoStep();
+}
+
+function stopAuto() {
+  autoRunning = false;
+  window.speechSynthesis.cancel();
+  speaking = false;
+  if (autoTimer) clearTimeout(autoTimer);
+  autoTimer = null;
+  btnAuto.innerHTML = '&#x25B6; Auto';
+}
+
+function autoStep() {
+  if (!autoRunning) return;
+  const slide = slides[current];
+  const narration = slide?.getAttribute('data-narration');
+  if (narration) {
+    speak(narration, () => {
+      if (!autoRunning) return;
+      autoTimer = setTimeout(() => {
+        if (current < totalSlides - 1) { next(); autoStep(); }
+        else { stopAuto(); }
+      }, 1500);
+    });
+  } else {
+    autoTimer = setTimeout(() => {
+      if (current < totalSlides - 1) { next(); autoStep(); }
+      else { stopAuto(); }
+    }, 5000);
+  }
+}
+
+btnAuto.addEventListener('click', () => {
+  if (autoRunning) stopAuto(); else startAuto();
+});
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = () => {
+    const v = getMicrosoftVoice();
+    if (v) voiceStatus.textContent = `Voz: ${v.name}`;
+  };
+  window.speechSynthesis.getVoices();
+}
+
+updateUI();
+</script>
+</body>
+</html>

@@ -56,7 +56,7 @@ export class AudioLevelMonitor {
   private audioContext: AudioContext | null = null;
   private analyser: AnalyserNode | null = null;
   private sourceNode: MediaStreamAudioSourceNode | null = null;
-  private dataArray: Uint8Array | null = null;
+  private dataArray: Uint8Array<ArrayBuffer> | null = null;
   private stream: MediaStream | null = null;
 
   // Current state

@@ -21,7 +21,7 @@ Esta arquitectura permite **cambiar dinámicamente entre proveedores** cuando un
 - Mejor comprensión de contexto conversacional
 - Respuestas más naturales y coherentes
 - Excelente para análisis de intención del usuario
-- Soporte superior para múltiples idiomas (12 idiomas soportados)
+- Soporte superior para múltiples idiomas (4 idiomas soportados)
 
 **Precios** (actualizado 2026):
 - Claude 3.5 Sonnet: $3 por millón tokens entrada, $15 por millón salida
@@ -159,7 +159,7 @@ Usuario escribe → Webhook recibido → Detectar idioma
 | **Generación de respuesta** | AI Provider | Respuesta conversacional natural |
 | **Análisis de sentimiento** | AI Provider | Detecta emoción para respuesta empática |
 | **Contexto conversacional** | AI Provider | Mantiene coherencia en diálogos largos |
-| **Múltiples idiomas** | AI Provider | 12 idiomas soportados automáticamente |
+| **Múltiples idiomas** | AI Provider | 4 idiomas soportados automáticamente |
 
 ---
 

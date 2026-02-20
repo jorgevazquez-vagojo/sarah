@@ -18,9 +18,7 @@ const LINE_META: Record<string, { color: string; gradient: string; label: string
 };
 
 const LANG_NAMES: Record<string, string> = {
-  es: 'Espanol', en: 'English', pt: 'Portugues', fr: 'Francais',
-  de: 'Deutsch', it: 'Italiano', nl: 'Nederlands', zh: 'Chinese',
-  ja: 'Japanese', ko: 'Korean', ar: 'Arabic', gl: 'Galego',
+  es: 'Espanol', en: 'English', pt: 'Portugues', gl: 'Galego',
 };
 
 function StatCard({ label, value, icon, color, subtitle }: {

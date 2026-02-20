@@ -344,7 +344,7 @@ export function CallbackScheduler({
   const lang = (language || 'es').slice(0, 2);
   const s = STRINGS[lang] || STRINGS['es'];
   const buLabels = BU_LABELS[lang] || BU_LABELS['es'];
-  const isRTL = lang === 'ar';
+  const isRTL = false;
 
   // ─── State ───
   const businessDays = useMemo(() => getNextBusinessDays(7), []);
