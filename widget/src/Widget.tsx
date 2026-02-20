@@ -337,6 +337,13 @@ export function Widget(props: WidgetConfig) {
                   {chat.isConnected
                     ? (chat.isBusinessHours ? 'Online' : t('offline_title'))
                     : t('reconnecting')}
+                  <span style={{
+                    padding: '1px 8px', borderRadius: 20, fontSize: 8, fontWeight: 700,
+                    background: 'rgba(255,255,255,0.15)', color: colors.textOnPrimary,
+                    letterSpacing: '0.06em', textTransform: 'uppercase' as const,
+                    border: '1px solid rgba(255,255,255,0.3)',
+                    backdropFilter: 'blur(4px)',
+                  }}>Beta</span>
                 </div>
               </div>
             </div>
@@ -1311,6 +1318,14 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack }: {
             <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
               Introduce tu telefono y te devolvemos la llamada en segundos
             </p>
+            <span style={{
+              display: 'inline-block', marginTop: 6, padding: '2px 10px', borderRadius: 20,
+              fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
+              textTransform: 'uppercase' as const,
+              background: `linear-gradient(135deg, ${theme.colors.gradientFrom}22, ${theme.colors.gradientTo}22)`,
+              color: 'var(--rc-primary)', border: '1px solid var(--rc-primary)',
+              opacity: 0.7,
+            }}>Version Beta</span>
           </div>
 
           {callStatus.status === 'error' && callStatus.message && (
