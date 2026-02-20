@@ -184,19 +184,22 @@ CREATE TABLE file_uploads (
 -- ─── Calls ───
 CREATE TABLE calls (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    call_id VARCHAR(64) UNIQUE NOT NULL,
     conversation_id UUID REFERENCES conversations(id),
+    visitor_id VARCHAR(100),
     agent_id UUID REFERENCES agents(id),
-    visitor_sip_id VARCHAR(100),
-    queue VARCHAR(64),
+    business_line VARCHAR(64),
     status VARCHAR(20) DEFAULT 'connecting' CHECK (status IN ('connecting', 'ringing', 'active', 'on_hold', 'ended', 'failed', 'missed')),
     duration_seconds INTEGER,
     recording_url TEXT,
     quality_score INTEGER,
     metadata JSONB DEFAULT '{}',
-    started_at TIMESTAMPTZ DEFAULT NOW(),
+    created_at TIMESTAMPTZ DEFAULT NOW(),
+    answered_at TIMESTAMPTZ,
     ended_at TIMESTAMPTZ
 );
 
+CREATE INDEX idx_calls_call_id ON calls(call_id);
 CREATE INDEX idx_calls_conv ON calls(conversation_id);
 CREATE INDEX idx_calls_status ON calls(status);
 
@@ -296,22 +299,22 @@ INSERT INTO widget_themes (tenant_id, name, is_active, config) VALUES
             "showPoweredBy": true
         },
         "colors": {
-            "primary": "#E30613",
-            "primaryDark": "#B8050F",
-            "primaryLight": "#FEE2E2",
-            "secondary": "#1E293B",
-            "accent": "#F59E0B",
+            "primary": "#007fff",
+            "primaryDark": "#0066cc",
+            "primaryLight": "#E0F0FF",
+            "secondary": "#32373c",
+            "accent": "#0693e3",
             "background": "#FFFFFF",
-            "surface": "#F8FAFC",
-            "text": "#0F172A",
-            "textSecondary": "#64748B",
+            "surface": "#F7F9FC",
+            "text": "#1A1A2E",
+            "textSecondary": "#5A6178",
             "textOnPrimary": "#FFFFFF",
-            "border": "#E2E8F0",
-            "success": "#10B981",
-            "warning": "#F59E0B",
-            "error": "#EF4444",
-            "gradientFrom": "#E30613",
-            "gradientTo": "#B8050F",
+            "border": "#E5E9F0",
+            "success": "#00D084",
+            "warning": "#FCB900",
+            "error": "#CF2E2E",
+            "gradientFrom": "#007fff",
+            "gradientTo": "#0055CC",
             "headerGradient": true
         },
         "typography": {

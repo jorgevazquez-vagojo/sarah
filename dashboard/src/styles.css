@@ -8,9 +8,9 @@
 
 @layer base {
   :root {
-    --rd-primary: #E30613;
-    --rd-primary-dark: #B8050F;
-    --rd-primary-light: #FF2D3A;
+    --rd-primary: #007fff;
+    --rd-primary-dark: #0066cc;
+    --rd-primary-light: #3399ff;
     --rd-bg: #f8fafc;
     --rd-surface: #ffffff;
     --rd-surface-hover: #f1f5f9;
@@ -81,7 +81,7 @@
     position: relative;
   }
   .sidebar-link.active {
-    background: linear-gradient(135deg, rgba(227,6,19,0.08), rgba(227,6,19,0.04));
+    background: linear-gradient(135deg, rgba(0,127,255,0.08), rgba(0,127,255,0.04));
     color: var(--rd-primary);
     font-weight: 600;
   }
@@ -159,10 +159,10 @@
   .btn-primary {
     @apply px-4 py-2 text-white text-sm font-semibold rounded-xl transition-all;
     background: linear-gradient(135deg, var(--rd-primary), var(--rd-primary-dark));
-    box-shadow: 0 2px 8px rgba(227,6,19,0.25);
+    box-shadow: 0 2px 8px rgba(0,127,255,0.25);
   }
   .btn-primary:hover {
-    box-shadow: 0 4px 16px rgba(227,6,19,0.35);
+    box-shadow: 0 4px 16px rgba(0,127,255,0.35);
     transform: translateY(-1px);
   }
   .btn-primary:active {
@@ -216,7 +216,7 @@
   }
   .input-field:focus {
     border-color: var(--rd-primary);
-    box-shadow: 0 0 0 3px rgba(227,6,19,0.08);
+    box-shadow: 0 0 0 3px rgba(0,127,255,0.08);
   }
   [data-theme="dark"] .input-field {
     @apply bg-slate-800 border-slate-700;
@@ -263,8 +263,8 @@
     background: var(--rd-surface-hover);
   }
   .conv-card.active {
-    background: rgba(227,6,19,0.04);
-    border-color: rgba(227,6,19,0.15);
+    background: rgba(0,127,255,0.04);
+    border-color: rgba(0,127,255,0.15);
   }
   .conv-card.active::before {
     content: '';
@@ -278,8 +278,8 @@
     border-radius: 0 3px 3px 0;
   }
   [data-theme="dark"] .conv-card.active {
-    background: rgba(227,6,19,0.08);
-    border-color: rgba(227,6,19,0.2);
+    background: rgba(0,127,255,0.08);
+    border-color: rgba(0,127,255,0.2);
   }
 
   /* ─── Priority Ring ─── */
@@ -295,7 +295,7 @@
     background: linear-gradient(135deg, var(--rd-primary), var(--rd-primary-dark));
     color: white;
     border-radius: 18px 18px 4px 18px;
-    box-shadow: 0 2px 8px rgba(227,6,19,0.15);
+    box-shadow: 0 2px 8px rgba(0,127,255,0.15);
   }
   .msg-visitor {
     background: var(--rd-surface);
@@ -390,9 +390,9 @@
   to { transform: scale(1); }
 }
 @keyframes rd-ring {
-  0% { box-shadow: 0 0 0 0 rgba(227,6,19,0.4); }
-  70% { box-shadow: 0 0 0 6px rgba(227,6,19,0); }
-  100% { box-shadow: 0 0 0 0 rgba(227,6,19,0); }
+  0% { box-shadow: 0 0 0 0 rgba(0,127,255,0.4); }
+  70% { box-shadow: 0 0 0 6px rgba(0,127,255,0); }
+  100% { box-shadow: 0 0 0 0 rgba(0,127,255,0); }
 }
 
 .animate-fade-in { animation: rd-fade-in 0.3s var(--rd-ease) both; }

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { WSClient } from '../lib/ws-client';
+import type { SipConfig } from '../lib/sip-client';
 
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read';
 
@@ -54,6 +55,7 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
   const [allRead, setAllRead] = useState(false);
   const [kbResults, setKbResults] = useState<KBResult[]>([]);
   const [showLeadForm, setShowLeadForm] = useState(false);
+  const [callReady, setCallReady] = useState<{ callId: string; sipConfig: SipConfig } | null>(null);
   const wsRef = useRef<WSClient | null>(null);
 
   useEffect(() => {
@@ -147,6 +149,13 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
     // Server requests showing lead form (from rich message postback)
     ws.on('show_lead_form', () => {
       setShowLeadForm(true);
+    });
+
+    // Call ready: server assigned a callId and SIP config for WebRTC
+    ws.on('call_ready', (data) => {
+      if (data.callId && data.sipConfig) {
+        setCallReady({ callId: data.callId, sipConfig: data.sipConfig });
+      }
     });
 
     ws.on('_close', () => setIsConnected(false));
@@ -247,11 +256,13 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
 
   const clearLeadForm = useCallback(() => setShowLeadForm(false), []);
 
+  const clearCallReady = useCallback(() => setCallReady(null), []);
+
   return {
     messages, isTyping, isConnected, isBusinessHours,
-    language, businessLine, allRead, kbResults, showLeadForm,
+    language, businessLine, allRead, kbResults, showLeadForm, callReady,
     sendMessage, setLanguage, setBusinessLine,
     escalate, requestCall, submitLead, submitOfflineForm, submitCsat,
-    searchKB, sendQuickReply, uploadFile, clearLeadForm,
+    searchKB, sendQuickReply, uploadFile, clearLeadForm, clearCallReady,
   };
 }

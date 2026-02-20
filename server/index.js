@@ -139,7 +139,7 @@ app.get('/widget/test.html', (_req, res) => {
       <h3>Personalizar Widget en Tiempo Real</h3>
       <div class="config-row">
         <label>Color primario:</label>
-        <input type="color" value="#E30613" onchange="updateConfig('primaryColor', this.value)" />
+        <input type="color" value="#007fff" onchange="updateConfig('primaryColor', this.value)" />
       </div>
       <div class="config-row">
         <label>Posicion:</label>
@@ -175,7 +175,7 @@ app.get('/widget/test.html', (_req, res) => {
       apiUrl: 'ws://' + window.location.host + '/ws/chat',
       configUrl: window.location.origin + '/api/config/widget',
       language: 'auto',
-      primaryColor: '#E30613'
+      primaryColor: '#007fff'
     };
     function updateConfig(key, val) {
       if (window.__redegalWidget) window.__redegalWidget.updateConfig({ [key]: val });

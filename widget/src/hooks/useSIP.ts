@@ -3,26 +3,35 @@ import { createSipClient, SipClient, SipConfig } from '../lib/sip-client';
 
 export type CallState = 'idle' | 'registering' | 'registered' | 'calling' | 'ringing' | 'active' | 'ended';
 
-export function useSIP(config?: SipConfig) {
+export function useSIP() {
   const [callState, setCallState] = useState<CallState>('idle');
   const [isMuted, setIsMuted] = useState(false);
   const clientRef = useRef<SipClient | null>(null);
 
-  const register = useCallback(async () => {
-    if (!config) return;
+  // Start a call with dynamic config (received from server via call_ready)
+  const startCall = useCallback(async (config: SipConfig) => {
+    // Destroy previous client if any
+    if (clientRef.current) {
+      clientRef.current.destroy();
+      clientRef.current = null;
+    }
+
     const client = createSipClient(config);
     clientRef.current = client;
     client.onStateChange((state) => setCallState(state as CallState));
-    setCallState('registering');
-    await client.register();
-  }, [config]);
 
-  const call = useCallback((target: string) => {
-    clientRef.current?.call(target);
+    try {
+      await client.register();
+      client.call('agent');
+    } catch {
+      setCallState('ended');
+    }
   }, []);
 
   const hangup = useCallback(() => {
     clientRef.current?.hangup();
+    clientRef.current?.destroy();
+    clientRef.current = null;
     setCallState('idle');
     setIsMuted(false);
   }, []);
@@ -33,13 +42,7 @@ export function useSIP(config?: SipConfig) {
     setIsMuted(next);
   }, [isMuted]);
 
-  const destroy = useCallback(() => {
-    clientRef.current?.destroy();
-    clientRef.current = null;
-    setCallState('idle');
-  }, []);
-
-  // Clean up SIP client on unmount
+  // Clean up on unmount
   useEffect(() => {
     return () => {
       clientRef.current?.destroy();
@@ -47,5 +50,5 @@ export function useSIP(config?: SipConfig) {
     };
   }, []);
 
-  return { callState, isMuted, register, call, hangup, toggleMute, destroy };
+  return { callState, isMuted, startCall, hangup, toggleMute };
 }

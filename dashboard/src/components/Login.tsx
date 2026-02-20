@@ -32,7 +32,7 @@ export function Login({ onLogin }: Props) {
       {/* Ambient glow */}
       <div className="absolute inset-0 pointer-events-none" aria-hidden>
         <div className="absolute top-1/3 left-1/4 w-[500px] h-[500px] rounded-full opacity-20"
-          style={{ background: 'radial-gradient(circle, rgba(227,6,19,0.3), transparent 70%)' }} />
+          style={{ background: 'radial-gradient(circle, rgba(0,127,255,0.3), transparent 70%)' }} />
         <div className="absolute bottom-1/4 right-1/3 w-[400px] h-[400px] rounded-full opacity-15"
           style={{ background: 'radial-gradient(circle, rgba(59,130,246,0.25), transparent 70%)' }} />
         {/* Grid pattern */}
@@ -49,7 +49,7 @@ export function Login({ onLogin }: Props) {
           {/* Logo */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-5 relative"
-              style={{ background: 'linear-gradient(135deg, #E30613, #B8050F)', boxShadow: '0 8px 32px rgba(227,6,19,0.3)' }}>
+              style={{ background: 'linear-gradient(135deg, #007fff, #0066cc)', boxShadow: '0 8px 32px rgba(0,127,255,0.3)' }}>
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
@@ -71,7 +71,7 @@ export function Login({ onLogin }: Props) {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-400/30 transition-all"
+                  className="w-full pl-10 pr-4 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/30 transition-all"
                   placeholder="tu.usuario"
                   required
                   autoFocus
@@ -90,7 +90,7 @@ export function Login({ onLogin }: Props) {
                   type={showPwd ? 'text' : 'password'}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-11 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-red-500/30 focus:border-red-400/30 transition-all"
+                  className="w-full pl-10 pr-11 py-3 bg-white/[0.04] border border-white/[0.08] rounded-xl text-sm text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400/30 transition-all"
                   placeholder="••••••••"
                   required
                   autoComplete="current-password"
@@ -126,8 +126,8 @@ export function Login({ onLogin }: Props) {
               disabled={loading || !username || !password}
               className="w-full py-3.5 rounded-xl text-sm font-semibold text-white transition-all disabled:opacity-30 disabled:cursor-not-allowed"
               style={{
-                background: 'linear-gradient(135deg, #E30613, #B8050F)',
-                boxShadow: loading || !username || !password ? 'none' : '0 4px 20px rgba(227,6,19,0.3)',
+                background: 'linear-gradient(135deg, #007fff, #0066cc)',
+                boxShadow: loading || !username || !password ? 'none' : '0 4px 20px rgba(0,127,255,0.3)',
               }}
             >
               {loading ? (

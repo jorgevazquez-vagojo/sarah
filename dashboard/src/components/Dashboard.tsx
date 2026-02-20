@@ -77,7 +77,15 @@ export function Dashboard({ token, agent, onLogout }: Props) {
   const [convSummary, setConvSummary] = useState<string | null>(null);
   const [visitorContext, setVisitorContext] = useState<any>(null);
   const [internalNotes, setInternalNotes] = useState<Array<{ content: string; agentName: string; timestamp: string }>>([]);
+  const [incomingCall, setIncomingCall] = useState<{ callId: string; visitorId: string; language: string; businessLine: string } | null>(null);
+  const [activeCall, setActiveCall] = useState<{ callId: string; state: string; duration: number } | null>(null);
+  const [isMuted, setIsMuted] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
+  const callPcRef = useRef<RTCPeerConnection | null>(null);
+  const callStreamRef = useRef<MediaStream | null>(null);
+  const callWsRef = useRef<WebSocket | null>(null);
+  const callTimerRef = useRef<number | null>(null);
+  const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
   // Dark mode
   useEffect(() => {
@@ -167,6 +175,22 @@ export function Dashboard({ token, agent, onLogout }: Props) {
           case 'status_updated':
             setStatus(msg.status);
             break;
+          case 'incoming_call':
+            setIncomingCall({
+              callId: msg.callId,
+              visitorId: msg.visitorId,
+              language: msg.language || 'es',
+              businessLine: msg.businessLine || 'general',
+            });
+            break;
+          case 'call_config':
+            // After accepting, server sends config to connect signaling
+            connectCallSignaling(msg.callId, token);
+            break;
+          case 'call_taken':
+            // Another agent took the call
+            if (incomingCall?.callId === msg.callId) setIncomingCall(null);
+            break;
         }
       };
 
@@ -245,6 +269,132 @@ export function Dashboard({ token, agent, onLogout }: Props) {
     setStatus(newStatus);
   };
 
+  // ─── WebRTC Call Functions ───
+  const ICE_SERVERS: RTCIceServer[] = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:stun1.l.google.com:19302' },
+  ];
+
+  const handleAcceptCall = () => {
+    if (!incomingCall) return;
+    sendWS('accept_call', { callId: incomingCall.callId });
+    setActiveCall({ callId: incomingCall.callId, state: 'connecting', duration: 0 });
+    setIncomingCall(null);
+  };
+
+  const handleRejectCall = () => {
+    if (!incomingCall) return;
+    sendWS('reject_call', { callId: incomingCall.callId });
+    setIncomingCall(null);
+  };
+
+  const handleHangupCall = () => {
+    if (activeCall) sendWS('hangup_call', { callId: activeCall.callId });
+    cleanupCall();
+  };
+
+  const handleToggleMute = () => {
+    if (callStreamRef.current) {
+      const next = !isMuted;
+      for (const track of callStreamRef.current.getAudioTracks()) track.enabled = !next;
+      setIsMuted(next);
+    }
+  };
+
+  function cleanupCall() {
+    if (callPcRef.current) { callPcRef.current.close(); callPcRef.current = null; }
+    if (callStreamRef.current) { for (const t of callStreamRef.current.getTracks()) t.stop(); callStreamRef.current = null; }
+    if (callWsRef.current) { callWsRef.current.close(); callWsRef.current = null; }
+    if (callTimerRef.current) { clearInterval(callTimerRef.current); callTimerRef.current = null; }
+    if (remoteAudioRef.current) { remoteAudioRef.current.srcObject = null; remoteAudioRef.current.remove(); remoteAudioRef.current = null; }
+    setActiveCall(null);
+    setIsMuted(false);
+  }
+
+  async function connectCallSignaling(callId: string, agentToken: string) {
+    try {
+      callStreamRef.current = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
+    } catch {
+      setActiveCall(null);
+      return;
+    }
+
+    const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const url = `${proto}//${window.location.host}/ws/sip?role=agent&callId=${encodeURIComponent(callId)}&token=${encodeURIComponent(agentToken)}`;
+    const ws = new WebSocket(url);
+    callWsRef.current = ws;
+
+    const sendSig = (type: string, data: Record<string, any> = {}) => {
+      if (ws.readyState === WebSocket.OPEN) ws.send(JSON.stringify({ type, ...data }));
+    };
+
+    ws.onopen = () => sendSig('register', { callId });
+
+    ws.onmessage = async (e) => {
+      const msg = JSON.parse(e.data);
+      switch (msg.type) {
+        case 'webrtc_offer': {
+          // Visitor sent offer, create answer
+          const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
+          callPcRef.current = pc;
+
+          pc.onicecandidate = (ev) => {
+            if (ev.candidate) sendSig('ice_candidate', { candidate: ev.candidate.toJSON() });
+          };
+
+          pc.oniceconnectionstatechange = () => {
+            const s = pc.iceConnectionState;
+            if (s === 'connected' || s === 'completed') {
+              setActiveCall((prev) => prev ? { ...prev, state: 'active' } : null);
+              // Start duration timer
+              callTimerRef.current = window.setInterval(() => {
+                setActiveCall((prev) => prev ? { ...prev, duration: prev.duration + 1 } : null);
+              }, 1000);
+            } else if (s === 'disconnected' || s === 'failed') {
+              cleanupCall();
+            }
+          };
+
+          pc.ontrack = (ev) => {
+            if (!remoteAudioRef.current) {
+              remoteAudioRef.current = document.createElement('audio');
+              remoteAudioRef.current.autoplay = true;
+              remoteAudioRef.current.style.display = 'none';
+              document.body.appendChild(remoteAudioRef.current);
+            }
+            remoteAudioRef.current.srcObject = ev.streams[0] || new MediaStream([ev.track]);
+          };
+
+          if (callStreamRef.current) {
+            for (const track of callStreamRef.current.getAudioTracks()) pc.addTrack(track, callStreamRef.current);
+          }
+
+          await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: msg.sdp }));
+          const answer = await pc.createAnswer();
+          await pc.setLocalDescription(answer);
+          sendSig('webrtc_answer', { sdp: answer.sdp });
+          break;
+        }
+
+        case 'ice_candidate': {
+          if (callPcRef.current && msg.candidate) {
+            await callPcRef.current.addIceCandidate(new RTCIceCandidate(msg.candidate));
+          }
+          break;
+        }
+
+        case 'call_ended': {
+          cleanupCall();
+          break;
+        }
+      }
+    };
+
+    ws.onclose = () => {
+      if (activeCall) cleanupCall();
+    };
+  }
+
   return (
     <div className="flex h-screen" style={{ background: 'var(--rd-bg)' }}>
       {/* ─── Sidebar ─── */}
@@ -256,7 +406,7 @@ export function Dashboard({ token, agent, onLogout }: Props) {
         <div className="h-16 flex items-center px-4" style={{ borderBottom: '1px solid var(--rd-border)' }}>
           <div className="flex items-center gap-2.5 overflow-hidden">
             <div className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0"
-              style={{ background: 'linear-gradient(135deg, #E30613, #B8050F)', boxShadow: '0 2px 8px rgba(227,6,19,0.25)' }}>
+              style={{ background: 'linear-gradient(135deg, #007fff, #0066cc)', boxShadow: '0 2px 8px rgba(0,127,255,0.25)' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
               </svg>
@@ -433,6 +583,75 @@ export function Dashboard({ token, agent, onLogout }: Props) {
           {tab === 'settings' && <Settings />}
         </div>
       </main>
+
+      {/* ─── Incoming Call Notification ─── */}
+      {incomingCall && (
+        <div className="fixed top-6 right-6 z-50 animate-scale-in" style={{ width: 340 }}>
+          <div className="rounded-2xl shadow-2xl border overflow-hidden"
+            style={{ background: 'var(--rd-surface)', borderColor: 'var(--rd-border)' }}>
+            <div className="px-5 py-4 flex items-center gap-4" style={{ background: 'linear-gradient(135deg, #007fff, #0066cc)' }}>
+              <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center animate-ring">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
+                </svg>
+              </div>
+              <div className="flex-1 text-white">
+                <p className="font-semibold text-sm">Llamada entrante</p>
+                <p className="text-xs opacity-80">
+                  Visitante {incomingCall.visitorId.slice(0, 8)} &middot; {incomingCall.businessLine} &middot; {incomingCall.language.toUpperCase()}
+                </p>
+              </div>
+            </div>
+            <div className="flex gap-3 p-4">
+              <button onClick={handleRejectCall}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold transition-colors"
+                style={{ background: 'var(--rd-surface-hover)', color: 'var(--rd-text-secondary)' }}>
+                Rechazar
+              </button>
+              <button onClick={handleAcceptCall}
+                className="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors"
+                style={{ background: '#10b981' }}>
+                Aceptar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Active Call Bar ─── */}
+      {activeCall && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 animate-fade-in">
+          <div className="flex items-center gap-4 px-6 py-3 rounded-2xl shadow-2xl border"
+            style={{ background: 'var(--rd-surface)', borderColor: 'var(--rd-border)' }}>
+            <div className={`w-3 h-3 rounded-full ${activeCall.state === 'active' ? 'bg-emerald-500 animate-pulse-dot' : 'bg-amber-500 animate-pulse'}`} />
+            <span className="text-sm font-semibold" style={{ color: 'var(--rd-text)' }}>
+              {activeCall.state === 'active' ? 'En llamada' : 'Conectando...'}
+            </span>
+            {activeCall.state === 'active' && (
+              <span className="font-mono text-xs px-2 py-1 rounded-lg" style={{ background: 'var(--rd-surface-hover)', color: 'var(--rd-text-secondary)' }}>
+                {Math.floor(activeCall.duration / 60).toString().padStart(2, '0')}:{(activeCall.duration % 60).toString().padStart(2, '0')}
+              </span>
+            )}
+            <button onClick={handleToggleMute}
+              className="btn-icon h-9 w-9"
+              style={{ color: isMuted ? 'var(--rd-danger)' : 'var(--rd-text-secondary)', background: isMuted ? 'rgba(239,68,68,0.1)' : undefined }}
+              title={isMuted ? 'Activar micro' : 'Silenciar'}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                {isMuted ? (
+                  <><line x1="1" y1="1" x2="23" y2="23"/><path d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6"/><path d="M17 16.95A7 7 0 015 12v-2m14 0v2c0 .76-.12 1.5-.35 2.18"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>
+                ) : (
+                  <><path d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z"/><path d="M19 10v2a7 7 0 01-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></>
+                )}
+              </svg>
+            </button>
+            <button onClick={handleHangupCall}
+              className="h-9 px-4 rounded-xl text-sm font-semibold text-white transition-colors"
+              style={{ background: 'linear-gradient(135deg, #EF4444, #DC2626)' }}>
+              Colgar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* ─── Command Palette ─── */}
       {showCmdPalette && (

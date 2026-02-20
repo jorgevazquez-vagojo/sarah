@@ -398,7 +398,7 @@ function ThemePanel() {
                 style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl" style={{ background: `linear-gradient(135deg, ${config.colors?.primary || '#E30613'}, ${config.colors?.primaryDark || '#B8050F'})` }} />
+                    <div className="w-10 h-10 rounded-xl" style={{ background: `linear-gradient(135deg, ${config.colors?.primary || '#007fff'}, ${config.colors?.primaryDark || '#0066cc'})` }} />
                     <div>
                       <span className="text-sm font-bold" style={{ color: 'var(--rd-text)' }}>{theme.name}</span>
                       <span className="badge badge-gray ml-2">{theme.tenant_slug}</span>
@@ -447,14 +447,14 @@ function ThemePanel() {
                   <p className="text-[10px] font-medium mb-3" style={{ color: 'var(--rd-text-muted)' }}>Vista previa</p>
                   <div className="flex items-center gap-3">
                     <div className="w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg"
-                      style={{ background: `linear-gradient(135deg, ${config.colors?.primary || '#E30613'}, ${config.colors?.primaryDark || '#B8050F'})` }}>
+                      style={{ background: `linear-gradient(135deg, ${config.colors?.primary || '#007fff'}, ${config.colors?.primaryDark || '#0066cc'})` }}>
                       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
                       </svg>
                     </div>
                     <div className="flex-1">
                       <div className="rounded-xl px-4 py-2.5 text-white text-xs font-medium mb-1"
-                        style={{ background: config.colors?.primary || '#E30613', display: 'inline-block' }}>
+                        style={{ background: config.colors?.primary || '#007fff', display: 'inline-block' }}>
                         {config.branding?.companyName || 'Redegal'}
                       </div>
                       <div className="rounded-xl px-4 py-2.5 text-xs"

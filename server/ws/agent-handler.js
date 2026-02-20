@@ -92,6 +92,20 @@ function initAgentHandler(wss) {
       send(ws, 'queue_new', data);
     }
   }).catch((e) => logger.warn('Redis subscribe error:', e.message));
+
+  // Listen for incoming call requests from visitors
+  redis.subscribe('call:incoming', (data) => {
+    // Broadcast to all connected agents
+    for (const [agentId, ws] of agents) {
+      send(ws, 'incoming_call', {
+        callId: data.callId,
+        conversationId: data.conversationId,
+        visitorId: data.visitorId,
+        language: data.language,
+        businessLine: data.businessLine,
+      });
+    }
+  }).catch((e) => logger.warn('Redis subscribe error (call:incoming):', e.message));
 }
 
 async function handleAgentMessage(ws, agent, msg) {
@@ -481,6 +495,77 @@ async function handleAgentMessage(ws, agent, msg) {
         conversationId: msg.conversationId,
         suggestions,
       });
+      break;
+    }
+
+    case 'accept_call': {
+      // Agent accepts an incoming call
+      if (!msg.callId) {
+        send(ws, 'error', { message: 'callId required' });
+        return;
+      }
+
+      // Update call record
+      try {
+        await db.query(
+          `UPDATE calls SET agent_id = $1, status = 'active', answered_at = NOW() WHERE call_id = $2`,
+          [agent.id, msg.callId]
+        );
+      } catch (e) {
+        logger.warn('Failed to update call record:', e.message);
+      }
+
+      // Notify visitor via Redis that agent accepted
+      await redis.publish('call:accepted', {
+        callId: msg.callId,
+        agentId: agent.id,
+        agentName: agent.displayName,
+      });
+
+      // Send SIP config to agent for connecting to /ws/sip
+      send(ws, 'call_config', {
+        callId: msg.callId,
+        sipConfig: {
+          wssUrl: `${process.env.SIP_WSS_URL || 'ws://localhost:3000'}`,
+          domain: process.env.SIP_DOMAIN || 'localhost',
+        },
+      });
+
+      // Notify other agents that call was taken
+      for (const [otherId, otherWs] of agents) {
+        if (otherId !== agent.id) {
+          send(otherWs, 'call_taken', { callId: msg.callId, agentName: agent.displayName });
+        }
+      }
+
+      db.trackEvent({ eventType: 'call_accepted', data: { callId: msg.callId, agentId: agent.id } }).catch(() => {});
+      triggerWebhooks('call.accepted', { callId: msg.callId, agentId: agent.id }).catch(() => {});
+      break;
+    }
+
+    case 'reject_call': {
+      // Agent rejects a call
+      if (!msg.callId) return;
+      await redis.publish('call:rejected', {
+        callId: msg.callId,
+        reason: 'Agent rejected',
+      });
+      break;
+    }
+
+    case 'hangup_call': {
+      // Agent hangs up an active call
+      if (!msg.callId) return;
+      // The sip-signaling handler will handle the actual call cleanup
+      // This just updates the database
+      try {
+        await db.query(
+          `UPDATE calls SET status = 'ended', ended_at = NOW() WHERE call_id = $1`,
+          [msg.callId]
+        );
+      } catch (e) {
+        logger.warn('Failed to end call record:', e.message);
+      }
       break;
     }
   }

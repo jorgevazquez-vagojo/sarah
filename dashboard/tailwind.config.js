@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        redegal: '#E30613',
+        redegal: '#007fff',
       },
     },
   },

@@ -14,7 +14,7 @@
     apiUrl: '{{ settings.redegal_chatbot_server_url | replace: "https://", "wss://" | replace: "http://", "ws://" | append: "/ws/chat" }}',
     configUrl: '{{ settings.redegal_chatbot_server_url | append: "/api/config/widget" }}',
     language: '{{ settings.redegal_chatbot_language | default: "auto" }}',
-    primaryColor: '{{ settings.redegal_chatbot_primary_color | default: "#E30613" }}',
+    primaryColor: '{{ settings.redegal_chatbot_primary_color | default: "#007fff" }}',
     theme: {
       branding: {
         companyName: '{{ shop.name }}',

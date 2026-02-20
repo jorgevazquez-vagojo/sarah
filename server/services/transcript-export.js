@@ -63,7 +63,7 @@ function generateHtmlTranscript(conv, messages, lead) {
     .map((m) => {
       const time = new Date(m.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
       const isVisitor = m.sender === 'visitor';
-      const bg = isVisitor ? '#E30613' : m.sender === 'agent' ? '#3B82F6' : '#F1F5F9';
+      const bg = isVisitor ? '#007fff' : m.sender === 'agent' ? '#3B82F6' : '#F1F5F9';
       const color = isVisitor || m.sender === 'agent' ? '#FFF' : '#333';
       const align = isVisitor ? 'right' : 'left';
       const label = isVisitor ? 'Visitante' : m.sender === 'agent' ? (m.metadata?.agentName || 'Agente') : m.sender === 'bot' ? 'Bot' : 'Sistema';
@@ -76,7 +76,7 @@ function generateHtmlTranscript(conv, messages, lead) {
     .join('');
 
   return `<!DOCTYPE html>
-<html><head><meta charset="utf-8"><style>body{font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#F8FAFC}h2{color:#E30613}
+<html><head><meta charset="utf-8"><style>body{font-family:-apple-system,sans-serif;max-width:600px;margin:0 auto;padding:24px;background:#F8FAFC}h2{color:#007fff}
 .meta{background:#fff;padding:16px;border-radius:12px;border:1px solid #E2E8F0;margin:16px 0;font-size:13px;color:#64748B}
 .meta strong{color:#0F172A}</style></head><body>
 <h2>Redegal - Transcripción</h2>

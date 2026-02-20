@@ -12,7 +12,7 @@ router.get('/config', (_req, res) => {
     isBusinessHours: isBusinessHours(),
     languages: getSupportedLanguages(),
     businessLines: BUSINESS_LINES,
-    primaryColor: process.env.PRIMARY_COLOR || '#E30613',
+    primaryColor: process.env.PRIMARY_COLOR || '#007fff',
   });
 });
 

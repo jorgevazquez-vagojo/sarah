@@ -5,9 +5,9 @@ export default {
     extend: {
       colors: {
         redegal: {
-          primary: 'var(--rc-primary, #E30613)',
-          dark: 'var(--rc-dark, #B8050F)',
-          light: 'var(--rc-light, #FEE2E2)',
+          primary: 'var(--rc-primary, #007fff)',
+          dark: 'var(--rc-dark, #0066cc)',
+          light: 'var(--rc-light, #E0F0FF)',
         },
       },
     },

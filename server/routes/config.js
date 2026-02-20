@@ -152,12 +152,12 @@ function getDefaultTheme() {
       showPoweredBy: true,
     },
     colors: {
-      primary: '#E30613', primaryDark: '#B8050F', primaryLight: '#FEE2E2',
-      secondary: '#1E293B', accent: '#F59E0B',
-      background: '#FFFFFF', surface: '#F8FAFC',
-      text: '#0F172A', textSecondary: '#64748B', textOnPrimary: '#FFFFFF',
-      border: '#E2E8F0', success: '#10B981', warning: '#F59E0B', error: '#EF4444',
-      gradientFrom: '#E30613', gradientTo: '#B8050F', headerGradient: true,
+      primary: '#007fff', primaryDark: '#0066cc', primaryLight: '#E0F0FF',
+      secondary: '#32373c', accent: '#0693e3',
+      background: '#FFFFFF', surface: '#F7F9FC',
+      text: '#1A1A2E', textSecondary: '#5A6178', textOnPrimary: '#FFFFFF',
+      border: '#E5E9F0', success: '#00D084', warning: '#FCB900', error: '#CF2E2E',
+      gradientFrom: '#007fff', gradientTo: '#0055CC', headerGradient: true,
     },
     typography: {
       fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",

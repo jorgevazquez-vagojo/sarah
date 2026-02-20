@@ -79,7 +79,7 @@ class Redegal_Chatbot {
                     </tr>
                     <tr>
                         <th><label for="redegal_chatbot_primary_color"><?php _e('Primary Color', 'redegal-chatbot'); ?></label></th>
-                        <td><input type="color" name="redegal_chatbot_primary_color" value="<?php echo esc_attr(get_option('redegal_chatbot_primary_color', '#E30613')); ?>" /></td>
+                        <td><input type="color" name="redegal_chatbot_primary_color" value="<?php echo esc_attr(get_option('redegal_chatbot_primary_color', '#007fff')); ?>" /></td>
                     </tr>
                     <tr>
                         <th><label for="redegal_chatbot_language"><?php _e('Default Language', 'redegal-chatbot'); ?></label></th>
@@ -139,7 +139,7 @@ class Redegal_Chatbot {
             'apiUrl' => str_replace(['https://', 'http://'], ['wss://', 'ws://'], $server) . '/ws/chat',
             'configUrl' => $server . '/api/config/widget',
             'language' => get_option('redegal_chatbot_language', 'auto'),
-            'primaryColor' => get_option('redegal_chatbot_primary_color', '#E30613'),
+            'primaryColor' => get_option('redegal_chatbot_primary_color', '#007fff'),
             'theme' => [
                 'branding' => [
                     'companyName' => get_option('redegal_chatbot_company_name', 'Redegal'),

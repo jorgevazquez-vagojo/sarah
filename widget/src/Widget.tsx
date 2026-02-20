@@ -204,6 +204,14 @@ export function Widget(props: WidgetConfig) {
     if (chat.showLeadForm) { setView('lead_form'); chat.clearLeadForm(); }
   }, [chat.showLeadForm]);
 
+  // WebRTC call: when server sends call_ready with sipConfig, auto-start the call
+  useEffect(() => {
+    if (chat.callReady) {
+      sip.startCall(chat.callReady.sipConfig);
+      chat.clearCallReady();
+    }
+  }, [chat.callReady]);
+
   const handleToggle = () => {
     if (isOpen) {
       setIsClosing(true);
@@ -698,7 +706,7 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
           cursor: input.trim() ? 'pointer' : 'default',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transition: 'all 0.25s var(--rc-ease-standard)',
-          boxShadow: input.trim() ? '0 2px 10px rgba(227,6,19,0.25)' : 'none',
+          boxShadow: input.trim() ? '0 2px 10px rgba(0,127,255,0.25)' : 'none',
           transform: input.trim() ? 'scale(1)' : 'scale(0.92)',
         }}>
           {I.send}
@@ -1048,7 +1056,7 @@ function MessageBubble({ message: msg, isGrouped }: { message: ChatMessage; isGr
         <div className="rc-avatar" style={{
           background: msg.sender === 'agent'
             ? 'linear-gradient(135deg, #10B981, #059669)'
-            : 'linear-gradient(135deg, var(--rc-primary), var(--rc-primary-hover, #B8050F))',
+            : 'linear-gradient(135deg, var(--rc-primary), var(--rc-primary-hover, #0066cc))',
           width: 30, height: 30, fontSize: 12,
         }}>
           {msg.sender === 'agent'
@@ -1100,9 +1108,9 @@ function MessageBubble({ message: msg, isGrouped }: { message: ChatMessage; isGr
             whiteSpace: 'pre-wrap', wordBreak: 'break-word',
             ...(isVisitor
               ? {
-                  background: `linear-gradient(135deg, var(--rc-primary), var(--rc-primary-hover, #B8050F))`,
+                  background: `linear-gradient(135deg, var(--rc-primary), var(--rc-primary-hover, #0066cc))`,
                   color: 'var(--rc-on-primary)',
-                  boxShadow: '0 1px 4px rgba(227,6,19,0.15)',
+                  boxShadow: '0 1px 4px rgba(0,127,255,0.15)',
                 }
               : {
                   background: 'var(--rc-bubble-bot)',

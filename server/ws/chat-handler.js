@@ -490,10 +490,11 @@ async function handleRequestCall(ws, visitorId) {
   const conv = await db.getActiveConversation(visitorId);
   if (!conv) return;
 
+  const session = (await sessionStore.get(visitorId)) || {};
+  const lang = session.language || 'es';
+
   // VoIP only during business hours
   if (!isBusinessHours()) {
-    const session = (await sessionStore.get(visitorId)) || {};
-    const lang = session.language || 'es';
     send(ws, 'message', {
       sender: 'system',
       content: t(lang, 'offline_message', {
@@ -506,8 +507,62 @@ async function handleRequestCall(ws, visitorId) {
     return;
   }
 
+  // Check for available agents
+  const agents = await db.getAvailableAgents({
+    language: lang,
+    businessLine: conv.business_line,
+  });
+
+  if (agents.length === 0) {
+    send(ws, 'message', {
+      sender: 'system',
+      content: t(lang, 'no_agents'),
+      timestamp: new Date().toISOString(),
+    });
+    return;
+  }
+
+  // Generate unique call ID and register the call session
+  const callId = uuid();
+  const { registerCall } = require('./sip-signaling');
+  registerCall(callId, conv.id);
+
+  // Save call record in database
+  try {
+    await db.query(
+      `INSERT INTO calls (call_id, conversation_id, visitor_id, business_line, status, created_at)
+       VALUES ($1, $2, $3, $4, 'ringing', NOW())`,
+      [callId, conv.id, visitorId, conv.business_line]
+    );
+  } catch (e) {
+    logger.warn('Failed to create call record:', e.message);
+  }
+
   await transition(conv.id, 'request_call');
-  send(ws, 'call_ready', { conversationId: conv.id });
+
+  // Send call credentials to visitor (callId is used to connect to /ws/sip)
+  send(ws, 'call_ready', {
+    conversationId: conv.id,
+    callId,
+    sipConfig: {
+      wssUrl: `${process.env.SIP_WSS_URL || 'ws://localhost:3000'}`,
+      domain: process.env.SIP_DOMAIN || 'localhost',
+      extension: `visitor-${visitorId.slice(0, 8)}`,
+      password: callId,
+    },
+  });
+
+  // Notify agents about incoming call via Redis
+  await redis.publish('call:incoming', {
+    callId,
+    conversationId: conv.id,
+    visitorId,
+    language: lang,
+    businessLine: conv.business_line,
+  });
+
+  triggerWebhooks('call.started', { callId, conversationId: conv.id, visitorId, businessLine: conv.business_line }).catch(() => {});
+  db.trackEvent({ eventType: 'call_requested', conversationId: conv.id, visitorId, data: { callId } }).catch(() => {});
 }
 
 async function handleCsat(ws, visitorId, msg) {

@@ -117,7 +117,7 @@ BUSINESS_HOURS_START=9
 BUSINESS_HOURS_END=19
 
 # ─── Branding ───
-PRIMARY_COLOR=#E30613
+PRIMARY_COLOR=#007fff
 ENVEOF
 
   log ".env creado con secrets aleatorios"
@@ -224,7 +224,7 @@ echo "        baseUrl: 'https://tu-dominio.com/widget',"
 echo "        apiUrl: 'wss://tu-dominio.com/ws/chat',"
 echo "        configUrl: 'https://tu-dominio.com/api/config/widget',"
 echo "        language: 'auto',"
-echo "        primaryColor: '#E30613'"
+echo "        primaryColor: '#007fff'"
 echo '      };'
 echo '    </script>'
 echo '    <script src="https://tu-dominio.com/widget/loader.js" async></script>'
