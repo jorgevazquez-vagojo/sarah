@@ -8,6 +8,7 @@ const { dispatchToCRM } = require('../integrations/crm');
 const { aiComplete } = require('../services/ai');
 const { sessionStore } = require('../state/session-store');
 const { generateSuggestedReplies } = require('../services/suggested-replies');
+const { sendConversationSummary } = require('../services/email');
 
 // Map of agentId -> ws
 const agents = new Map();
@@ -300,6 +301,9 @@ async function handleAgentMessage(ws, agent, msg) {
       db.trackEvent({ eventType: 'conversation_closed', conversationId: msg.conversationId, agentId: agent.id }).catch(() => {});
       triggerWebhooks('conversation.closed', { conversationId: msg.conversationId, agentId: agent.id }).catch(() => {});
       dispatchToCRM('conversation_closed', { conversationId: msg.conversationId, agentId: agent.id }).catch(() => {});
+
+      // Send conversation summary email to BU contacts
+      sendConversationSummary(msg.conversationId).catch((e) => logger.warn('Summary email error:', e.message));
       break;
     }
 

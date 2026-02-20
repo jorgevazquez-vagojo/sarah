@@ -15,5 +15,8 @@
     "build": "npm -w widget run build && npm -w dashboard run build",
     "start": "npm -w server start",
     "test": "npm -w server test"
+  },
+  "dependencies": {
+    "nodemailer": "^8.0.1"
   }
 }

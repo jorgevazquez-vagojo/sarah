@@ -1,0 +1,712 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redegal Chatbot — Setup</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --primary: #007fff;
+      --primary-dark: #0066cc;
+      --bg: #F7F9FC;
+      --surface: #FFFFFF;
+      --text: #1A1A2E;
+      --text-secondary: #5A6178;
+      --text-muted: #9CA3AF;
+      --border: #E5E9F0;
+      --success: #10B981;
+      --error: #EF4444;
+      --warning: #F59E0B;
+      --radius: 16px;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .setup-header {
+      width: 100%;
+      padding: 20px 32px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    .setup-header h1 { font-size: 20px; font-weight: 700; }
+    .setup-header p { font-size: 12px; opacity: 0.85; }
+    .setup-header .logo {
+      width: 40px; height: 40px; border-radius: 12px;
+      background: rgba(255,255,255,0.2); display: flex; align-items: center; justify-content: center;
+    }
+
+    /* Progress */
+    .progress-bar { width: 100%; max-width: 700px; margin: 32px auto 0; padding: 0 24px; }
+    .progress-steps { display: flex; gap: 4px; }
+    .progress-step {
+      flex: 1; height: 4px; border-radius: 2px;
+      background: var(--border); transition: background 0.3s ease;
+    }
+    .progress-step.active { background: var(--primary); }
+    .progress-step.done { background: var(--success); }
+    .progress-labels { display: flex; justify-content: space-between; margin-top: 8px; }
+    .progress-labels span { font-size: 10px; color: var(--text-muted); }
+    .progress-labels span.active { color: var(--primary); font-weight: 600; }
+    .progress-labels span.done { color: var(--success); }
+
+    /* Steps */
+    .step-container {
+      width: 100%; max-width: 700px; margin: 24px auto; padding: 0 24px;
+    }
+    .step {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 32px;
+      display: none; animation: fadeIn 0.3s ease;
+    }
+    .step.active { display: block; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+    .step-title {
+      font-size: 18px; font-weight: 700; margin-bottom: 4px;
+    }
+    .step-desc {
+      font-size: 13px; color: var(--text-secondary); margin-bottom: 24px; line-height: 1.5;
+    }
+    .step-icon {
+      width: 48px; height: 48px; border-radius: 14px; margin-bottom: 16px;
+      display: flex; align-items: center; justify-content: center;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    }
+
+    /* Form fields */
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block; font-size: 12px; font-weight: 600;
+      color: var(--text-secondary); margin-bottom: 6px;
+    }
+    .field label .required { color: var(--error); }
+    .field input, .field select {
+      width: 100%; padding: 10px 14px; border: 1px solid var(--border);
+      border-radius: 10px; font-size: 13px; color: var(--text);
+      background: var(--bg); transition: border-color 0.2s, box-shadow 0.2s;
+      outline: none;
+    }
+    .field input:focus, .field select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(0,127,255,0.1);
+    }
+    .field .hint {
+      font-size: 11px; color: var(--text-muted); margin-top: 4px;
+    }
+    .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .field-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+
+    /* Buttons */
+    .btn-row { display: flex; justify-content: space-between; margin-top: 28px; }
+    .btn {
+      padding: 10px 24px; border-radius: 10px; font-size: 13px; font-weight: 600;
+      border: none; cursor: pointer; transition: all 0.2s;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white; box-shadow: 0 2px 8px rgba(0,127,255,0.3);
+    }
+    .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,127,255,0.4); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+    .btn-secondary {
+      background: var(--bg); color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-ghost { background: transparent; color: var(--text-muted); padding: 10px 12px; }
+    .btn-ghost:hover { color: var(--text); }
+    .btn-test {
+      padding: 6px 14px; font-size: 11px; border-radius: 8px;
+      background: var(--bg); border: 1px solid var(--border); color: var(--text-secondary);
+      cursor: pointer; font-weight: 500;
+    }
+    .btn-test:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-test.testing { opacity: 0.6; cursor: wait; }
+    .btn-test.success { border-color: var(--success); color: var(--success); background: #F0FDF4; }
+    .btn-test.error { border-color: var(--error); color: var(--error); background: #FEF2F2; }
+
+    /* Test result */
+    .test-result {
+      margin-top: 8px; padding: 8px 12px; border-radius: 8px; font-size: 12px;
+      display: none;
+    }
+    .test-result.show { display: block; }
+    .test-result.success { background: #F0FDF4; color: #065F46; border: 1px solid #A7F3D0; }
+    .test-result.error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+
+    /* Section divider */
+    .section-title {
+      font-size: 13px; font-weight: 700; color: var(--text);
+      margin: 20px 0 12px; padding-top: 16px;
+      border-top: 1px solid var(--border);
+    }
+    .section-title:first-of-type { border-top: none; margin-top: 0; padding-top: 0; }
+
+    /* Optional badge */
+    .optional {
+      display: inline-block; padding: 2px 8px; border-radius: 6px;
+      background: var(--bg); color: var(--text-muted); font-size: 10px; font-weight: 500;
+      margin-left: 6px;
+    }
+
+    /* Color preview */
+    .color-preview {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .color-preview input[type="color"] {
+      width: 40px; height: 36px; padding: 2px; border: 1px solid var(--border);
+      border-radius: 8px; cursor: pointer; background: var(--bg);
+    }
+    .color-preview input[type="text"] { flex: 1; }
+
+    /* Completion screen */
+    .completion {
+      text-align: center; padding: 48px 32px;
+    }
+    .completion .check-circle {
+      width: 80px; height: 80px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--success), #059669);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 24px; box-shadow: 0 8px 24px rgba(16,185,129,0.3);
+    }
+    .completion h2 { font-size: 22px; margin-bottom: 8px; }
+    .completion p { font-size: 14px; color: var(--text-secondary); line-height: 1.6; }
+    .completion .links {
+      display: flex; gap: 12px; justify-content: center; margin-top: 32px;
+    }
+    .spinner {
+      width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.3);
+      border-top-color: white; border-radius: 50%;
+      animation: spin 0.6s linear infinite; display: inline-block;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Alert */
+    .alert {
+      padding: 12px 16px; border-radius: 10px; font-size: 12px;
+      margin-bottom: 16px; display: none; line-height: 1.5;
+    }
+    .alert.show { display: block; }
+    .alert-error { background: #FEF2F2; color: #991B1B; border: 1px solid #FECACA; }
+
+    /* Responsive */
+    @media (max-width: 600px) {
+      .step { padding: 20px; }
+      .field-row, .field-row-3 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="setup-header">
+  <div class="logo">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  </div>
+  <div>
+    <h1>Redegal Chatbot — Setup</h1>
+    <p>Configuracion inicial del sistema en 5 pasos</p>
+  </div>
+</div>
+
+<div class="progress-bar">
+  <div class="progress-steps" id="progressSteps"></div>
+  <div class="progress-labels" id="progressLabels"></div>
+</div>
+
+<div class="step-container">
+  <div id="alertGlobal" class="alert alert-error"></div>
+
+  <!-- Step 1: Email & Notifications -->
+  <div class="step" data-step="0">
+    <div class="step-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+      </svg>
+    </div>
+    <h3 class="step-title">Email y Notificaciones</h3>
+    <p class="step-desc">Configura el email que recibira las alertas de escalado, llamadas y resumenes de conversacion.</p>
+
+    <div class="field">
+      <label>Email de notificaciones <span class="required">*</span></label>
+      <input type="email" id="notificationEmail" placeholder="comercial@redegal.com" />
+      <p class="hint">Todas las alertas (escalados, llamadas, resumenes) se envian a este email</p>
+    </div>
+
+    <p class="section-title">Servidor SMTP <span class="optional">Opcional — se puede configurar despues</span></p>
+    <div class="field-row">
+      <div class="field">
+        <label>Host SMTP</label>
+        <input type="text" id="smtpHost" placeholder="smtp.gmail.com" />
+      </div>
+      <div class="field">
+        <label>Puerto</label>
+        <input type="number" id="smtpPort" value="587" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Usuario SMTP</label>
+        <input type="text" id="smtpUser" placeholder="chatbot@redegal.com" />
+      </div>
+      <div class="field">
+        <label>Password SMTP</label>
+        <input type="password" id="smtpPassword" placeholder="" />
+      </div>
+    </div>
+    <div class="field">
+      <label>Remitente (From)</label>
+      <input type="text" id="smtpFrom" placeholder="chatbot@redegal.com" />
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+      <button class="btn-test" onclick="testSmtp()">Probar conexion SMTP</button>
+      <div id="smtpTestResult" class="test-result"></div>
+    </div>
+  </div>
+
+  <!-- Step 2: PBX / AMI -->
+  <div class="step" data-step="1">
+    <div class="step-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+      </svg>
+    </div>
+    <h3 class="step-title">Centralita / PBX <span class="optional">Opcional</span></h3>
+    <p class="step-desc">Configura Asterisk AMI para lanzar llamadas automaticas cuando un visitante pide hablar con alguien.</p>
+
+    <p class="section-title">Conexion Asterisk AMI</p>
+    <div class="field-row">
+      <div class="field">
+        <label>Host AMI</label>
+        <input type="text" id="amiHost" placeholder="192.168.1.100" />
+      </div>
+      <div class="field">
+        <label>Puerto</label>
+        <input type="number" id="amiPort" value="5038" />
+      </div>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Usuario AMI</label>
+        <input type="text" id="amiUser" value="chatbot" />
+      </div>
+      <div class="field">
+        <label>Password AMI</label>
+        <input type="password" id="amiPassword" placeholder="" />
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;margin-top:4px;margin-bottom:16px">
+      <button class="btn-test" onclick="testAmi()">Probar conexion AMI</button>
+      <div id="amiTestResult" class="test-result"></div>
+    </div>
+
+    <p class="section-title">Click2Call</p>
+    <div class="field-row-3">
+      <div class="field">
+        <label>Extension destino</label>
+        <input type="text" id="c2cExtension" value="100" />
+        <p class="hint">Extension por defecto</p>
+      </div>
+      <div class="field">
+        <label>Contexto</label>
+        <input type="text" id="c2cContext" value="from-internal" />
+      </div>
+      <div class="field">
+        <label>Trunk</label>
+        <input type="text" id="c2cTrunk" value="PJSIP/trunk" />
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3: BU Extensions -->
+  <div class="step" data-step="2">
+    <div class="step-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+      </svg>
+    </div>
+    <h3 class="step-title">Extensiones por Linea de Negocio</h3>
+    <p class="step-desc">Asigna una extension PBX a cada linea de negocio. Cuando un visitante pida hablar con alguien, se llamara a la extension correspondiente.</p>
+
+    <div class="field">
+      <label>Boostic (SEO & Growth)</label>
+      <input type="text" id="buExtBoostic" placeholder="101" />
+    </div>
+    <div class="field">
+      <label>Binnacle (BI)</label>
+      <input type="text" id="buExtBinnacle" placeholder="102" />
+    </div>
+    <div class="field">
+      <label>Marketing Digital</label>
+      <input type="text" id="buExtMarketing" placeholder="103" />
+    </div>
+    <div class="field">
+      <label>Digital Tech</label>
+      <input type="text" id="buExtTech" placeholder="104" />
+    </div>
+    <div class="field">
+      <label>Extension por defecto <span class="required">*</span></label>
+      <input type="text" id="buExtDefault" value="100" />
+      <p class="hint">Se usa si no hay extension asignada a la BU o si no se detecta BU</p>
+    </div>
+  </div>
+
+  <!-- Step 4: AI + Hours -->
+  <div class="step" data-step="3">
+    <div class="step-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </div>
+    <h3 class="step-title">IA y Horario</h3>
+    <p class="step-desc">Configura el proveedor de IA del chatbot y el horario de atencion.</p>
+
+    <p class="section-title">Inteligencia Artificial</p>
+    <div class="field">
+      <label>Proveedor de IA</label>
+      <select id="aiProvider">
+        <option value="gemini">Gemini (gratuito)</option>
+        <option value="claude">Claude (Anthropic)</option>
+        <option value="openai">OpenAI</option>
+      </select>
+      <p class="hint">Gemini 2.0 Flash es gratuito con 20 peticiones/dia. Claude y OpenAI requieren API key en .env</p>
+    </div>
+
+    <p class="section-title">Horario de Atencion</p>
+    <div class="field">
+      <label>Zona horaria</label>
+      <select id="hoursTimezone">
+        <option value="Europe/Madrid">Europe/Madrid (CET)</option>
+        <option value="Europe/Lisbon">Europe/Lisbon (WET)</option>
+        <option value="America/Mexico_City">America/Mexico_City (CST)</option>
+        <option value="America/Bogota">America/Bogota (COT)</option>
+        <option value="UTC">UTC</option>
+      </select>
+    </div>
+    <div class="field-row">
+      <div class="field">
+        <label>Hora inicio</label>
+        <input type="number" id="hoursStart" value="9" min="0" max="23" />
+      </div>
+      <div class="field">
+        <label>Hora fin</label>
+        <input type="number" id="hoursEnd" value="19" min="0" max="23" />
+      </div>
+    </div>
+    <p class="hint">Fuera de este horario, el VoIP se desactiva y se muestra formulario offline</p>
+  </div>
+
+  <!-- Step 5: Branding -->
+  <div class="step" data-step="4">
+    <div class="step-icon">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"/>
+      </svg>
+    </div>
+    <h3 class="step-title">Marca y Apariencia</h3>
+    <p class="step-desc">Personaliza el aspecto del widget para que encaje con tu marca.</p>
+
+    <div class="field">
+      <label>Nombre de la empresa</label>
+      <input type="text" id="brandCompanyName" value="Redegal" />
+    </div>
+    <div class="field">
+      <label>Color primario</label>
+      <div class="color-preview">
+        <input type="color" id="brandColorPicker" value="#007fff"
+          oninput="document.getElementById('brandColorText').value = this.value" />
+        <input type="text" id="brandColorText" value="#007fff"
+          oninput="document.getElementById('brandColorPicker').value = this.value" />
+      </div>
+      <p class="hint">Se aplica al widget, boton flotante y cabecera</p>
+    </div>
+
+    <div style="margin-top:24px; padding:20px; border-radius:14px; border:1px solid var(--border); background:var(--bg)">
+      <p style="font-size:11px; font-weight:600; color:var(--text-muted); margin-bottom:12px">Vista previa</p>
+      <div style="display:flex; align-items:center; gap:14px">
+        <div id="previewButton" style="width:56px;height:56px;border-radius:28px;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#007fff,#0066cc);box-shadow:0 4px 16px rgba(0,127,255,0.4)">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <div>
+          <div id="previewBubble" style="display:inline-block;padding:8px 14px;border-radius:12px;color:white;font-size:13px;font-weight:500;background:#007fff">
+            Hola, en que puedo ayudarte?
+          </div>
+          <p style="font-size:10px;color:var(--text-muted);margin-top:4px" id="previewName">Redegal</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Completion -->
+  <div class="step" data-step="5">
+    <div class="completion">
+      <div class="check-circle">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h2>Setup completado</h2>
+      <p>Tu chatbot esta configurado y listo. Puedes modificar toda la configuracion en cualquier momento desde el panel de administracion.</p>
+      <div class="links">
+        <a href="/dashboard" class="btn btn-primary">Ir al Dashboard</a>
+        <a href="/widget/test.html" class="btn btn-secondary">Probar Widget</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Navigation -->
+  <div class="btn-row" id="navRow">
+    <button class="btn btn-secondary" id="btnPrev" onclick="prevStep()" style="visibility:hidden">Anterior</button>
+    <div style="display:flex;gap:8px;align-items:center">
+      <button class="btn btn-ghost" id="btnSkip" onclick="nextStep()">Saltar</button>
+      <button class="btn btn-primary" id="btnNext" onclick="nextStep()">Siguiente</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const STEPS = [
+  { label: 'Email', required: ['notificationEmail'] },
+  { label: 'PBX', required: [] },
+  { label: 'Extensiones', required: [] },
+  { label: 'IA/Horario', required: [] },
+  { label: 'Marca', required: [] },
+];
+
+let currentStep = 0;
+
+function renderProgress() {
+  const stepsEl = document.getElementById('progressSteps');
+  const labelsEl = document.getElementById('progressLabels');
+  stepsEl.innerHTML = '';
+  labelsEl.innerHTML = '';
+  STEPS.forEach((s, i) => {
+    const div = document.createElement('div');
+    div.className = 'progress-step' + (i < currentStep ? ' done' : '') + (i === currentStep ? ' active' : '');
+    stepsEl.appendChild(div);
+    const span = document.createElement('span');
+    span.textContent = s.label;
+    span.className = i < currentStep ? 'done' : i === currentStep ? 'active' : '';
+    labelsEl.appendChild(span);
+  });
+}
+
+function showStep(idx) {
+  document.querySelectorAll('.step').forEach((el) => {
+    el.classList.remove('active');
+    if (parseInt(el.dataset.step) === idx) el.classList.add('active');
+  });
+  currentStep = idx;
+  renderProgress();
+
+  const btnPrev = document.getElementById('btnPrev');
+  const btnNext = document.getElementById('btnNext');
+  const btnSkip = document.getElementById('btnSkip');
+  const navRow = document.getElementById('navRow');
+
+  if (idx >= STEPS.length) {
+    navRow.style.display = 'none';
+    return;
+  }
+  navRow.style.display = 'flex';
+  btnPrev.style.visibility = idx === 0 ? 'hidden' : 'visible';
+  btnSkip.style.display = idx === STEPS.length - 1 ? 'none' : 'block';
+  btnNext.textContent = idx === STEPS.length - 1 ? 'Finalizar' : 'Siguiente';
+}
+
+function prevStep() {
+  if (currentStep > 0) showStep(currentStep - 1);
+}
+
+function nextStep() {
+  // Validate required fields
+  const step = STEPS[currentStep];
+  if (step) {
+    for (const id of step.required) {
+      const el = document.getElementById(id);
+      if (el && !el.value.trim()) {
+        el.focus();
+        el.style.borderColor = 'var(--error)';
+        setTimeout(() => { el.style.borderColor = ''; }, 2000);
+        return;
+      }
+    }
+  }
+
+  if (currentStep === STEPS.length - 1) {
+    saveSetup();
+    return;
+  }
+  showStep(currentStep + 1);
+}
+
+async function saveSetup() {
+  const btnNext = document.getElementById('btnNext');
+  const alertEl = document.getElementById('alertGlobal');
+  btnNext.disabled = true;
+  btnNext.innerHTML = '<span class="spinner"></span> Guardando...';
+  alertEl.classList.remove('show');
+
+  const body = {
+    notificationEmail: val('notificationEmail'),
+    smtp: {
+      host: val('smtpHost'),
+      port: val('smtpPort'),
+      user: val('smtpUser'),
+      password: val('smtpPassword'),
+      from: val('smtpFrom'),
+    },
+    ami: {
+      host: val('amiHost'),
+      port: val('amiPort'),
+      user: val('amiUser'),
+      password: val('amiPassword'),
+    },
+    click2call: {
+      extension: val('c2cExtension'),
+      context: val('c2cContext'),
+      trunk: val('c2cTrunk'),
+    },
+    buExtensions: {
+      boostic: val('buExtBoostic'),
+      binnacle: val('buExtBinnacle'),
+      marketing: val('buExtMarketing'),
+      tech: val('buExtTech'),
+      default: val('buExtDefault'),
+    },
+    ai: { provider: val('aiProvider') },
+    hours: {
+      timezone: val('hoursTimezone'),
+      start: val('hoursStart'),
+      end: val('hoursEnd'),
+    },
+    brand: {
+      primaryColor: val('brandColorText'),
+      companyName: val('brandCompanyName'),
+    },
+  };
+
+  try {
+    const res = await fetch('/api/settings/setup', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Error saving settings');
+    showStep(STEPS.length);
+  } catch (e) {
+    alertEl.textContent = e.message;
+    alertEl.classList.add('show');
+    btnNext.disabled = false;
+    btnNext.textContent = 'Finalizar';
+  }
+}
+
+function val(id) {
+  const el = document.getElementById(id);
+  return el ? el.value.trim() : '';
+}
+
+async function testSmtp() {
+  const btn = document.querySelector('[onclick="testSmtp()"]');
+  const result = document.getElementById('smtpTestResult');
+  btn.className = 'btn-test testing';
+  btn.textContent = 'Probando...';
+  result.classList.remove('show', 'success', 'error');
+
+  try {
+    const res = await fetch('/api/settings/test-smtp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        host: val('smtpHost'),
+        port: val('smtpPort'),
+        user: val('smtpUser'),
+        password: val('smtpPassword'),
+      }),
+    });
+    const data = await res.json();
+    result.textContent = data.message;
+    result.className = 'test-result show ' + (data.success ? 'success' : 'error');
+    btn.className = 'btn-test ' + (data.success ? 'success' : 'error');
+    btn.textContent = data.success ? 'Conexion OK' : 'Fallo';
+  } catch (e) {
+    result.textContent = e.message;
+    result.className = 'test-result show error';
+    btn.className = 'btn-test error';
+    btn.textContent = 'Error';
+  }
+  setTimeout(() => { btn.className = 'btn-test'; btn.textContent = 'Probar conexion SMTP'; }, 4000);
+}
+
+async function testAmi() {
+  const btn = document.querySelector('[onclick="testAmi()"]');
+  const result = document.getElementById('amiTestResult');
+  btn.className = 'btn-test testing';
+  btn.textContent = 'Probando...';
+  result.classList.remove('show', 'success', 'error');
+
+  try {
+    const res = await fetch('/api/settings/test-ami', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        host: val('amiHost'),
+        port: val('amiPort'),
+        user: val('amiUser'),
+        password: val('amiPassword'),
+      }),
+    });
+    const data = await res.json();
+    result.textContent = data.message;
+    result.className = 'test-result show ' + (data.success ? 'success' : 'error');
+    btn.className = 'btn-test ' + (data.success ? 'success' : 'error');
+    btn.textContent = data.success ? 'Conexion OK' : 'Fallo';
+  } catch (e) {
+    result.textContent = e.message;
+    result.className = 'test-result show error';
+    btn.className = 'btn-test error';
+    btn.textContent = 'Error';
+  }
+  setTimeout(() => { btn.className = 'btn-test'; btn.textContent = 'Probar conexion AMI'; }, 4000);
+}
+
+// Live preview for branding step
+document.getElementById('brandColorPicker').addEventListener('input', updatePreview);
+document.getElementById('brandColorText').addEventListener('input', updatePreview);
+document.getElementById('brandCompanyName').addEventListener('input', updatePreview);
+
+function updatePreview() {
+  const color = val('brandColorText') || '#007fff';
+  const name = val('brandCompanyName') || 'Redegal';
+  document.getElementById('previewButton').style.background = `linear-gradient(135deg, ${color}, ${darken(color)})`;
+  document.getElementById('previewButton').style.boxShadow = `0 4px 16px ${color}66`;
+  document.getElementById('previewBubble').style.background = color;
+  document.getElementById('previewName').textContent = name;
+}
+
+function darken(hex) {
+  const num = parseInt(hex.replace('#', ''), 16);
+  const r = Math.max(0, (num >> 16) - 30);
+  const g = Math.max(0, ((num >> 8) & 0xff) - 30);
+  const b = Math.max(0, (num & 0xff) - 30);
+  return `#${(r << 16 | g << 8 | b).toString(16).padStart(6, '0')}`;
+}
+
+// Init
+showStep(0);
+</script>
+</body>
+</html>

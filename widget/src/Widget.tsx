@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useChat, ChatMessage, RichContent } from './hooks/useChat';
 import { useLanguage } from './hooks/useLanguage';
-import { useSIP } from './hooks/useSIP';
+// useSIP removed — Click2Call now uses AMI callback via phone number
 import { ThemeConfig, RichContent as RichContentType } from './lib/types';
 import { applyTheme, DEFAULT_THEME } from './lib/theme';
 import { playSound } from './lib/sounds';
@@ -157,8 +157,6 @@ export function Widget(props: WidgetConfig) {
   const wsUrl = props.apiUrl || `${(props.baseUrl || '').replace(/^http/, 'ws').replace(/\/widget$/, '')}/ws/chat`;
   const chat = useChat({ apiUrl: wsUrl, visitorId });
   const { t, isRTL } = useLanguage(chat.language, props.baseUrl?.replace('/widget', ''));
-  const sip = useSIP();
-
   // Load remote theme
   useEffect(() => {
     if (props.configUrl) {
@@ -204,13 +202,13 @@ export function Widget(props: WidgetConfig) {
     if (chat.showLeadForm) { setView('lead_form'); chat.clearLeadForm(); }
   }, [chat.showLeadForm]);
 
-  // WebRTC call: when server sends call_ready with sipConfig, auto-start the call
+  // Click2Call: show phone form when server requests it
   useEffect(() => {
-    if (chat.callReady) {
-      sip.startCall(chat.callReady.sipConfig);
-      chat.clearCallReady();
+    if (chat.showPhoneForm) {
+      setView('call');
+      chat.clearPhoneForm();
     }
-  }, [chat.callReady]);
+  }, [chat.showPhoneForm]);
 
   const handleToggle = () => {
     if (isOpen) {
@@ -414,7 +412,9 @@ export function Widget(props: WidgetConfig) {
               <CsatView theme={theme} t={t}
                 onSubmit={(r, c) => { chat.submitCsat(r, c); setView('chat'); }} />
             ) : view === 'call' ? (
-              <CallView theme={theme} t={t} sip={sip} onBack={() => setView('chat')} />
+              <CallView theme={theme} t={t} callStatus={chat.callStatus}
+                onRequestCall={(phone) => chat.requestCall(phone)}
+                onBack={() => { chat.resetCallStatus(); setView('chat'); }} />
             ) : view === 'help' ? (
               <HelpCenterView theme={theme} t={t}
                 kbResults={chat.kbResults} onSearch={chat.searchKB}
@@ -428,7 +428,7 @@ export function Widget(props: WidgetConfig) {
               <ChatView
                 theme={theme} t={t} messages={chat.messages} isTyping={chat.isTyping}
                 onSend={chat.sendMessage} onEscalate={chat.escalate}
-                onCall={() => { chat.isBusinessHours ? (chat.requestCall(), setView('call')) : setView('offline_form'); }}
+                onCall={() => { chat.isBusinessHours ? setView('call') : setView('offline_form'); }}
                 onCsat={() => setView('csat')}
                 isBusinessHours={chat.isBusinessHours}
                 onQuickReply={chat.sendQuickReply}
@@ -1262,65 +1262,144 @@ function CsatView({ theme, t, onSubmit }: { theme: ThemeConfig; t: (k: string) =
 }
 
 // ──────────────────────────────────────────────────────────
-// CALL VIEW
+// CALL VIEW — Phone callback form
 // ──────────────────────────────────────────────────────────
-function CallView({ theme, t, sip, onBack }: { theme: ThemeConfig; t: (k: string) => string; sip: ReturnType<typeof useSIP>; onBack: () => void }) {
-  const isActive = sip.callState === 'active';
+function CallView({ theme, t, callStatus, onRequestCall, onBack }: {
+  theme: ThemeConfig;
+  t: (k: string) => string;
+  callStatus: { callId?: string; status: string; message?: string };
+  onRequestCall: (phone: string) => void;
+  onBack: () => void;
+}) {
+  const [phone, setPhone] = useState('');
+  const isWaiting = callStatus.status === 'requesting' || callStatus.status === 'ringing' || callStatus.status === 'queued';
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (phone.replace(/[^\d+]/g, '').length >= 6) {
+      onRequestCall(phone);
+    }
+  };
 
   return (
-    <div className="rc-slide-up" style={{ padding: '40px 32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 20 }}>
+    <div className="rc-slide-up" style={{ padding: '32px 28px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+      {/* Phone icon */}
       <div style={{
-        width: 88, height: 88, borderRadius: 44, position: 'relative',
+        width: 80, height: 80, borderRadius: 40, position: 'relative',
         background: `linear-gradient(135deg, ${theme.colors.gradientFrom}15, ${theme.colors.gradientTo}15)`,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         color: 'var(--rc-primary)',
       }}>
-        {isActive && (
+        {isWaiting && (
           <div style={{
-            position: 'absolute', inset: -10, borderRadius: '50%',
+            position: 'absolute', inset: -8, borderRadius: '50%',
             border: '2px solid var(--rc-primary)',
             animation: 'rc-pulse-ring 2s ease-out infinite', opacity: 0.4,
           }} />
         )}
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
           <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/>
         </svg>
       </div>
-      <p style={{ fontSize: 14, fontWeight: 600, color: 'var(--rc-text)' }}>
-        {t(isActive ? 'call' : 'call_connecting')}
-      </p>
-      {isActive && (
-        <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)' }}>En llamada...</p>
+
+      {callStatus.status === 'idle' || callStatus.status === 'error' ? (
+        <>
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>
+              Te llamamos
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
+              Introduce tu telefono y te devolvemos la llamada en segundos
+            </p>
+          </div>
+
+          {callStatus.status === 'error' && callStatus.message && (
+            <div style={{
+              padding: '8px 14px', borderRadius: 10, fontSize: 12, fontWeight: 500,
+              background: 'rgba(207,46,46,0.08)', color: 'var(--rc-error)', width: '100%',
+            }}>
+              {callStatus.message}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <div style={{ position: 'relative' }}>
+              <span style={{
+                position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)',
+                fontSize: 16, color: 'var(--rc-text-secondary)',
+              }}>📞</span>
+              <input
+                type="tel"
+                value={phone}
+                onChange={e => setPhone(e.target.value)}
+                placeholder="+34 600 000 000"
+                autoFocus
+                required
+                style={{
+                  width: '100%', padding: '12px 14px 12px 42px', borderRadius: 14,
+                  border: '1.5px solid var(--rc-border)', background: 'var(--rc-surface)',
+                  fontSize: 15, color: 'var(--rc-text)', outline: 'none',
+                  transition: 'border-color 0.2s',
+                  fontFamily: 'inherit',
+                }}
+                onFocus={e => (e.target.style.borderColor = 'var(--rc-primary)')}
+                onBlur={e => (e.target.style.borderColor = 'var(--rc-border)')}
+              />
+            </div>
+            <button type="submit" disabled={phone.replace(/[^\d+]/g, '').length < 6} style={{
+              width: '100%', padding: '12px', borderRadius: 14, border: 'none',
+              background: phone.replace(/[^\d+]/g, '').length >= 6
+                ? `linear-gradient(135deg, ${theme.colors.gradientFrom}, ${theme.colors.gradientTo})`
+                : 'var(--rc-surface)',
+              color: phone.replace(/[^\d+]/g, '').length >= 6 ? 'white' : 'var(--rc-text-tertiary)',
+              fontSize: 14, fontWeight: 600, cursor: phone.replace(/[^\d+]/g, '').length >= 6 ? 'pointer' : 'default',
+              boxShadow: phone.replace(/[^\d+]/g, '').length >= 6 ? '0 2px 10px rgba(0,127,255,0.25)' : 'none',
+              transition: 'all 0.25s',
+            }}>
+              Llamadme ahora
+            </button>
+          </form>
+        </>
+      ) : (
+        <>
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>
+              {callStatus.status === 'ringing' ? 'Conectando llamada...' :
+               callStatus.status === 'queued' ? 'Llamada en cola' :
+               'Solicitando llamada...'}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
+              {callStatus.status === 'ringing'
+                ? 'Recibiras una llamada en tu telefono en unos segundos'
+                : callStatus.status === 'queued'
+                  ? 'Un agente te llamara lo antes posible'
+                  : 'Procesando tu solicitud...'}
+            </p>
+          </div>
+          {isWaiting && (
+            <div style={{ display: 'flex', gap: 6, justifyContent: 'center' }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{
+                  width: 8, height: 8, borderRadius: 4,
+                  background: 'var(--rc-primary)',
+                  animation: `rc-bounce 1.4s infinite both`,
+                  animationDelay: `${i * 0.16}s`,
+                }} />
+              ))}
+            </div>
+          )}
+        </>
       )}
-      <div style={{ display: 'flex', gap: 16 }}>
-        <button onClick={sip.toggleMute} style={{
-          width: 52, height: 52, borderRadius: 26,
-          border: '1.5px solid var(--rc-border)',
-          background: sip.isMuted ? 'rgba(239,68,68,0.1)' : 'var(--rc-surface)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: sip.isMuted ? 'var(--rc-error)' : 'var(--rc-text-secondary)',
-          transition: 'all 0.2s',
-        }}>
-          {sip.isMuted ? I.mute : I.sound}
-        </button>
-        <button onClick={() => { sip.hangup(); onBack(); }} style={{
-          width: 52, height: 52, borderRadius: 26, border: 'none',
-          background: 'linear-gradient(135deg, #EF4444, #DC2626)',
-          cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
-          color: 'white', boxShadow: '0 4px 12px rgba(239,68,68,0.3)',
-          transition: 'all 0.2s',
-        }}>
-          {I.phone}
-        </button>
-      </div>
+
       <button onClick={onBack} style={{
         fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
         border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
+        marginTop: 4,
       }}
         onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
         onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
       >
-        ← {t('back_to_chat')}
+        ← Volver al chat
       </button>
     </div>
   );

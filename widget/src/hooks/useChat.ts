@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { WSClient } from '../lib/ws-client';
-import type { SipConfig } from '../lib/sip-client';
 
 export type MessageStatus = 'sending' | 'sent' | 'delivered' | 'read';
 
@@ -55,7 +54,8 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
   const [allRead, setAllRead] = useState(false);
   const [kbResults, setKbResults] = useState<KBResult[]>([]);
   const [showLeadForm, setShowLeadForm] = useState(false);
-  const [callReady, setCallReady] = useState<{ callId: string; sipConfig: SipConfig } | null>(null);
+  const [showPhoneForm, setShowPhoneForm] = useState(false);
+  const [callStatus, setCallStatus] = useState<{ callId?: string; status: 'idle' | 'requesting' | 'ringing' | 'queued' | 'error'; message?: string }>({ status: 'idle' });
   const wsRef = useRef<WSClient | null>(null);
 
   useEffect(() => {
@@ -151,11 +151,21 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
       setShowLeadForm(true);
     });
 
-    // Call ready: server assigned a callId and SIP config for WebRTC
-    ws.on('call_ready', (data) => {
-      if (data.callId && data.sipConfig) {
-        setCallReady({ callId: data.callId, sipConfig: data.sipConfig });
-      }
+    // Click2Call: callback flow responses
+    ws.on('show_phone_form', () => {
+      setShowPhoneForm(true);
+    });
+
+    ws.on('call_initiated', (data) => {
+      setCallStatus({ callId: data.callId, status: 'ringing', message: data.message });
+    });
+
+    ws.on('call_queued', (data) => {
+      setCallStatus({ callId: data.callId, status: 'queued', message: data.message });
+    });
+
+    ws.on('call_error', (data) => {
+      setCallStatus({ status: 'error', message: data.message });
     });
 
     ws.on('_close', () => setIsConnected(false));
@@ -206,8 +216,9 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
     wsRef.current?.send('escalate', {});
   }, []);
 
-  const requestCall = useCallback(() => {
-    wsRef.current?.send('request_call', {});
+  const requestCall = useCallback((phone: string) => {
+    setCallStatus({ status: 'requesting' });
+    wsRef.current?.send('request_call', { phone });
   }, []);
 
   const submitLead = useCallback((data: { name: string; email: string; phone?: string; company?: string }) => {
@@ -256,13 +267,14 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
 
   const clearLeadForm = useCallback(() => setShowLeadForm(false), []);
 
-  const clearCallReady = useCallback(() => setCallReady(null), []);
+  const clearPhoneForm = useCallback(() => setShowPhoneForm(false), []);
+  const resetCallStatus = useCallback(() => setCallStatus({ status: 'idle' }), []);
 
   return {
     messages, isTyping, isConnected, isBusinessHours,
-    language, businessLine, allRead, kbResults, showLeadForm, callReady,
+    language, businessLine, allRead, kbResults, showLeadForm, showPhoneForm, callStatus,
     sendMessage, setLanguage, setBusinessLine,
     escalate, requestCall, submitLead, submitOfflineForm, submitCsat,
-    searchKB, sendQuickReply, uploadFile, clearLeadForm, clearCallReady,
+    searchKB, sendQuickReply, uploadFile, clearLeadForm, clearPhoneForm, resetCallStatus,
   };
 }

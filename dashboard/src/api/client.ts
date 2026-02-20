@@ -70,6 +70,15 @@ export const api = {
 
   // Health
   getHealth: () => request('/health'),
+
+  // System Settings (admin)
+  getSettings: () => request('/settings'),
+  updateSettings: (settings: Record<string, string>) =>
+    request('/settings', { method: 'PUT', body: JSON.stringify({ settings }) }),
+  testSmtp: (data: { host: string; port: string; user: string; password: string }) =>
+    request('/settings/test-smtp', { method: 'POST', body: JSON.stringify(data) }),
+  testAmi: (data: { host: string; port: string; user: string; password: string }) =>
+    request('/settings/test-ami', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export function createAgentWS(token: string): WebSocket {

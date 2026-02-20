@@ -474,86 +474,364 @@ function ThemePanel() {
 }
 
 // ─── System ───
+type SettingsCategory = 'health' | 'email' | 'pbx' | 'extensions' | 'ai' | 'branding';
+
+const SETTING_CATEGORIES: { id: SettingsCategory; label: string; icon: string }[] = [
+  { id: 'health', label: 'Estado', icon: 'M22 12h-4l-3 9L9 3l-3 9H2' },
+  { id: 'email', label: 'Email/SMTP', icon: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z' },
+  { id: 'pbx', label: 'PBX/AMI', icon: 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72' },
+  { id: 'extensions', label: 'Extensiones BU', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' },
+  { id: 'ai', label: 'IA/Horario', icon: 'M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z' },
+  { id: 'branding', label: 'Marca', icon: 'M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z' },
+];
+
 function SystemPanel() {
   const [health, setHealth] = useState<any>(null);
+  const [settings, setSettings] = useState<Record<string, string>>({});
+  const [original, setOriginal] = useState<Record<string, string>>({});
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [saveMsg, setSaveMsg] = useState('');
+  const [testResult, setTestResult] = useState<{ type: string; ok: boolean; msg: string } | null>(null);
+  const [category, setCategory] = useState<SettingsCategory>('health');
 
   useEffect(() => {
-    api.getHealth().then(setHealth).catch(() => {});
+    Promise.all([
+      api.getHealth().catch(() => null),
+      api.getSettings().catch(() => ({})),
+    ]).then(([h, s]) => {
+      setHealth(h);
+      setSettings(s || {});
+      setOriginal(s || {});
+      setLoading(false);
+    });
   }, []);
+
+  const updateField = (key: string, value: string) => {
+    setSettings((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const hasChanges = () => {
+    return Object.keys(settings).some((k) => settings[k] !== original[k]);
+  };
+
+  const handleSave = async () => {
+    setSaving(true);
+    setSaveMsg('');
+    try {
+      const changed: Record<string, string> = {};
+      for (const k of Object.keys(settings)) {
+        if (settings[k] !== original[k]) changed[k] = settings[k];
+      }
+      await api.updateSettings(changed);
+      setOriginal({ ...settings });
+      setSaveMsg('Guardado correctamente');
+      setTimeout(() => setSaveMsg(''), 3000);
+    } catch (e: any) {
+      setSaveMsg('Error: ' + (e.message || 'Fallo al guardar'));
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleTestSmtp = async () => {
+    setTestResult(null);
+    try {
+      const res = await api.testSmtp({
+        host: settings['smtp.host'] || '',
+        port: settings['smtp.port'] || '587',
+        user: settings['smtp.user'] || '',
+        password: settings['smtp.password'] || '',
+      });
+      setTestResult({ type: 'smtp', ok: res.success, msg: res.message });
+    } catch (e: any) {
+      setTestResult({ type: 'smtp', ok: false, msg: e.message });
+    }
+  };
+
+  const handleTestAmi = async () => {
+    setTestResult(null);
+    try {
+      const res = await api.testAmi({
+        host: settings['ami.host'] || '',
+        port: settings['ami.port'] || '5038',
+        user: settings['ami.user'] || '',
+        password: settings['ami.password'] || '',
+      });
+      setTestResult({ type: 'ami', ok: res.success, msg: res.message });
+    } catch (e: any) {
+      setTestResult({ type: 'ami', ok: false, msg: e.message });
+    }
+  };
+
+  const InputField = ({ label, settingKey, type = 'text', hint }: { label: string; settingKey: string; type?: string; hint?: string }) => (
+    <div className="mb-3">
+      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--rd-text-secondary)' }}>{label}</label>
+      <input
+        type={type}
+        value={settings[settingKey] || ''}
+        onChange={(e) => updateField(settingKey, e.target.value)}
+        className="input-field"
+        placeholder=""
+      />
+      {hint && <p className="text-[10px] mt-1" style={{ color: 'var(--rd-text-muted)' }}>{hint}</p>}
+    </div>
+  );
+
+  const SelectField = ({ label, settingKey, options, hint }: { label: string; settingKey: string; options: { value: string; label: string }[]; hint?: string }) => (
+    <div className="mb-3">
+      <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--rd-text-secondary)' }}>{label}</label>
+      <select value={settings[settingKey] || ''} onChange={(e) => updateField(settingKey, e.target.value)} className="input-field">
+        {options.map((o) => <option key={o.value} value={o.value}>{o.label}</option>)}
+      </select>
+      {hint && <p className="text-[10px] mt-1" style={{ color: 'var(--rd-text-muted)' }}>{hint}</p>}
+    </div>
+  );
+
+  if (loading) return <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="skeleton h-14 rounded-xl" />)}</div>;
 
   return (
     <div className="animate-fade-in">
-      <h2 className="text-lg font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Estado del sistema</h2>
-      <p className="text-xs mb-6" style={{ color: 'var(--rd-text-muted)' }}>Diagnostico y salud de servicios</p>
-
-      {health ? (
-        <div className="space-y-2 mb-6">
-          {Object.entries(health).map(([key, val]: [string, any]) => {
-            const isOk = val === 'ok' || val === true;
-            return (
-              <div key={key} className="flex items-center justify-between rounded-xl p-4"
-                style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
-                <div className="flex items-center gap-3">
-                  <span className={`w-3 h-3 rounded-full ${isOk ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                  <span className="text-sm font-medium capitalize" style={{ color: 'var(--rd-text)' }}>{key}</span>
-                </div>
-                <span className={`text-xs font-semibold ${isOk ? 'text-emerald-600' : 'text-red-600'}`}>
-                  {typeof val === 'object' ? JSON.stringify(val) : String(val)}
-                </span>
-              </div>
-            );
-          })}
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h2 className="text-lg font-bold" style={{ color: 'var(--rd-text)' }}>Sistema</h2>
+          <p className="text-xs mt-0.5" style={{ color: 'var(--rd-text-muted)' }}>
+            Configuracion global del chatbot, PBX, email y servicios
+          </p>
         </div>
-      ) : (
-        <div className="space-y-2 mb-6">
-          {Array.from({ length: 3 }).map((_, i) => (
-            <div key={i} className="skeleton h-14 rounded-xl" />
-          ))}
+        {hasChanges() && (
+          <div className="flex items-center gap-3">
+            {saveMsg && (
+              <span className={`text-xs font-medium ${saveMsg.startsWith('Error') ? 'text-red-500' : 'text-emerald-600'}`}>{saveMsg}</span>
+            )}
+            <button onClick={handleSave} disabled={saving} className="btn-primary text-xs flex items-center gap-1.5">
+              {saving ? (
+                <span className="w-3 h-3 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+              )}
+              Guardar cambios
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Category tabs */}
+      <div className="flex gap-1 mb-5 flex-wrap">
+        {SETTING_CATEGORIES.map((c) => (
+          <button
+            key={c.id}
+            onClick={() => setCategory(c.id)}
+            className="px-3 py-1.5 text-[11px] rounded-lg font-medium transition-all"
+            style={category === c.id
+              ? { background: 'linear-gradient(135deg, var(--rd-primary), var(--rd-primary-dark))', color: 'white' }
+              : { background: 'var(--rd-surface)', color: 'var(--rd-text-muted)', border: '1px solid var(--rd-border)' }
+            }
+          >
+            {c.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Health */}
+      {category === 'health' && (
+        <div className="space-y-3">
+          {health ? (
+            <div className="space-y-2 mb-6">
+              {Object.entries(health).map(([key, val]: [string, any]) => {
+                const isOk = val === 'ok' || val === true;
+                return (
+                  <div key={key} className="flex items-center justify-between rounded-xl p-4"
+                    style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+                    <div className="flex items-center gap-3">
+                      <span className={`w-3 h-3 rounded-full ${isOk ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                      <span className="text-sm font-medium capitalize" style={{ color: 'var(--rd-text)' }}>{key}</span>
+                    </div>
+                    <span className={`text-xs font-semibold ${isOk ? 'text-emerald-600' : 'text-red-600'}`}>
+                      {typeof val === 'object' ? JSON.stringify(val) : String(val)}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="space-y-2"><div className="skeleton h-14 rounded-xl" /><div className="skeleton h-14 rounded-xl" /></div>
+          )}
+
+          <div className="rounded-xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Integraciones CRM</h3>
+            <p className="text-xs mb-4" style={{ color: 'var(--rd-text-muted)' }}>Salesforce, HubSpot, Zoho, Pipedrive</p>
+            <div className="grid grid-cols-4 gap-2">
+              {['Salesforce', 'HubSpot', 'Zoho CRM', 'Pipedrive'].map((crm) => (
+                <div key={crm} className="rounded-xl p-3 text-center"
+                  style={{ background: 'var(--rd-bg)', border: '1px solid var(--rd-border)' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--rd-text)' }}>{crm}</p>
+                  <p className="text-[10px]" style={{ color: 'var(--rd-text-muted)' }}>OAuth 2.0</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="rounded-xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Plugins</h3>
+            <p className="text-xs mb-4" style={{ color: 'var(--rd-text-muted)' }}>WordPress, Shopify, Magento 2</p>
+            <div className="grid grid-cols-3 gap-2">
+              {['WordPress', 'Shopify', 'Magento 2'].map((p) => (
+                <div key={p} className="rounded-xl p-3 text-center"
+                  style={{ background: 'var(--rd-bg)', border: '1px solid var(--rd-border)' }}>
+                  <p className="text-xs font-semibold" style={{ color: 'var(--rd-text)' }}>{p}</p>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
 
-      {/* CRM Integrations */}
-      <div className="rounded-xl p-5 mb-4" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
-        <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Integraciones CRM</h3>
-        <p className="text-xs mb-4" style={{ color: 'var(--rd-text-muted)' }}>
-          Configura via tabla <code className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'var(--rd-surface-hover)' }}>config</code> con clave <code className="px-1.5 py-0.5 rounded text-[10px]" style={{ background: 'var(--rd-surface-hover)' }}>crm_integrations</code>
-        </p>
-        <div className="grid grid-cols-4 gap-2">
-          {['Salesforce', 'HubSpot', 'Zoho CRM', 'Pipedrive'].map((crm) => (
-            <div key={crm} className="rounded-xl p-3 text-center"
-              style={{ background: 'var(--rd-bg)', border: '1px solid var(--rd-border)' }}>
-              <p className="text-xs font-semibold" style={{ color: 'var(--rd-text)' }}>{crm}</p>
-              <p className="text-[10px]" style={{ color: 'var(--rd-text-muted)' }}>OAuth 2.0</p>
-            </div>
-          ))}
+      {/* Email / SMTP */}
+      {category === 'email' && (
+        <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+          <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Email y SMTP</h3>
+          <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Configuracion del servidor de correo para notificaciones</p>
+          <InputField label="Email de notificaciones" settingKey="notification.email" type="email" hint="Recibe alertas de escalado, llamadas y resumenes" />
+          <div className="grid grid-cols-2 gap-3">
+            <InputField label="Host SMTP" settingKey="smtp.host" />
+            <InputField label="Puerto" settingKey="smtp.port" type="number" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <InputField label="Usuario SMTP" settingKey="smtp.user" />
+            <InputField label="Password SMTP" settingKey="smtp.password" type="password" />
+          </div>
+          <InputField label="Remitente (From)" settingKey="smtp.from" type="email" />
+          <div className="flex items-center gap-3 mt-2">
+            <button onClick={handleTestSmtp} className="px-3 py-1.5 text-[11px] rounded-lg font-medium transition-all"
+              style={{ background: 'var(--rd-bg)', border: '1px solid var(--rd-border)', color: 'var(--rd-text-secondary)' }}>
+              Probar conexion SMTP
+            </button>
+            {testResult?.type === 'smtp' && (
+              <span className={`text-xs font-medium ${testResult.ok ? 'text-emerald-600' : 'text-red-500'}`}>
+                {testResult.msg}
+              </span>
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
-      {/* Plugins */}
-      <div className="rounded-xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
-        <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Plugins disponibles</h3>
-        <p className="text-xs mb-4" style={{ color: 'var(--rd-text-muted)' }}>Integracion directa para plataformas e-commerce</p>
-        <div className="grid grid-cols-3 gap-2">
-          {[
-            { name: 'WordPress', desc: 'Plugin PHP', icon: 'M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2z' },
-            { name: 'Shopify', desc: 'Liquid snippet', icon: 'M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z' },
-            { name: 'Magento 2', desc: 'PHTML template', icon: 'M12 2L2 7l10 5 10-5-10-5z M2 17l10 5 10-5 M2 12l10 5 10-5' },
-          ].map((p) => (
-            <div key={p.name} className="rounded-xl p-3 flex items-center gap-3"
-              style={{ background: 'var(--rd-bg)', border: '1px solid var(--rd-border)' }}>
-              <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ background: 'var(--rd-surface-hover)' }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--rd-text-muted)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d={p.icon} />
-                </svg>
-              </div>
-              <div>
-                <p className="text-xs font-semibold" style={{ color: 'var(--rd-text)' }}>{p.name}</p>
-                <p className="text-[10px]" style={{ color: 'var(--rd-text-muted)' }}>{p.desc}</p>
-              </div>
+      {/* PBX / AMI */}
+      {category === 'pbx' && (
+        <div className="space-y-4">
+          <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Asterisk AMI</h3>
+            <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Conexion a la centralita para Click2Call automatico</p>
+            <div className="grid grid-cols-2 gap-3">
+              <InputField label="Host AMI" settingKey="ami.host" />
+              <InputField label="Puerto" settingKey="ami.port" type="number" />
             </div>
-          ))}
+            <div className="grid grid-cols-2 gap-3">
+              <InputField label="Usuario AMI" settingKey="ami.user" />
+              <InputField label="Password AMI" settingKey="ami.password" type="password" />
+            </div>
+            <div className="flex items-center gap-3 mt-2">
+              <button onClick={handleTestAmi} className="px-3 py-1.5 text-[11px] rounded-lg font-medium transition-all"
+                style={{ background: 'var(--rd-bg)', border: '1px solid var(--rd-border)', color: 'var(--rd-text-secondary)' }}>
+                Probar conexion AMI
+              </button>
+              {testResult?.type === 'ami' && (
+                <span className={`text-xs font-medium ${testResult.ok ? 'text-emerald-600' : 'text-red-500'}`}>
+                  {testResult.msg}
+                </span>
+              )}
+            </div>
+          </div>
+          <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Click2Call</h3>
+            <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Parametros de la llamada de callback</p>
+            <div className="grid grid-cols-3 gap-3">
+              <InputField label="Extension destino" settingKey="click2call.extension" hint="Extension por defecto" />
+              <InputField label="Contexto" settingKey="click2call.context" />
+              <InputField label="Trunk" settingKey="click2call.trunk" />
+            </div>
+          </div>
         </div>
-      </div>
+      )}
+
+      {/* BU Extensions */}
+      {category === 'extensions' && (
+        <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+          <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Extensiones por Linea de Negocio</h3>
+          <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Extension PBX que suena cuando un visitante escala en cada BU</p>
+          <InputField label="Boostic (SEO & Growth)" settingKey="bu.ext.boostic" />
+          <InputField label="Binnacle (BI)" settingKey="bu.ext.binnacle" />
+          <InputField label="Marketing Digital" settingKey="bu.ext.marketing" />
+          <InputField label="Digital Tech" settingKey="bu.ext.tech" />
+          <InputField label="Extension por defecto" settingKey="bu.ext.default" hint="Se usa si no hay extension asignada a la BU" />
+        </div>
+      )}
+
+      {/* AI + Hours */}
+      {category === 'ai' && (
+        <div className="space-y-4">
+          <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Inteligencia Artificial</h3>
+            <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Proveedor y parametros del chatbot IA</p>
+            <SelectField label="Proveedor" settingKey="ai.provider" options={[
+              { value: 'gemini', label: 'Gemini (gratuito)' },
+              { value: 'claude', label: 'Claude (Anthropic)' },
+              { value: 'openai', label: 'OpenAI' },
+            ]} hint="Gemini 2.0 Flash es gratuito. Claude/OpenAI requieren API key en .env" />
+            <div className="grid grid-cols-2 gap-3">
+              <InputField label="Max tokens" settingKey="ai.max_tokens" type="number" />
+              <InputField label="Temperature" settingKey="ai.temperature" />
+            </div>
+          </div>
+          <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Horario de Atencion</h3>
+            <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Fuera de horario se desactiva VoIP y se muestra formulario offline</p>
+            <SelectField label="Zona horaria" settingKey="hours.timezone" options={[
+              { value: 'Europe/Madrid', label: 'Europe/Madrid (CET)' },
+              { value: 'Europe/Lisbon', label: 'Europe/Lisbon (WET)' },
+              { value: 'America/Mexico_City', label: 'America/Mexico_City (CST)' },
+              { value: 'America/Bogota', label: 'America/Bogota (COT)' },
+              { value: 'UTC', label: 'UTC' },
+            ]} />
+            <div className="grid grid-cols-3 gap-3">
+              <InputField label="Hora inicio" settingKey="hours.start" type="number" />
+              <InputField label="Hora fin" settingKey="hours.end" type="number" />
+              <InputField label="Dias (L-V = 1,2,3,4,5)" settingKey="hours.days" hint="Separados por coma" />
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Branding */}
+      {category === 'branding' && (
+        <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+          <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Marca</h3>
+          <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Nombre y color principal del chatbot</p>
+          <InputField label="Nombre de la empresa" settingKey="brand.company_name" />
+          <div className="mb-3">
+            <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--rd-text-secondary)' }}>Color primario</label>
+            <div className="flex items-center gap-3">
+              <input
+                type="color"
+                value={settings['brand.primary_color'] || '#007fff'}
+                onChange={(e) => updateField('brand.primary_color', e.target.value)}
+                className="w-10 h-10 rounded-lg border cursor-pointer"
+                style={{ borderColor: 'var(--rd-border)' }}
+              />
+              <input
+                type="text"
+                value={settings['brand.primary_color'] || '#007fff'}
+                onChange={(e) => updateField('brand.primary_color', e.target.value)}
+                className="input-field"
+                style={{ maxWidth: 120 }}
+              />
+              <div className="flex-1 h-10 rounded-lg" style={{
+                background: `linear-gradient(135deg, ${settings['brand.primary_color'] || '#007fff'}, ${settings['brand.primary_color'] || '#007fff'}cc)`,
+              }} />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

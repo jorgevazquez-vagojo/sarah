@@ -13,6 +13,7 @@ const { triggerWebhooks } = require('../integrations/webhooks');
 const { dispatchToCRM } = require('../integrations/crm');
 
 const { evaluateTriggers } = require('../services/proactive-triggers');
+const { notifyEscalation, notifyCallRequest, sendConversationSummary } = require('../services/email');
 
 // Map of visitorId -> ws
 const visitors = new Map();
@@ -167,7 +168,7 @@ async function handleMessage(ws, visitorId, msg) {
     case 'lead_submit': return handleLeadSubmit(ws, visitorId, msg);
     case 'offline_form': return handleOfflineForm(ws, visitorId, msg);
     case 'escalate': return handleEscalate(ws, visitorId);
-    case 'request_call': return handleRequestCall(ws, visitorId);
+    case 'request_call': return handleRequestCall(ws, visitorId, msg);
     case 'csat': return handleCsat(ws, visitorId, msg);
     case 'page_context': return handlePageContext(ws, visitorId, msg);
     case 'search_kb': return handleSearchKB(ws, visitorId, msg);
@@ -484,9 +485,38 @@ async function handleEscalate(ws, visitorId) {
   });
 
   db.trackEvent({ eventType: 'escalation_requested', conversationId: conv.id, visitorId, businessLine: conv.business_line }).catch(() => {});
+
+  // Email notification + AMI call to BU extension (business hours only)
+  if (isBusinessHours()) {
+    notifyEscalation(conv.id, visitorId, conv.business_line, lang).catch((e) => logger.warn('Escalation email error:', e.message));
+
+    // Ring the BU extension on the PBX so someone picks up
+    const { ami } = require('../services/asterisk-ami');
+    if (ami.connected) {
+      const buLine = (conv.business_line || 'default').toUpperCase();
+      const buExt = process.env[`BU_EXT_${buLine}`] || process.env.BU_EXT_DEFAULT || process.env.CLICK2CALL_EXTENSION;
+      if (buExt) {
+        const context = process.env.CLICK2CALL_CONTEXT || 'from-internal';
+        ami.sendAction({
+          Action: 'Originate',
+          Channel: `Local/${buExt}@${context}`,
+          Application: 'Playback',
+          Data: 'custom/lead-web-waiting',
+          CallerID: `"Lead Web - ${conv.business_line || 'General'}" <0000>`,
+          Timeout: '25000',
+          Async: 'true',
+          Variable: `CONV_ID=${conv.id},BUSINESS_LINE=${conv.business_line || 'general'}`,
+        }).then(() => {
+          logger.info(`AMI: Rang BU extension ${buExt} for escalation (conv ${conv.id})`);
+        }).catch((e) => {
+          logger.warn(`AMI: Failed to ring BU extension ${buExt}:`, e.message);
+        });
+      }
+    }
+  }
 }
 
-async function handleRequestCall(ws, visitorId) {
+async function handleRequestCall(ws, visitorId, msg) {
   const conv = await db.getActiveConversation(visitorId);
   if (!conv) return;
 
@@ -507,32 +537,22 @@ async function handleRequestCall(ws, visitorId) {
     return;
   }
 
-  // Check for available agents
-  const agents = await db.getAvailableAgents({
-    language: lang,
-    businessLine: conv.business_line,
-  });
-
-  if (agents.length === 0) {
-    send(ws, 'message', {
-      sender: 'system',
-      content: t(lang, 'no_agents'),
-      timestamp: new Date().toISOString(),
-    });
+  // Phone number is required for callback mode
+  const phone = (msg && msg.phone || '').replace(/[^\d+]/g, '');
+  if (!phone || phone.length < 6) {
+    send(ws, 'call_error', { message: t(lang, 'phone_required') });
     return;
   }
 
-  // Generate unique call ID and register the call session
+  // Generate unique call ID
   const callId = uuid();
-  const { registerCall } = require('./sip-signaling');
-  registerCall(callId, conv.id);
 
   // Save call record in database
   try {
     await db.query(
-      `INSERT INTO calls (call_id, conversation_id, visitor_id, business_line, status, created_at)
-       VALUES ($1, $2, $3, $4, 'ringing', NOW())`,
-      [callId, conv.id, visitorId, conv.business_line]
+      `INSERT INTO calls (call_id, conversation_id, visitor_id, business_line, status, metadata, created_at)
+       VALUES ($1, $2, $3, $4, 'ringing', $5, NOW())`,
+      [callId, conv.id, visitorId, conv.business_line, JSON.stringify({ phone, mode: 'callback' })]
     );
   } catch (e) {
     logger.warn('Failed to create call record:', e.message);
@@ -540,29 +560,81 @@ async function handleRequestCall(ws, visitorId) {
 
   await transition(conv.id, 'request_call');
 
-  // Send call credentials to visitor (callId is used to connect to /ws/sip)
-  send(ws, 'call_ready', {
-    conversationId: conv.id,
-    callId,
-    sipConfig: {
-      wssUrl: `${process.env.SIP_WSS_URL || 'ws://localhost:3000'}`,
-      domain: process.env.SIP_DOMAIN || 'localhost',
-      extension: `visitor-${visitorId.slice(0, 8)}`,
-      password: callId,
-    },
-  });
+  // Attempt AMI originate (callback to visitor's phone → PBX extension)
+  const { ami } = require('../services/asterisk-ami');
+  if (!ami.connected) {
+    // AMI not available: save lead with phone for manual callback
+    logger.warn('AMI not connected — saving phone for manual callback');
+    send(ws, 'call_queued', {
+      callId,
+      message: t(lang, 'call_queued'),
+    });
 
-  // Notify agents about incoming call via Redis
-  await redis.publish('call:incoming', {
-    callId,
-    conversationId: conv.id,
-    visitorId,
-    language: lang,
-    businessLine: conv.business_line,
-  });
+    // Notify agents via Redis so they can call back manually
+    await redis.publish('call:incoming', {
+      callId,
+      conversationId: conv.id,
+      visitorId,
+      phone,
+      language: lang,
+      businessLine: conv.business_line,
+      mode: 'manual_callback',
+    });
+  } else {
+    // AMI connected: originate the call
+    try {
+      // Get visitor name from lead if available
+      let visitorName = null;
+      try {
+        const leadResult = await db.query(
+          `SELECT name FROM leads WHERE conversation_id = $1 ORDER BY created_at DESC LIMIT 1`,
+          [conv.id]
+        );
+        if (leadResult.rows[0]) visitorName = leadResult.rows[0].name;
+      } catch {}
 
-  triggerWebhooks('call.started', { callId, conversationId: conv.id, visitorId, businessLine: conv.business_line }).catch(() => {});
-  db.trackEvent({ eventType: 'call_requested', conversationId: conv.id, visitorId, data: { callId } }).catch(() => {});
+      await ami.originate({
+        visitorPhone: phone,
+        callId,
+        extension: process.env.CLICK2CALL_EXTENSION || '100',
+        businessLine: conv.business_line,
+        visitorName,
+        context: process.env.CLICK2CALL_CONTEXT || 'from-internal',
+      });
+
+      send(ws, 'call_initiated', {
+        callId,
+        message: t(lang, 'call_connecting'),
+      });
+
+      // Notify agents
+      await redis.publish('call:incoming', {
+        callId,
+        conversationId: conv.id,
+        visitorId,
+        phone,
+        language: lang,
+        businessLine: conv.business_line,
+        mode: 'ami_callback',
+      });
+    } catch (e) {
+      logger.error('AMI originate failed:', e.message);
+
+      // Update call record as failed
+      await db.query(`UPDATE calls SET status = 'failed' WHERE call_id = $1`, [callId]).catch(() => {});
+
+      send(ws, 'call_error', {
+        message: t(lang, 'call_error'),
+      });
+      return;
+    }
+  }
+
+  triggerWebhooks('call.started', { callId, conversationId: conv.id, visitorId, phone, businessLine: conv.business_line }).catch(() => {});
+  db.trackEvent({ eventType: 'call_requested', conversationId: conv.id, visitorId, data: { callId, phone } }).catch(() => {});
+
+  // Email BU contacts about call request
+  notifyCallRequest(conv.id, phone, conv.business_line).catch((e) => logger.warn('Call notification email error:', e.message));
 }
 
 async function handleCsat(ws, visitorId, msg) {
@@ -613,7 +685,7 @@ async function handleQuickReply(ws, visitorId, msg) {
     send(ws, 'show_lead_form', {});
     return;
   }
-  if (msg.value === '__call__') return handleRequestCall(ws, visitorId);
+  if (msg.value === '__call__') { send(ws, 'show_phone_form', {}); return; }
   // Otherwise treat as a regular chat message
   return handleChat(ws, visitorId, { content: msg.value });
 }

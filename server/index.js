@@ -33,6 +33,7 @@ app.use('/api/agents', require('./routes/agents'));
 app.use('/api/calls', require('./routes/call'));
 app.use('/api/analytics', require('./routes/analytics'));
 app.use('/api/upload', require('./routes/upload'));
+app.use('/api/settings', require('./routes/settings'));
 
 // ─── WebSocket upgrade handling ───
 const wssChat = new WebSocketServer({ noServer: true });
@@ -62,6 +63,14 @@ initAgentHandler(wssAgent);
 const { initSipSignaling } = require('./ws/sip-signaling');
 initSipSignaling(wssSip);
 
+// ─── Asterisk AMI for Click2Call ───
+const { initAMI } = require('./services/asterisk-ami');
+initAMI();
+
+// ─── Email notifications ───
+const { initEmail } = require('./services/email');
+initEmail();
+
 // ─── Transcript export ───
 const { asyncRoute } = require('./middleware/error-handler');
 const { requireAgent } = require('./middleware/auth');
@@ -82,6 +91,14 @@ app.get('/api/conversations/:id/transcript', requireAgent, asyncRoute(async (req
   }
   res.json(transcript);
 }));
+
+// ─── Setup wizard (redirect if already completed) ───
+app.get('/setup', async (_req, res) => {
+  const settings = require('./services/settings');
+  const done = await settings.isSetupComplete();
+  if (done) return res.redirect('/dashboard');
+  res.sendFile(path.join(__dirname, 'public', 'setup.html'));
+});
 
 // ─── Premium test page ───
 app.get('/widget/test.html', (_req, res) => {
