@@ -286,6 +286,36 @@ CREATE TABLE config (
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ─── Call Recordings (30-day retention) ───
+CREATE TABLE call_recordings (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    call_id VARCHAR(64) UNIQUE NOT NULL,
+    conversation_id UUID REFERENCES conversations(id),
+    visitor_phone VARCHAR(30),
+    agent_extension VARCHAR(20),
+    business_line VARCHAR(32),
+    language VARCHAR(5) DEFAULT 'es',
+    status VARCHAR(20) DEFAULT 'active' CHECK (status IN ('active', 'ringing', 'ended', 'failed', 'missed', 'transferred')),
+    duration_seconds INTEGER,
+    recording_url TEXT,
+    recording_path TEXT,
+    file_size_bytes BIGINT,
+    transcript TEXT,
+    transcribed_at TIMESTAMPTZ,
+    monitored_by UUID REFERENCES agents(id),
+    monitor_started_at TIMESTAMPTZ,
+    retention_note TEXT,
+    metadata JSONB DEFAULT '{}',
+    started_at TIMESTAMPTZ DEFAULT NOW(),
+    ended_at TIMESTAMPTZ
+);
+
+CREATE INDEX idx_callrec_call_id ON call_recordings(call_id);
+CREATE INDEX idx_callrec_conv ON call_recordings(conversation_id);
+CREATE INDEX idx_callrec_status ON call_recordings(status);
+CREATE INDEX idx_callrec_started ON call_recordings(started_at DESC);
+CREATE INDEX idx_callrec_retention ON call_recordings(started_at) WHERE recording_path IS NOT NULL;
+
 -- ─── Response Feedback (agent training) ───
 CREATE TABLE response_feedback (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),

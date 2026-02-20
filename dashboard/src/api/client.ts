@@ -91,6 +91,21 @@ export const api = {
   getScrapeHistory: () => request('/training/scrape-history'),
   triggerScrape: () => request('/training/scrape', { method: 'POST' }),
   triggerEmbedKb: () => request('/training/embed-kb', { method: 'POST' }),
+
+  // Calls / Recordings
+  getCallStats: () => request('/calls/stats'),
+  getCallRecordings: (params?: Record<string, string>) => {
+    const qs = params ? '?' + new URLSearchParams(params).toString() : '';
+    return request(`/calls/recordings${qs}`);
+  },
+  getCallDetail: (callId: string) => request(`/calls/recordings/${callId}`),
+  transcribeCall: (callId: string) =>
+    request(`/calls/recordings/${callId}/transcribe`, { method: 'POST' }),
+  monitorCall: (callId: string) =>
+    request(`/calls/recordings/${callId}/monitor`, { method: 'POST' }),
+  stopMonitorCall: (callId: string) =>
+    request(`/calls/recordings/${callId}/monitor/stop`, { method: 'POST' }),
+  cleanupRecordings: () => request('/calls/cleanup', { method: 'POST' }),
 };
 
 export function createAgentWS(token: string): WebSocket {

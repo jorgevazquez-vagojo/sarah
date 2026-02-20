@@ -17,6 +17,7 @@ const os = require('os');
 const { EventEmitter } = require('events');
 const { logger } = require('../utils/logger');
 const settings = require('./settings');
+const { logCallStart, logCallEnd } = require('./call-recording');
 
 // ─── Helpers ───
 
@@ -324,7 +325,11 @@ class SipClick2Call extends EventEmitter {
 
     const msg = buildSipRequest('INVITE', uri, {
       via, from, to, callId, cseq: call.cseq, contact,
-      extraHeaders: { Allow: 'INVITE, ACK, BYE, CANCEL, REFER, NOTIFY', Supported: 'replaces' },
+      extraHeaders: {
+        Allow: 'INVITE, ACK, BYE, CANCEL, REFER, NOTIFY',
+        Supported: 'replaces',
+        Record: 'on', // Request PBX to record this call
+      },
       body: sdp,
     });
 
@@ -624,19 +629,33 @@ class SipClick2Call extends EventEmitter {
    * @param {string} [businessLine] - For logging/CallerID context
    * @returns {Promise<{success: boolean, transferredTo: string}>}
    */
-  async click2call(visitorPhone, businessLine) {
+  async click2call(visitorPhone, businessLine, conversationId) {
     if (!this.registered) {
       throw new Error('SIP not registered — Click2Call unavailable');
     }
 
     logger.info(`SIP: Click2Call — calling ${visitorPhone} (BU: ${businessLine || 'general'})`);
 
+    // Log call start
+    const callId = this.activeCalls.size > 0
+      ? [...this.activeCalls.keys()].pop()
+      : require('crypto').randomBytes(12).toString('hex');
+    logCallStart({
+      callId, conversationId,
+      visitorPhone, agentExtension: this.config.ringExtensions.join(','),
+      businessLine: businessLine || 'general',
+    }).catch(() => {});
+
     try {
       const result = await this.originate(visitorPhone);
       logger.info(`SIP: Click2Call success — ${visitorPhone} → ext ${result.transferredTo}`);
+
+      // Update call recording with transferred extension
+      logCallEnd({ callId, status: 'transferred' }).catch(() => {});
       return result;
     } catch (e) {
       logger.error(`SIP: Click2Call failed — ${visitorPhone}: ${e.message}`);
+      logCallEnd({ callId, duration: 0, status: 'failed' }).catch(() => {});
       throw e;
     }
   }

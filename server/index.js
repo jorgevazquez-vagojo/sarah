@@ -76,6 +76,10 @@ initEmail();
 const { initScraper } = require('./services/kb-scraper');
 initScraper();
 
+// ─── Call Recording Cleanup (30-day retention) ───
+const { initRecordingCleanup } = require('./services/call-recording');
+initRecordingCleanup();
+
 // ─── Transcript export ───
 const { asyncRoute } = require('./middleware/error-handler');
 const { requireAgent } = require('./middleware/auth');
