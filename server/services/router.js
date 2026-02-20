@@ -100,21 +100,8 @@ async function generateResponse({ message, language, businessLine, conversationH
 }
 
 function isBusinessHours() {
-  const tz = process.env.TIMEZONE || 'Europe/Madrid';
-  // Use Intl.DateTimeFormat for reliable timezone conversion
-  const fmt = new Intl.DateTimeFormat('en-US', {
-    timeZone: tz,
-    hour: 'numeric',
-    hour12: false,
-    weekday: 'short',
-  });
-  const parts = fmt.formatToParts(new Date());
-  const hour = parseInt(parts.find((p) => p.type === 'hour').value);
-  const weekday = parts.find((p) => p.type === 'weekday').value;
-  const weekend = new Set(['Sat', 'Sun']);
-  const start = parseInt(process.env.BUSINESS_HOURS_START || '9');
-  const end = parseInt(process.env.BUSINESS_HOURS_END || '19');
-  return !weekend.has(weekday) && hour >= start && hour < end;
+  // Always available — no business hours restriction
+  return true;
 }
 
 module.exports = { generateResponse, detectBusinessLine, isBusinessHours, BUSINESS_LINES };

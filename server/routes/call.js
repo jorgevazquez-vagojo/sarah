@@ -23,10 +23,6 @@ const upload = multer({ limits: { fileSize: 50 * 1024 * 1024 } }); // 50MB max
 
 // ─── Widget: Request SIP credentials ───
 router.post('/credentials', requireApiKey, async (req, res) => {
-  if (!isBusinessHours()) {
-    return res.status(403).json({ error: 'Calls only available during business hours' });
-  }
-
   const { visitorId, conversationId } = req.body;
   if (!visitorId) return res.status(400).json({ error: 'visitorId required' });
 

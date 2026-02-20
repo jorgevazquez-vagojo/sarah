@@ -30,8 +30,12 @@ services:
   server:
     build: ./server
     ports:
-      - "3000:3000"
+      - "127.0.0.1:9456:9456"
     env_file: .env
+    environment:
+      PORT: 9456
+      POSTGRES_HOST: postgres
+      REDIS_HOST: redis
     depends_on:
       postgres:
         condition: service_healthy
