@@ -10,7 +10,7 @@
  */
 
 const { Router } = require('express');
-const { requireAgent } = require('../middleware/auth');
+const { requireAgent, requireRole } = require('../middleware/auth');
 const settings = require('../services/settings');
 const { logger } = require('../utils/logger');
 
@@ -126,8 +126,8 @@ router.put('/', requireAgent, async (req, res) => {
   res.json({ success: true, updated: Object.keys(filtered) });
 });
 
-// ─── Test SMTP connection ───
-router.post('/test-smtp', async (req, res) => {
+// ─── Test SMTP connection (admin only) ───
+router.post('/test-smtp', requireAgent, requireRole('admin'), async (req, res) => {
   const { host, port, user, password } = req.body;
   if (!host || !user || !password) {
     return res.status(400).json({ error: 'host, user, password required' });
@@ -149,8 +149,8 @@ router.post('/test-smtp', async (req, res) => {
   }
 });
 
-// ─── Test SIP connectivity (UDP OPTIONS ping) ───
-router.post('/test-sip', async (req, res) => {
+// ─── Test SIP connectivity (UDP OPTIONS ping, admin only) ───
+router.post('/test-sip', requireAgent, requireRole('admin'), async (req, res) => {
   const { domain, port, extension, password } = req.body;
   if (!domain || !extension) {
     return res.status(400).json({ error: 'domain and extension required' });

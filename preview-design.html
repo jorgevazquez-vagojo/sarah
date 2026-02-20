@@ -1,0 +1,955 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redegal Chatbot — Preview Design</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    background: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    gap: 48px;
+    padding: 40px;
+    min-height: 100vh;
+  }
+  h1 {
+    text-align: center;
+    font-size: 28px;
+    color: #1A1A2E;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .subtitle {
+    text-align: center;
+    font-size: 14px;
+    color: #5A6178;
+    margin-bottom: 40px;
+  }
+  .preview-label {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #5A6178;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 16px;
+  }
+
+  /* ─── Widget Preview ─── */
+  .widget-container {
+    width: 400px;
+    filter: drop-shadow(0 20px 60px rgba(0,0,0,0.15));
+  }
+  .widget {
+    width: 400px;
+    border-radius: 20px;
+    overflow: hidden;
+    background: #FFFFFF;
+    border: 1px solid #E5E9F0;
+  }
+  .widget-header {
+    background: linear-gradient(135deg, #007fff, #0055CC);
+    padding: 18px 20px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    height: 68px;
+  }
+  .widget-header img {
+    height: 32px;
+    filter: brightness(0) invert(1);
+  }
+  .widget-header-text {
+    flex: 1;
+  }
+  .widget-header-title {
+    color: #fff;
+    font-size: 16px;
+    font-weight: 700;
+  }
+  .widget-header-sub {
+    color: rgba(255,255,255,0.75);
+    font-size: 11px;
+    font-weight: 500;
+  }
+  .widget-header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .widget-header-actions button {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.15);
+    border: none;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+
+  /* Messages */
+  .widget-messages {
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 380px;
+    background: #FFFFFF;
+  }
+  .msg {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+  }
+  .msg.bot { justify-content: flex-start; }
+  .msg.user { justify-content: flex-end; }
+  .msg-avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: white;
+    flex-shrink: 0;
+  }
+  .msg-avatar.bot-av {
+    background: linear-gradient(135deg, #007fff, #0066cc);
+  }
+  .msg-avatar.agent-av {
+    background: linear-gradient(135deg, #10B981, #059669);
+  }
+  .bubble {
+    max-width: 78%;
+    padding: 10px 16px;
+    font-size: 14px;
+    line-height: 1.55;
+  }
+  .bubble.bot-bubble {
+    background: #F7F9FC;
+    color: #1A1A2E;
+    border: 1px solid #E5E9F0;
+    border-radius: 18px 18px 18px 6px;
+  }
+  .bubble.user-bubble {
+    background: linear-gradient(135deg, #007fff, #0055CC);
+    color: #FFFFFF;
+    border-radius: 18px 18px 6px 18px;
+    box-shadow: 0 1px 4px rgba(0,127,255,0.15);
+  }
+  .timestamp {
+    font-size: 10px;
+    color: #5A6178;
+    margin-top: 3px;
+    padding-left: 38px;
+  }
+  .timestamp.right {
+    text-align: right;
+    padding-left: 0;
+    padding-right: 4px;
+  }
+
+  /* Quick Replies */
+  .quick-replies {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    padding-left: 38px;
+    margin-top: -4px;
+  }
+  .qr-chip {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 7px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #007fff;
+    color: #007fff;
+    background: rgba(0,127,255,0.04);
+    cursor: pointer;
+  }
+
+  /* Business Lines */
+  .bl-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    padding: 0 38px;
+    margin-top: 4px;
+  }
+  .bl-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    border-radius: 14px;
+    border: 1.5px solid #E5E9F0;
+    background: #FFFFFF;
+    font-size: 13px;
+    font-weight: 600;
+    color: #1A1A2E;
+    cursor: pointer;
+  }
+  .bl-item:hover { border-color: #007fff; }
+  .bl-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+  }
+
+  /* Input */
+  .widget-input {
+    padding: 14px 16px;
+    border-top: 1px solid #E5E9F0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: #FFFFFF;
+  }
+  .widget-input input {
+    flex: 1;
+    border: none;
+    font-size: 14px;
+    color: #1A1A2E;
+    background: transparent;
+    outline: none;
+  }
+  .widget-input input::placeholder { color: #9CA3AF; }
+  .send-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 21px;
+    border: none;
+    background: linear-gradient(135deg, #007fff, #0055CC);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,127,255,0.25);
+  }
+  .send-btn svg { width: 18px; height: 18px; }
+  .emoji-btn, .attach-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    color: #5A6178;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+  }
+
+  /* Powered by */
+  .powered-by {
+    text-align: center;
+    padding: 8px;
+    font-size: 10px;
+    color: #9CA3AF;
+    background: #FFFFFF;
+    border-radius: 0 0 20px 20px;
+  }
+
+  /* FAB */
+  .fab-preview {
+    position: relative;
+    margin-top: 20px;
+    display: flex;
+    justify-content: flex-end;
+  }
+  .fab {
+    width: 60px;
+    height: 60px;
+    border-radius: 30px;
+    background: linear-gradient(135deg, #007fff, #0055CC);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 24px rgba(0,127,255,0.35);
+    cursor: pointer;
+    color: white;
+    font-size: 24px;
+  }
+  .fab-badge {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 11px;
+    background: #CF2E2E;
+    color: white;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid white;
+  }
+
+  /* ─── Dashboard Preview ─── */
+  .dashboard-container {
+    width: 720px;
+    filter: drop-shadow(0 20px 60px rgba(0,0,0,0.15));
+  }
+  .dashboard {
+    width: 720px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #FFFFFF;
+    border: 1px solid #E5E9F0;
+    display: flex;
+    min-height: 560px;
+  }
+
+  /* Sidebar */
+  .dash-sidebar {
+    width: 220px;
+    background: #F7F9FC;
+    border-right: 1px solid #E5E9F0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+  }
+  .dash-logo {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    border-bottom: 1px solid #E5E9F0;
+  }
+  .dash-logo-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #007fff, #0066cc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0,127,255,0.25);
+  }
+  .dash-logo-icon svg { width: 16px; height: 16px; }
+  .dash-logo-text {
+    font-weight: 700;
+    font-size: 14px;
+    color: #1A1A2E;
+  }
+  .dash-logo-sub {
+    font-size: 10px;
+    color: #5A6178;
+    font-weight: 500;
+  }
+  .dash-nav {
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+  }
+  .dash-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #5A6178;
+    cursor: pointer;
+    position: relative;
+  }
+  .dash-nav-item:hover { background: rgba(0,127,255,0.04); }
+  .dash-nav-item.active {
+    background: linear-gradient(135deg, rgba(0,127,255,0.08), rgba(0,127,255,0.04));
+    color: #007fff;
+    font-weight: 600;
+  }
+  .dash-nav-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 18px;
+    border-radius: 0 4px 4px 0;
+    background: #007fff;
+  }
+  .dash-nav-item .icon { width: 18px; text-align: center; }
+  .nav-badge {
+    margin-left: auto;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: #007fff;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+  }
+  .dash-status {
+    padding: 12px 16px;
+    border-top: 1px solid #E5E9F0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .dash-status-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #007fff, #0066cc);
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .dash-status-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1A1A2E;
+  }
+  .dash-status-role {
+    font-size: 10px;
+    color: #5A6178;
+  }
+  .online-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    background: #00D084;
+    margin-left: auto;
+    box-shadow: 0 0 0 2px rgba(0,208,132,0.2);
+  }
+
+  /* Dashboard Main */
+  .dash-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .dash-header {
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 24px;
+    border-bottom: 1px solid #E5E9F0;
+  }
+  .dash-header h2 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1A1A2E;
+  }
+  .dash-header-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .dash-btn {
+    padding: 7px 14px;
+    border-radius: 10px;
+    border: 1px solid #E5E9F0;
+    background: white;
+    font-size: 12px;
+    font-weight: 600;
+    color: #5A6178;
+    cursor: pointer;
+  }
+  .dash-btn.primary {
+    background: linear-gradient(135deg, #007fff, #0066cc);
+    color: white;
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,127,255,0.25);
+  }
+
+  /* Stats */
+  .dash-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    padding: 20px 24px;
+  }
+  .stat-card {
+    padding: 14px;
+    border-radius: 14px;
+    background: #F7F9FC;
+    border: 1px solid #E5E9F0;
+  }
+  .stat-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #5A6178;
+    margin-bottom: 4px;
+  }
+  .stat-value {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1A1A2E;
+  }
+  .stat-change {
+    font-size: 10px;
+    font-weight: 600;
+    color: #00D084;
+    margin-top: 2px;
+  }
+
+  /* Conversations list */
+  .dash-convos {
+    flex: 1;
+    padding: 0 24px 20px;
+  }
+  .dash-convos-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .dash-convos-header h3 {
+    font-size: 13px;
+    font-weight: 700;
+    color: #1A1A2E;
+  }
+  .convo-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    border: 1px solid #E5E9F0;
+    margin-bottom: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .convo-item:hover { border-color: #007fff; background: rgba(0,127,255,0.02); }
+  .convo-item.active { border-color: #007fff; background: rgba(0,127,255,0.04); }
+  .convo-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: white;
+    flex-shrink: 0;
+  }
+  .convo-info { flex: 1; min-width: 0; }
+  .convo-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: #1A1A2E;
+  }
+  .convo-preview {
+    font-size: 12px;
+    color: #5A6178;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .convo-meta {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .convo-time {
+    font-size: 10px;
+    color: #5A6178;
+  }
+  .convo-badge {
+    width: 18px;
+    height: 18px;
+    border-radius: 9px;
+    background: #007fff;
+    color: white;
+    font-size: 10px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    margin-top: 4px;
+  }
+  .bl-tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 10px;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+
+  /* ─── Login Preview ─── */
+  .login-container {
+    width: 420px;
+    filter: drop-shadow(0 20px 60px rgba(0,0,0,0.15));
+  }
+  .login {
+    width: 420px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: linear-gradient(135deg, #0c0f1a 0%, #151929 40%, #0a1020 100%);
+    padding: 40px 32px;
+    position: relative;
+  }
+  .login-glow {
+    position: absolute;
+    top: 30%;
+    left: 25%;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0,127,255,0.2), transparent 70%);
+    pointer-events: none;
+  }
+  .login-content {
+    position: relative;
+    z-index: 1;
+  }
+  .login-logo {
+    width: 64px;
+    height: 64px;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #007fff, #0066cc);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+    box-shadow: 0 8px 32px rgba(0,127,255,0.3);
+  }
+  .login-logo svg { width: 28px; height: 28px; }
+  .login h2 {
+    text-align: center;
+    color: white;
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 4px;
+  }
+  .login p {
+    text-align: center;
+    color: rgba(255,255,255,0.4);
+    font-size: 13px;
+    margin-bottom: 28px;
+  }
+  .login-field {
+    margin-bottom: 16px;
+  }
+  .login-field label {
+    display: block;
+    font-size: 11px;
+    font-weight: 500;
+    color: rgba(255,255,255,0.5);
+    margin-bottom: 6px;
+  }
+  .login-field input {
+    width: 100%;
+    padding: 11px 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.08);
+    background: rgba(255,255,255,0.04);
+    color: white;
+    font-size: 13px;
+    outline: none;
+  }
+  .login-field input::placeholder { color: rgba(255,255,255,0.2); }
+  .login-field input:focus { border-color: rgba(0,127,255,0.4); box-shadow: 0 0 0 3px rgba(0,127,255,0.1); }
+  .login-btn {
+    width: 100%;
+    padding: 12px;
+    border-radius: 12px;
+    border: none;
+    background: linear-gradient(135deg, #007fff, #0066cc);
+    color: white;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(0,127,255,0.3);
+    margin-top: 8px;
+  }
+  .login-version {
+    text-align: center;
+    font-size: 10px;
+    color: rgba(255,255,255,0.15);
+    margin-top: 24px;
+  }
+
+  /* Sections */
+  .section { margin-bottom: 48px; }
+  .columns { display: flex; gap: 48px; align-items: flex-start; }
+  .col { display: flex; flex-direction: column; align-items: center; }
+</style>
+</head>
+<body>
+<div style="max-width: 1600px; margin: 0 auto;">
+  <div style="text-align: center; margin-bottom: 48px;">
+    <img src="https://www.redegal.com/wp-content/uploads/2025/05/Logo-Redegal.svg" alt="Redegal" style="height: 40px; margin-bottom: 16px;" />
+    <h1>Redegal Chatbot + WebPhone — Design Preview</h1>
+    <p class="subtitle">Widget embebible para redegal.com · Paleta corporativa #007fff</p>
+  </div>
+
+  <div class="columns">
+    <!-- Widget Column -->
+    <div class="col">
+      <p class="preview-label">💬 Widget de Chat</p>
+      <div class="widget-container">
+        <div class="widget">
+          <div class="widget-header">
+            <img src="https://www.redegal.com/wp-content/uploads/2025/05/Logo-Redegal.svg" alt="R" />
+            <div class="widget-header-text">
+              <div class="widget-header-title">Redegal</div>
+              <div class="widget-header-sub">A Smart Digital Company</div>
+            </div>
+            <div class="widget-header-actions">
+              <button title="Llamar">📞</button>
+              <button title="Idioma">🌐</button>
+            </div>
+          </div>
+          <div class="widget-messages">
+            <!-- Welcome -->
+            <div class="msg bot">
+              <div class="msg-avatar bot-av">✦</div>
+              <div class="bubble bot-bubble">👋 ¡Hola! Bienvenido a <strong>Redegal</strong>. ¿En qué puedo ayudarte hoy?</div>
+            </div>
+            <div class="timestamp">10:32</div>
+
+            <!-- Business Lines -->
+            <div class="bl-grid">
+              <div class="bl-item">
+                <div class="bl-icon" style="background: rgba(0,127,255,0.1); color: #007fff;">📈</div>
+                Boostic
+              </div>
+              <div class="bl-item">
+                <div class="bl-icon" style="background: rgba(6,147,227,0.1); color: #0693e3;">📊</div>
+                Binnacle
+              </div>
+              <div class="bl-item">
+                <div class="bl-icon" style="background: rgba(0,208,132,0.1); color: #00D084;">📣</div>
+                Marketing
+              </div>
+              <div class="bl-item">
+                <div class="bl-icon" style="background: rgba(50,55,60,0.1); color: #32373c;">💻</div>
+                Tech
+              </div>
+            </div>
+
+            <!-- User message -->
+            <div class="msg user">
+              <div class="bubble user-bubble">Me interesa mejorar el SEO de mi tienda online</div>
+            </div>
+            <div class="timestamp right">10:33</div>
+
+            <!-- Bot reply -->
+            <div class="msg bot">
+              <div class="msg-avatar bot-av">✦</div>
+              <div class="bubble bot-bubble">¡Perfecto! Nuestro equipo de <strong>Boostic</strong> es especialista en SEO para ecommerce. ¿Sobre qué plataforma está tu tienda?</div>
+            </div>
+            <div class="timestamp">10:33</div>
+
+            <!-- Quick replies -->
+            <div class="quick-replies">
+              <span class="qr-chip">Shopify</span>
+              <span class="qr-chip">Magento</span>
+              <span class="qr-chip">WooCommerce</span>
+              <span class="qr-chip">Otra</span>
+            </div>
+
+            <!-- Agent joined -->
+            <div style="text-align: center; padding: 12px 0;">
+              <span style="font-size: 11px; color: #5A6178; background: #F7F9FC; padding: 4px 14px; border-radius: 12px; border: 1px solid #E5E9F0;">
+                👤 Ana Garcia se ha unido al chat
+              </span>
+            </div>
+
+            <!-- Agent message -->
+            <div class="msg bot">
+              <div class="msg-avatar agent-av">A</div>
+              <div class="bubble bot-bubble">¡Hola! Soy Ana del equipo Boostic. Veo que te interesa mejorar el SEO. Podemos hacer una auditoría gratuita de tu tienda. ¿Te parece bien?</div>
+            </div>
+            <div class="timestamp">10:34</div>
+          </div>
+
+          <div class="widget-input">
+            <button class="attach-btn">📎</button>
+            <input type="text" placeholder="Escribe un mensaje..." value="" />
+            <button class="emoji-btn">😊</button>
+            <button class="send-btn">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+            </button>
+          </div>
+          <div class="powered-by">Redegal · A Smart Digital Company</div>
+        </div>
+        <div class="fab-preview">
+          <div class="fab">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            <div class="fab-badge">2</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dashboard + Login Column -->
+    <div class="col" style="gap: 32px;">
+      <div>
+        <p class="preview-label">🖥️ Dashboard de Agentes</p>
+        <div class="dashboard-container">
+          <div class="dashboard">
+            <div class="dash-sidebar">
+              <div class="dash-logo">
+                <div class="dash-logo-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <div>
+                  <div class="dash-logo-text">Redegal</div>
+                  <div class="dash-logo-sub">Agent Panel</div>
+                </div>
+              </div>
+              <div class="dash-nav">
+                <div class="dash-nav-item active">
+                  <span class="icon">💬</span> Conversaciones
+                  <span class="nav-badge">12</span>
+                </div>
+                <div class="dash-nav-item">
+                  <span class="icon">👥</span> Leads
+                </div>
+                <div class="dash-nav-item">
+                  <span class="icon">📊</span> Analytics
+                </div>
+                <div class="dash-nav-item">
+                  <span class="icon">📞</span> Llamadas
+                </div>
+                <div class="dash-nav-item">
+                  <span class="icon">📚</span> Knowledge
+                </div>
+                <div class="dash-nav-item">
+                  <span class="icon">⚙️</span> Settings
+                </div>
+              </div>
+              <div class="dash-status">
+                <div class="dash-status-avatar">JV</div>
+                <div>
+                  <div class="dash-status-name">Jorge Vazquez</div>
+                  <div class="dash-status-role">Admin</div>
+                </div>
+                <div class="online-dot"></div>
+              </div>
+            </div>
+            <div class="dash-main">
+              <div class="dash-header">
+                <h2>Conversaciones</h2>
+                <div class="dash-header-actions">
+                  <button class="dash-btn">Filtrar</button>
+                  <button class="dash-btn primary">+ Nueva</button>
+                </div>
+              </div>
+              <div class="dash-stats">
+                <div class="stat-card">
+                  <div class="stat-label">Activas</div>
+                  <div class="stat-value">12</div>
+                  <div class="stat-change">↑ 8%</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">En espera</div>
+                  <div class="stat-value">3</div>
+                  <div class="stat-change">↓ 2</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">Hoy</div>
+                  <div class="stat-value">47</div>
+                  <div class="stat-change">↑ 15%</div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-label">CSAT</div>
+                  <div class="stat-value">4.8</div>
+                  <div class="stat-change">⭐</div>
+                </div>
+              </div>
+              <div class="dash-convos">
+                <div class="dash-convos-header">
+                  <h3>Recientes</h3>
+                </div>
+                <div class="convo-item active">
+                  <div class="convo-avatar" style="background: linear-gradient(135deg, #007fff, #0066cc);">MC</div>
+                  <div class="convo-info">
+                    <div class="convo-name">Maria Castillo <span class="bl-tag" style="background: rgba(0,127,255,0.1); color: #007fff;">Boostic</span></div>
+                    <div class="convo-preview">Me interesa mejorar el SEO de mi tienda...</div>
+                  </div>
+                  <div class="convo-meta">
+                    <div class="convo-time">10:34</div>
+                    <div class="convo-badge">3</div>
+                  </div>
+                </div>
+                <div class="convo-item">
+                  <div class="convo-avatar" style="background: linear-gradient(135deg, #0693e3, #0574b8);">PL</div>
+                  <div class="convo-info">
+                    <div class="convo-name">Pedro Lopez <span class="bl-tag" style="background: rgba(6,147,227,0.1); color: #0693e3;">Binnacle</span></div>
+                    <div class="convo-preview">Necesitamos un dashboard de BI para...</div>
+                  </div>
+                  <div class="convo-meta">
+                    <div class="convo-time">10:28</div>
+                  </div>
+                </div>
+                <div class="convo-item">
+                  <div class="convo-avatar" style="background: linear-gradient(135deg, #00D084, #059669);">AF</div>
+                  <div class="convo-info">
+                    <div class="convo-name">Ana Ferreira <span class="bl-tag" style="background: rgba(0,208,132,0.1); color: #00D084;">Marketing</span></div>
+                    <div class="convo-preview">Queremos lanzar campañas en redes sociales...</div>
+                  </div>
+                  <div class="convo-meta">
+                    <div class="convo-time">10:15</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <p class="preview-label">🔐 Pantalla de Login</p>
+        <div class="login-container">
+          <div class="login">
+            <div class="login-glow"></div>
+            <div class="login-content">
+              <div class="login-logo">
+                <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+              </div>
+              <h2>Redegal</h2>
+              <p>Panel de Agentes</p>
+              <div class="login-field">
+                <label>Usuario</label>
+                <input type="text" placeholder="tu.usuario" />
+              </div>
+              <div class="login-field">
+                <label>Contraseña</label>
+                <input type="password" placeholder="••••••••" />
+              </div>
+              <button class="login-btn">Entrar</button>
+              <div class="login-version">Redegal Agent Dashboard v3.0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

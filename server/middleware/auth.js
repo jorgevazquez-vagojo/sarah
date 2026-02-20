@@ -16,7 +16,7 @@ function generateToken(agent) {
 }
 
 function verifyToken(token) {
-  return jwt.verify(token, secret);
+  return jwt.verify(token, secret, { algorithms: ['HS256'] });
 }
 
 // Middleware: require JWT for agent endpoints

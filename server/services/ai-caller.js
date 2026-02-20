@@ -178,14 +178,18 @@ function generateTts(text, voice = TTS_VOICE) {
   const ts = Date.now();
   const mp3File = path.join(tmpDir, `tts-${ts}.mp3`);
   const ulawFile = path.join(tmpDir, `tts-${ts}.wav`);
-  const escaped = text.replace(/'/g, "'\\''");
-  execSync(`python3 -c "
-import asyncio, edge_tts
+  // SECURITY: Write Python script to temp file instead of interpolating user text into shell
+  const scriptFile = path.join(tmpDir, `tts-script-${ts}.py`);
+  fs.writeFileSync(scriptFile, `import asyncio, sys, json, edge_tts
 async def main():
-    comm = edge_tts.Communicate('${escaped}', '${voice}', rate='${TTS_RATE}')
-    await comm.save('${mp3File}')
+    args = json.loads(sys.argv[1])
+    comm = edge_tts.Communicate(args['text'], args['voice'], rate=args['rate'])
+    await comm.save(args['output'])
 asyncio.run(main())
-"`, { timeout: 20000 });
+`);
+  const { execFileSync } = require('child_process');
+  execFileSync('python3', [scriptFile, JSON.stringify({ text, voice, rate: TTS_RATE, output: mp3File })], { timeout: 20000 });
+  try { fs.unlinkSync(scriptFile); } catch {}
   execSync(`afconvert -f WAVE -d ulaw@8000 -c 1 "${mp3File}" "${ulawFile}"`, { timeout: 10000 });
   const wavData = fs.readFileSync(ulawFile);
   const audioData = wavData.subarray(44);

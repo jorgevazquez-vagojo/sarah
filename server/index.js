@@ -19,7 +19,7 @@ const server = http.createServer(app);
 // ─── Middleware ───
 app.use(securityHeaders);
 app.use(corsMiddleware);
-app.use(express.json({ limit: '15mb' }));
+app.use(express.json({ limit: '100kb' }));
 
 // ─── Static files ───
 app.use('/widget', express.static(path.join(__dirname, 'public', 'widget')));
@@ -45,11 +45,21 @@ app.use('/api/training', require('./routes/training'));
 app.use('/api/ai-caller', require('./routes/ai-caller'));
 
 // ─── WebSocket upgrade handling ───
-const wssChat = new WebSocketServer({ noServer: true });
-const wssAgent = new WebSocketServer({ noServer: true });
-const wssSip = new WebSocketServer({ noServer: true });
+const wssChat = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024 });
+const wssAgent = new WebSocketServer({ noServer: true, maxPayload: 64 * 1024 });
+const wssSip = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024 });
 
 server.on('upgrade', (req, socket, head) => {
+  // Validate WebSocket origin in production
+  const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
+  const origin = req.headers.origin;
+  if (process.env.NODE_ENV === 'production' && allowedOrigins.length && origin && !allowedOrigins.includes(origin)) {
+    logger.warn(`WS: Rejected upgrade from unauthorized origin: ${origin}`);
+    socket.write('HTTP/1.1 403 Forbidden\r\n\r\n');
+    socket.destroy();
+    return;
+  }
+
   const { pathname } = new URL(req.url, `http://${req.headers.host}`);
   if (pathname === '/ws/chat') {
     wssChat.handleUpgrade(req, socket, head, (ws) => wssChat.emit('connection', ws, req));

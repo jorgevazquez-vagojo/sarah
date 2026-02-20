@@ -98,8 +98,8 @@ router.get('/recordings/file/:filename', requireAgent, (req, res) => {
   fs.createReadStream(filePath).pipe(res);
 });
 
-// ─── Upload recording (webhook from PBX) ───
-router.post('/recordings/:callId/upload', upload.single('recording'), asyncRoute(async (req, res) => {
+// ─── Upload recording (webhook from PBX — requires API key) ───
+router.post('/recordings/:callId/upload', requireApiKey, upload.single('recording'), asyncRoute(async (req, res) => {
   if (!req.file) return res.status(400).json({ error: 'No recording file uploaded' });
   const url = await saveRecording(req.params.callId, req.file.buffer, req.file.mimetype);
   res.json({ url });

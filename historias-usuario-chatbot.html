@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Redegal Chatbot — Historias de Usuario para Validacion</title>
+<style>
+  @page {
+    size: A4;
+    margin: 20mm 18mm 22mm 18mm;
+    @top-right { content: "Redegal Chatbot — Historias de Usuario"; font-size: 8px; color: #9CA3AF; }
+    @bottom-center { content: "Pagina " counter(page) " de " counter(pages); font-size: 8px; color: #9CA3AF; }
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    font-size: 11px;
+    color: #1A1A2E;
+    line-height: 1.5;
+  }
+
+  /* Cover */
+  .cover {
+    page-break-after: always;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 700px;
+    text-align: center;
+    padding: 40px;
+  }
+  .cover-logo {
+    width: 80px; height: 80px; border-radius: 24px;
+    background: linear-gradient(135deg, #007fff, #0055CC);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 32px;
+    box-shadow: 0 8px 32px rgba(0,127,255,0.3);
+  }
+  .cover h1 { font-size: 32px; font-weight: 800; margin-bottom: 8px; color: #1A1A2E; }
+  .cover h2 { font-size: 18px; font-weight: 400; color: #5A6178; margin-bottom: 40px; }
+  .cover-meta { font-size: 12px; color: #9CA3AF; }
+  .cover-meta strong { color: #5A6178; }
+  .cover-line { width: 60px; height: 4px; background: #007fff; border-radius: 2px; margin: 24px auto; }
+  .cover-box {
+    margin-top: 40px; padding: 20px 32px; border-radius: 12px;
+    background: #F7F9FC; border: 1px solid #E5E9F0;
+    text-align: left; max-width: 500px;
+  }
+  .cover-box h3 { font-size: 13px; font-weight: 700; color: #007fff; margin-bottom: 8px; }
+  .cover-box p { font-size: 11px; color: #5A6178; line-height: 1.6; }
+
+  /* TOC */
+  .toc { page-break-after: always; padding-top: 20px; }
+  .toc h2 { font-size: 20px; font-weight: 700; margin-bottom: 20px; color: #007fff; }
+  .toc-item {
+    display: flex; justify-content: space-between; align-items: baseline;
+    padding: 8px 0; border-bottom: 1px dashed #E5E9F0;
+  }
+  .toc-item span:first-child { font-weight: 600; }
+  .toc-item span:last-child { color: #9CA3AF; font-size: 10px; }
+
+  /* Section header */
+  .section-header {
+    background: linear-gradient(135deg, #007fff, #0055CC);
+    color: white; padding: 16px 20px; border-radius: 12px;
+    margin: 20px 0 16px; page-break-after: avoid;
+  }
+  .section-header h2 { font-size: 16px; font-weight: 700; margin-bottom: 2px; }
+  .section-header p { font-size: 11px; opacity: 0.85; }
+
+  /* User story card */
+  .story {
+    border: 1px solid #E5E9F0; border-radius: 12px;
+    margin-bottom: 14px; overflow: hidden;
+    page-break-inside: avoid;
+  }
+  .story-header {
+    padding: 12px 16px; background: #F7F9FC;
+    border-bottom: 1px solid #E5E9F0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .story-id { font-size: 10px; font-weight: 700; color: #007fff; letter-spacing: 0.5px; }
+  .story-priority {
+    font-size: 9px; font-weight: 600; padding: 2px 8px;
+    border-radius: 6px; text-transform: uppercase; letter-spacing: 0.3px;
+  }
+  .priority-alta { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+  .priority-media { background: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+  .priority-baja { background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
+
+  .story-body { padding: 14px 16px; }
+  .story-title { font-size: 13px; font-weight: 700; margin-bottom: 6px; }
+  .story-como { font-size: 11px; color: #5A6178; margin-bottom: 10px; line-height: 1.6; }
+  .story-como strong { color: #1A1A2E; }
+
+  .story-criteria { margin-bottom: 12px; }
+  .story-criteria h4 { font-size: 10px; font-weight: 700; color: #5A6178; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .story-criteria li {
+    font-size: 10.5px; color: #1A1A2E; padding: 3px 0 3px 16px;
+    position: relative; line-height: 1.5;
+  }
+  .story-criteria li::before {
+    content: ""; position: absolute; left: 0; top: 8px;
+    width: 8px; height: 8px; border: 1.5px solid #D1D5DB; border-radius: 2px;
+  }
+
+  /* Validation form */
+  .validation {
+    border-top: 1px solid #E5E9F0; padding: 12px 16px;
+    background: #FAFBFC;
+  }
+  .val-row {
+    display: flex; gap: 12px; align-items: flex-start;
+    margin-bottom: 8px;
+  }
+  .val-label { font-size: 10px; font-weight: 600; color: #5A6178; min-width: 90px; padding-top: 2px; }
+  .val-options { display: flex; gap: 8px; flex-wrap: wrap; }
+  .val-option {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 10px; color: #1A1A2E;
+  }
+  .val-checkbox {
+    width: 12px; height: 12px; border: 1.5px solid #D1D5DB;
+    border-radius: 3px; display: inline-block;
+  }
+  .val-radio {
+    width: 12px; height: 12px; border: 1.5px solid #D1D5DB;
+    border-radius: 50%; display: inline-block;
+  }
+  .val-notes {
+    width: 100%; min-height: 28px; border: 1px solid #E5E9F0;
+    border-radius: 6px; font-size: 10px; padding: 4px 8px;
+    background: white;
+  }
+  .val-line {
+    border-bottom: 1px solid #D1D5DB; min-width: 200px;
+    height: 18px; display: inline-block;
+  }
+
+  /* BU Tag */
+  .bu-tag {
+    display: inline-block; padding: 2px 8px; border-radius: 6px;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.3px;
+  }
+  .bu-all { background: #F0F5FF; color: #007fff; border: 1px solid #BAE0FF; }
+  .bu-boostic { background: #EFF6FF; color: #3B82F6; border: 1px solid #BFDBFE; }
+  .bu-binnacle { background: #F5F3FF; color: #8B5CF6; border: 1px solid #DDD6FE; }
+  .bu-marketing { background: #ECFDF5; color: #10B981; border: 1px solid #A7F3D0; }
+  .bu-tech { background: #FFFBEB; color: #F59E0B; border: 1px solid #FDE68A; }
+
+  /* Info box */
+  .info-box {
+    background: #F0F5FF; border: 1px solid #BAE0FF; border-radius: 10px;
+    padding: 14px 18px; margin: 16px 0; page-break-inside: avoid;
+  }
+  .info-box h4 { font-size: 11px; font-weight: 700; color: #007fff; margin-bottom: 4px; }
+  .info-box p { font-size: 10.5px; color: #5A6178; line-height: 1.6; }
+
+  /* Sign-off */
+  .signoff {
+    margin-top: 30px; padding: 24px; border: 1px solid #E5E9F0;
+    border-radius: 12px; page-break-inside: avoid;
+  }
+  .signoff h3 { font-size: 14px; font-weight: 700; margin-bottom: 16px; color: #1A1A2E; }
+  .signoff-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .signoff-field { margin-bottom: 12px; }
+  .signoff-field label { display: block; font-size: 10px; font-weight: 600; color: #5A6178; margin-bottom: 4px; }
+  .signoff-field .line { border-bottom: 1px solid #D1D5DB; height: 24px; }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ COVER ═══════════════════ -->
+<div class="cover">
+  <div class="cover-logo">
+    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  </div>
+  <h1>Redegal Chatbot</h1>
+  <h2>Historias de Usuario para Validacion</h2>
+  <div class="cover-line"></div>
+  <div class="cover-meta">
+    <p><strong>Proyecto:</strong> Chatbot IA + WebPhone VoIP — Web Corporativa Redegal</p>
+    <p><strong>Version:</strong> 1.0 &nbsp;|&nbsp; <strong>Fecha:</strong> Febrero 2026</p>
+    <p><strong>Lineas de Negocio:</strong> Boostic, Binnacle, Marketing, Tech</p>
+  </div>
+  <div class="cover-box">
+    <h3>Instrucciones para validacion</h3>
+    <p>
+      Cada historia de usuario incluye un bloque de validacion al final.
+      Por favor, revisa cada historia, marca si esta <strong>Aprobada</strong>,
+      <strong>Requiere cambios</strong> o <strong>Rechazada</strong>,
+      y anota cualquier observacion o requisito adicional en el campo de notas.
+      Si falta alguna funcionalidad, anotadla en la seccion final.
+    </p>
+  </div>
+</div>
+
+<!-- ═══════════════════ TOC ═══════════════════ -->
+<div class="toc">
+  <h2>Indice</h2>
+  <div class="toc-item"><span>1. Widget — Chatbot IA</span><span>Pag 3</span></div>
+  <div class="toc-item"><span>2. Widget — Click2Call / Telefonia</span><span>Pag 5</span></div>
+  <div class="toc-item"><span>3. Widget — Formularios y Leads</span><span>Pag 6</span></div>
+  <div class="toc-item"><span>4. Notificaciones y Escalado</span><span>Pag 7</span></div>
+  <div class="toc-item"><span>5. Dashboard de Agentes</span><span>Pag 9</span></div>
+  <div class="toc-item"><span>6. Administracion y Configuracion</span><span>Pag 11</span></div>
+  <div class="toc-item"><span>7. Integraciones</span><span>Pag 13</span></div>
+  <div class="toc-item"><span>8. Historias adicionales propuestas</span><span>Pag 14</span></div>
+  <div class="toc-item"><span>9. Firma de validacion</span><span>Pag 15</span></div>
+</div>
+
+<!-- ═══════════════════ 1. WIDGET CHATBOT ═══════════════════ -->
+<div class="section-header">
+  <h2>1. Widget — Chatbot IA</h2>
+  <p>Interaccion del visitante con el bot automatico</p>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-001</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Abrir chatbot desde la web</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante de la web de Redegal,<br>
+      <strong>quiero</strong> ver un boton flotante en la esquina inferior derecha,<br>
+      <strong>para que</strong> pueda abrir el chatbot y hacer consultas sin salir de la pagina.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>El boton flotante aparece en todas las paginas de redegal.com</li>
+        <li>Al hacer clic se abre el widget con animacion suave</li>
+        <li>El widget no interfiere con el contenido de la pagina (Shadow DOM)</li>
+        <li>Funciona correctamente en movil (pantalla completa) y escritorio</li>
+        <li>El color del boton es el azul corporativo (#007fff)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-002</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Saludo automatico del bot</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante,<br>
+      <strong>quiero</strong> recibir un saludo automatico al abrir el chatbot,<br>
+      <strong>para que</strong> sepa inmediatamente que servicios ofrece Redegal y como puedo interactuar.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>El bot saluda automaticamente al abrir el widget</li>
+        <li>El saludo se adapta al idioma detectado del navegador</li>
+        <li>Muestra opciones rapidas (quick replies) para las 4 lineas de negocio</li>
+        <li>El saludo se personaliza segun la pagina visitada (ej: si esta en /seo, menciona Boostic)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-003</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Conversacion con IA sobre servicios</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante,<br>
+      <strong>quiero</strong> hacer preguntas sobre los servicios de Redegal y recibir respuestas inteligentes,<br>
+      <strong>para que</strong> pueda resolver mis dudas de forma inmediata sin esperar a un comercial.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>El bot responde sobre las 4 lineas de negocio con informacion actualizada</li>
+        <li>Detecta la intencion del visitante y clasifica por BU automaticamente</li>
+        <li>Si no sabe la respuesta, lo reconoce y ofrece hablar con un comercial</li>
+        <li>Las respuestas son concisas, profesionales y en el idioma del visitante</li>
+        <li>Indicador de "escribiendo..." mientras genera la respuesta</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-004</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Multiidioma automatico</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante internacional,<br>
+      <strong>quiero</strong> que el chatbot detecte mi idioma y me hable en el,<br>
+      <strong>para que</strong> pueda comunicarme comodamente sin barreras de idioma.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Auto-deteccion del idioma del navegador (es, en, pt, gl)</li>
+        <li>Selector manual de idioma visible en la cabecera del widget</li>
+        <li>Todos los textos del widget (botones, placeholders) se traducen</li>
+        <li>El bot responde en el idioma seleccionado</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-005</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Envio de archivos</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante,<br>
+      <strong>quiero</strong> poder adjuntar archivos (imagenes, PDFs) en el chat,<br>
+      <strong>para que</strong> pueda compartir documentos relevantes con el agente.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Boton de adjuntar archivo visible en la barra de input</li>
+        <li>Tipos permitidos: imagenes, PDF, Word, Excel (max 10MB)</li>
+        <li>Vista previa de imagenes en el chat</li>
+        <li>Los archivos se almacenan en el servidor y son accesibles por agentes</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 2. CLICK2CALL ═══════════════════ -->
+<div class="section-header">
+  <h2>2. Widget — Click2Call / Telefonia</h2>
+  <p>Llamadas desde el widget via centralita PBX</p>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-006</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Solicitar llamada de vuelta (callback)</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante,<br>
+      <strong>quiero</strong> introducir mi numero de telefono y que me llamen,<br>
+      <strong>para que</strong> pueda hablar directamente con un comercial de la BU que necesito.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Formulario de telefono con validacion (minimo 6 digitos)</li>
+        <li>La centralita llama automaticamente al visitante (via Asterisk AMI)</li>
+        <li>CallerID muestra "Lead Web - [BU]" en el telefono del comercial</li>
+        <li>Si la centralita no esta configurada, se envia email al comercial</li>
+        <li>El visitante ve estado en tiempo real: "Conectando...", "Llamando..."</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-007</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Solo llamadas en horario laboral</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante fuera de horario,<br>
+      <strong>quiero</strong> que el bot me informe de que no hay personal disponible,<br>
+      <strong>para que</strong> pueda dejar mis datos y me contacten en el siguiente horario laboral.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>El boton de llamar se desactiva fuera del horario configurado</li>
+        <li>Se muestra mensaje informativo con el proximo horario disponible</li>
+        <li>Se ofrece formulario de contacto offline (nombre, email, telefono, asunto)</li>
+        <li>Los datos se registran como lead para seguimiento posterior</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 3. FORMULARIOS Y LEADS ═══════════════════ -->
+<div class="section-header">
+  <h2>3. Widget — Formularios y Leads</h2>
+  <p>Captura de datos de contacto y generacion de oportunidades</p>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-008</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Captura de lead durante la conversacion</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante interesado,<br>
+      <strong>quiero</strong> poder dejar mis datos de contacto durante la conversacion,<br>
+      <strong>para que</strong> un comercial de Redegal pueda contactarme con una propuesta.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>El bot solicita datos en el momento oportuno (tras detectar interes comercial)</li>
+        <li>Campos: nombre, email (obligatorio), telefono, empresa, cargo</li>
+        <li>El lead se almacena con puntuacion de calidad automatica (0-100)</li>
+        <li>Se clasifica automaticamente por BU segun el contexto de la conversacion</li>
+        <li>Se dispara webhook y/o CRM sync al crear el lead</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-009</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Encuesta de satisfaccion al cerrar</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante al finalizar una conversacion,<br>
+      <strong>quiero</strong> poder valorar la atencion recibida,<br>
+      <strong>para que</strong> Redegal pueda mejorar continuamente el servicio.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Se muestra encuesta CSAT (1-5 estrellas) al cerrar la conversacion</li>
+        <li>Campo opcional de comentario libre</li>
+        <li>Los resultados se almacenan vinculados a la conversacion</li>
+        <li>No es obligatoria: el visitante puede cerrar sin valorar</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 4. NOTIFICACIONES Y ESCALADO ═══════════════════ -->
+<div class="section-header">
+  <h2>4. Notificaciones y Escalado</h2>
+  <p>Alertas por email y telefonia cuando un visitante necesita atencion humana</p>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-010</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Escalado a agente humano por BU</div>
+    <p class="story-como">
+      <strong>Como</strong> visitante,<br>
+      <strong>quiero</strong> poder pedir hablar con una persona en cualquier momento,<br>
+      <strong>para que</strong> un comercial de la linea de negocio apropiada me atienda directamente.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Quick reply "Hablar con una persona" visible en todo momento</li>
+        <li>El sistema detecta la BU de la conversacion automaticamente</li>
+        <li>Se envia email de alerta al email de notificaciones configurado</li>
+        <li>Se lanza llamada a la extension PBX de la BU correspondiente</li>
+        <li>El visitante ve mensaje "Conectando con un agente..." mientras espera</li>
+        <li>Si un agente esta online en el dashboard, recibe la conversacion al instante</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-011</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Email de notificacion de escalado</div>
+    <p class="story-como">
+      <strong>Como</strong> comercial de una BU,<br>
+      <strong>quiero</strong> recibir un email inmediato cuando un visitante pida hablar conmigo,<br>
+      <strong>para que</strong> pueda entrar al dashboard y atenderle rapidamente.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Email con asunto claro: "Lead Web quiere hablar — [BU]"</li>
+        <li>Incluye los ultimos mensajes de la conversacion como contexto</li>
+        <li>Incluye hora, BU detectada y enlace al dashboard</li>
+        <li>Se envia al email de notificaciones unico configurado</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-012</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Resumen de conversacion por email</div>
+    <p class="story-como">
+      <strong>Como</strong> responsable comercial,<br>
+      <strong>quiero</strong> recibir un resumen por email al cerrarse cada conversacion,<br>
+      <strong>para que</strong> tenga registro de las consultas y datos del lead sin entrar al dashboard.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Se envia automaticamente al cerrar la conversacion (agente o timeout)</li>
+        <li>Incluye: BU, idioma, numero de mensajes, hora inicio/fin</li>
+        <li>Incluye datos del lead si los dejo (nombre, email, telefono, empresa)</li>
+        <li>Incluye transcripcion completa de la conversacion</li>
+        <li>Formato HTML profesional con branding Redegal</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-013</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Email de solicitud de llamada</div>
+    <p class="story-como">
+      <strong>Como</strong> comercial,<br>
+      <strong>quiero</strong> recibir un email cuando un visitante solicite una llamada de vuelta,<br>
+      <strong>para que</strong> pueda llamarle manualmente si la centralita no completo la llamada.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Email con asunto: "Lead Web pide llamada — [telefono] ([BU])"</li>
+        <li>Incluye el telefono del visitante con enlace tel: para llamar desde el movil</li>
+        <li>Indica si la llamada automatica se completo o no</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 5. DASHBOARD ═══════════════════ -->
+<div class="section-header">
+  <h2>5. Dashboard de Agentes</h2>
+  <p>Panel web para agentes humanos que atienden conversaciones</p>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-014</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Login y gestion de estado del agente</div>
+    <p class="story-como">
+      <strong>Como</strong> agente/comercial,<br>
+      <strong>quiero</strong> iniciar sesion en el dashboard y cambiar mi estado,<br>
+      <strong>para que</strong> el sistema sepa si estoy disponible para recibir conversaciones.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Login con usuario y contrasena</li>
+        <li>Estados: Online, Ocupado, Ausente, Offline</li>
+        <li>Al ponerse Online, el agente empieza a recibir conversaciones en cola</li>
+        <li>Maximo 3 conversaciones simultaneas por agente (configurable)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-015</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Atender conversaciones en tiempo real</div>
+    <p class="story-como">
+      <strong>Como</strong> agente,<br>
+      <strong>quiero</strong> ver las conversaciones asignadas y responder en tiempo real,<br>
+      <strong>para que</strong> el visitante reciba atencion humana inmediata.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Lista de conversaciones activas con indicador de no leidos</li>
+        <li>Chat en tiempo real via WebSocket con el visitante</li>
+        <li>Respuestas rapidas con atajos /shortcut</li>
+        <li>Ver historial completo de la conversacion (incluido lo que hablo con el bot)</li>
+        <li>Notas internas entre agentes (no visibles para el visitante)</li>
+        <li>Boton para cerrar conversacion</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-016</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Ver leads y datos de contacto</div>
+    <p class="story-como">
+      <strong>Como</strong> agente,<br>
+      <strong>quiero</strong> ver todos los leads capturados con filtros por estado y BU,<br>
+      <strong>para que</strong> pueda hacer seguimiento comercial de las oportunidades.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Tabla de leads con filtros: estado, BU, fecha, puntuacion</li>
+        <li>Detalle del lead con datos de contacto e historial de conversacion</li>
+        <li>Cambio de estado: Nuevo, Contactado, Cualificado, Convertido, Perdido</li>
+        <li>Export de datos (futuro)</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-017</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Analytics del chatbot</div>
+    <p class="story-como">
+      <strong>Como</strong> responsable de BU,<br>
+      <strong>quiero</strong> ver metricas de uso del chatbot (conversaciones, leads, tiempos),<br>
+      <strong>para que</strong> pueda medir el impacto y optimizar la atencion.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Graficas de conversaciones por dia/semana</li>
+        <li>Metricas: total conversaciones, leads generados, escalados, tiempo medio</li>
+        <li>Filtros por BU, idioma y periodo</li>
+        <li>Tabla de top consultas / temas mas preguntados</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 6. ADMIN ═══════════════════ -->
+<div class="section-header">
+  <h2>6. Administracion y Configuracion</h2>
+  <p>Setup inicial y panel de administracion</p>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-018</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">ADMIN</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Asistente de configuracion inicial (Setup Wizard)</div>
+    <p class="story-como">
+      <strong>Como</strong> administrador que despliega el chatbot por primera vez,<br>
+      <strong>quiero</strong> un asistente paso a paso para configurar todo lo necesario,<br>
+      <strong>para que</strong> el chatbot funcione correctamente sin editar archivos de configuracion.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Accesible via /setup solo si es la primera vez (se bloquea tras completar)</li>
+        <li>5 pasos: Email, PBX, Extensiones BU, IA/Horario, Marca</li>
+        <li>Posibilidad de saltar pasos opcionales</li>
+        <li>Test de conexion SMTP y AMI integrado</li>
+        <li>Al finalizar, redirige al Dashboard</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-019</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">ADMIN</span>
+      <span class="story-priority priority-alta">ALTA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Panel de configuracion del sistema</div>
+    <p class="story-como">
+      <strong>Como</strong> administrador,<br>
+      <strong>quiero</strong> modificar la configuracion del chatbot desde el Dashboard,<br>
+      <strong>para que</strong> pueda cambiar SMTP, PBX, IA, horarios y colores sin reiniciar.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Accesible desde Dashboard > Configuracion > Sistema (solo admin)</li>
+        <li>Categorias: Email/SMTP, PBX/AMI, Extensiones BU, IA/Horario, Marca</li>
+        <li>Los cambios se guardan en BD y aplican en tiempo real (sin reiniciar)</li>
+        <li>Passwords enmascarados y nunca visibles en texto plano</li>
+        <li>Boton "Probar conexion" para SMTP y AMI</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-020</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">ADMIN</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Gestion de respuestas rapidas (canned responses)</div>
+    <p class="story-como">
+      <strong>Como</strong> administrador,<br>
+      <strong>quiero</strong> crear y gestionar respuestas rapidas por idioma y BU,<br>
+      <strong>para que</strong> los agentes puedan responder mas rapido con atajos /shortcut.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>CRUD completo desde Dashboard > Configuracion > Respuestas rapidas</li>
+        <li>Cada respuesta tiene: atajo, titulo, contenido, idioma, BU (opcional)</li>
+        <li>Contador de uso por respuesta</li>
+        <li>Los agentes escriben /atajo en el chat y se expande automaticamente</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-021</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">ADMIN</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Personalizacion de apariencia del widget</div>
+    <p class="story-como">
+      <strong>Como</strong> administrador,<br>
+      <strong>quiero</strong> cambiar colores, fuentes y layout del widget desde el Dashboard,<br>
+      <strong>para que</strong> el widget se integre visualmente con la web del cliente.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Editor de tema visual con color pickers (8 colores: primario, fondo, texto, etc.)</li>
+        <li>Vista previa en tiempo real del widget</li>
+        <li>Configuracion por tenant (multi-tenant)</li>
+        <li>Opciones de posicion: bottom-right / bottom-left</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 7. INTEGRACIONES ═══════════════════ -->
+<div class="section-header">
+  <h2>7. Integraciones</h2>
+  <p>CRM, webhooks y plugins para plataformas externas</p>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-022</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-media">MEDIA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Webhooks para eventos</div>
+    <p class="story-como">
+      <strong>Como</strong> administrador / equipo tecnico,<br>
+      <strong>quiero</strong> configurar webhooks HTTP que se disparen en eventos del chatbot,<br>
+      <strong>para que</strong> pueda integrar con sistemas externos (n8n, Zapier, CRM custom).
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>CRUD de webhooks desde Dashboard > Configuracion > Webhooks</li>
+        <li>10+ tipos de evento: conversation.started, message.received, lead.created, etc.</li>
+        <li>Firma HMAC (SHA-256) para seguridad</li>
+        <li>Reintentos automaticos con backoff exponencial</li>
+        <li>Log de entregas con estado HTTP y respuesta</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-023</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-baja">BAJA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Integracion CRM</div>
+    <p class="story-como">
+      <strong>Como</strong> equipo comercial,<br>
+      <strong>quiero</strong> que los leads se sincronicen automaticamente con nuestro CRM,<br>
+      <strong>para que</strong> no tengamos que copiar datos manualmente.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>Soporte: Salesforce, HubSpot, Zoho CRM, Pipedrive</li>
+        <li>Sync automatico al crear lead y al cerrar conversacion</li>
+        <li>Mapeo de campos configurable</li>
+        <li>OAuth 2.0 para autenticacion</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<div class="story">
+  <div class="story-header">
+    <span class="story-id">HU-024</span>
+    <div style="display:flex;gap:6px;align-items:center">
+      <span class="bu-tag bu-all">TODAS</span>
+      <span class="story-priority priority-baja">BAJA</span>
+    </div>
+  </div>
+  <div class="story-body">
+    <div class="story-title">Plugins para plataformas e-commerce</div>
+    <p class="story-como">
+      <strong>Como</strong> equipo tecnico,<br>
+      <strong>quiero</strong> instalar el widget en WordPress, Shopify o Magento con un plugin,<br>
+      <strong>para que</strong> la instalacion sea rapida y sin modificar codigo.
+    </p>
+    <div class="story-criteria">
+      <h4>Criterios de aceptacion</h4>
+      <ul>
+        <li>WordPress: plugin PHP con pagina de settings (tenant, color, posicion)</li>
+        <li>Shopify: snippet Liquid con configuracion en JSON</li>
+        <li>Magento 2: bloque PHTML con settings XML</li>
+        <li>Cada plugin inyecta el script del widget y la configuracion basica</li>
+      </ul>
+    </div>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Validacion:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Aprobada</span>
+        <span class="val-option"><span class="val-radio"></span> Requiere cambios</span>
+        <span class="val-option"><span class="val-radio"></span> Rechazada</span>
+      </div>
+    </div>
+    <div class="val-row">
+      <span class="val-label">Notas:</span>
+      <div class="val-notes">&nbsp;</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 8. HISTORIAS ADICIONALES ═══════════════════ -->
+<div class="section-header">
+  <h2>8. Historias adicionales propuestas por las BU</h2>
+  <p>Espacio para que cada linea de negocio anote funcionalidades que falten</p>
+</div>
+
+<div class="info-box">
+  <h4>Instrucciones</h4>
+  <p>Si detectais alguna funcionalidad que falta o necesitais algun flujo especifico para vuestra linea de negocio, anotadlo aqui con el formato: "Como [rol], quiero [funcionalidad], para que [beneficio]".</p>
+</div>
+
+<div class="story" style="min-height: 120px;">
+  <div class="story-header">
+    <span class="story-id">HU-NEW-1</span>
+    <span class="bu-tag bu-boostic">BOOSTIC</span>
+  </div>
+  <div class="story-body">
+    <div class="story-title" style="color: #9CA3AF; font-weight: 400; font-style: italic;">Escribir aqui...</div>
+    <p class="story-como" style="min-height: 60px;">&nbsp;</p>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Prioridad:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Alta</span>
+        <span class="val-option"><span class="val-radio"></span> Media</span>
+        <span class="val-option"><span class="val-radio"></span> Baja</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="story" style="min-height: 120px;">
+  <div class="story-header">
+    <span class="story-id">HU-NEW-2</span>
+    <span class="bu-tag bu-binnacle">BINNACLE</span>
+  </div>
+  <div class="story-body">
+    <div class="story-title" style="color: #9CA3AF; font-weight: 400; font-style: italic;">Escribir aqui...</div>
+    <p class="story-como" style="min-height: 60px;">&nbsp;</p>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Prioridad:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Alta</span>
+        <span class="val-option"><span class="val-radio"></span> Media</span>
+        <span class="val-option"><span class="val-radio"></span> Baja</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="story" style="min-height: 120px;">
+  <div class="story-header">
+    <span class="story-id">HU-NEW-3</span>
+    <span class="bu-tag bu-marketing">MARKETING</span>
+  </div>
+  <div class="story-body">
+    <div class="story-title" style="color: #9CA3AF; font-weight: 400; font-style: italic;">Escribir aqui...</div>
+    <p class="story-como" style="min-height: 60px;">&nbsp;</p>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Prioridad:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Alta</span>
+        <span class="val-option"><span class="val-radio"></span> Media</span>
+        <span class="val-option"><span class="val-radio"></span> Baja</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="story" style="min-height: 120px;">
+  <div class="story-header">
+    <span class="story-id">HU-NEW-4</span>
+    <span class="bu-tag bu-tech">TECH</span>
+  </div>
+  <div class="story-body">
+    <div class="story-title" style="color: #9CA3AF; font-weight: 400; font-style: italic;">Escribir aqui...</div>
+    <p class="story-como" style="min-height: 60px;">&nbsp;</p>
+  </div>
+  <div class="validation">
+    <div class="val-row">
+      <span class="val-label">Prioridad:</span>
+      <div class="val-options">
+        <span class="val-option"><span class="val-radio"></span> Alta</span>
+        <span class="val-option"><span class="val-radio"></span> Media</span>
+        <span class="val-option"><span class="val-radio"></span> Baja</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ 9. FIRMA ═══════════════════ -->
+<div class="section-header">
+  <h2>9. Firma de Validacion</h2>
+  <p>Aprobacion del documento por los responsables</p>
+</div>
+
+<div class="signoff">
+  <h3>Validacion y aprobacion</h3>
+  <p style="font-size: 11px; color: #5A6178; margin-bottom: 20px; line-height: 1.6;">
+    Al firmar este documento, confirmo que he revisado todas las historias de usuario
+    y mis observaciones han sido recogidas en los campos de notas correspondientes.
+  </p>
+
+  <div class="signoff-grid">
+    <div>
+      <div class="signoff-field">
+        <label>Nombre (Boostic)</label>
+        <div class="line"></div>
+      </div>
+      <div class="signoff-field">
+        <label>Firma y fecha</label>
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      <div class="signoff-field">
+        <label>Nombre (Binnacle)</label>
+        <div class="line"></div>
+      </div>
+      <div class="signoff-field">
+        <label>Firma y fecha</label>
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      <div class="signoff-field">
+        <label>Nombre (Marketing)</label>
+        <div class="line"></div>
+      </div>
+      <div class="signoff-field">
+        <label>Firma y fecha</label>
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      <div class="signoff-field">
+        <label>Nombre (Tech)</label>
+        <div class="line"></div>
+      </div>
+      <div class="signoff-field">
+        <label>Firma y fecha</label>
+        <div class="line"></div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px; border-top: 1px solid #E5E9F0; padding-top: 16px;">
+    <div class="signoff-grid">
+      <div>
+        <div class="signoff-field">
+          <label>Responsable Digital</label>
+          <div class="line"></div>
+        </div>
+        <div class="signoff-field">
+          <label>Firma y fecha</label>
+          <div class="line"></div>
+        </div>
+      </div>
+      <div>
+        <div class="signoff-field">
+          <label>Responsable Tech</label>
+          <div class="line"></div>
+        </div>
+        <div class="signoff-field">
+          <label>Firma y fecha</label>
+          <div class="line"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top: 24px; border-top: 1px solid #E5E9F0; padding-top: 16px;">
+    <div class="signoff-field">
+      <label>Aprobacion general — Responsable del proyecto</label>
+      <div class="line" style="margin-top: 8px;"></div>
+    </div>
+    <div class="signoff-field">
+      <label>Firma y fecha</label>
+      <div class="line"></div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; margin-top: 40px; padding: 20px; color: #9CA3AF; font-size: 10px;">
+  <p>Redegal — A Smart Digital Company</p>
+  <p>Documento generado automaticamente — Febrero 2026</p>
+</div>
+
+</body>
+</html>

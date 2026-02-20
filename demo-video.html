@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Redegal Chatbot — Demo 15 min</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --primary: #007fff;
+  --primary-dark: #0059b3;
+  --bg: #0a0a12;
+  --surface: #14141f;
+  --surface2: #1e1e2e;
+  --text: #f0f0f5;
+  --text-sec: #9ca3b0;
+  --text-muted: #5a6070;
+  --green: #10b981;
+  --red: #ef4444;
+  --yellow: #f59e0b;
+  --chat-bot: #007fff;
+  --chat-user: #2d2d44;
+  --radius: 16px;
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Inter, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow: hidden;
+  width: 1920px;
+  height: 1080px;
+}
+.scene { position: absolute; inset: 0; opacity: 0; display: flex; flex-direction: column; transition: opacity 0.8s ease; pointer-events: none; }
+.scene.active { opacity: 1; pointer-events: auto; }
+
+/* ─── Title slides ─── */
+.title-slide {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  height: 100%; text-align: center;
+  background: radial-gradient(ellipse at center, #0d1a3a 0%, var(--bg) 70%);
+}
+.title-slide h1 { font-size: 72px; font-weight: 800; letter-spacing: -2px; margin-bottom: 16px; }
+.title-slide h1 span { background: linear-gradient(135deg, var(--primary), #60a5fa); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.title-slide h2 { font-size: 32px; font-weight: 400; color: var(--text-sec); }
+.title-slide .subtitle { font-size: 20px; color: var(--text-muted); margin-top: 24px; }
+.title-slide .badge { display: inline-block; padding: 8px 20px; border-radius: 100px; background: rgba(0,127,255,0.15); color: var(--primary); font-size: 14px; font-weight: 600; margin-top: 32px; border: 1px solid rgba(0,127,255,0.3); }
+.logo-mark { width: 80px; height: 80px; border-radius: 24px; background: linear-gradient(135deg, var(--primary), var(--primary-dark)); display: flex; align-items: center; justify-content: center; margin-bottom: 32px; box-shadow: 0 8px 40px rgba(0,127,255,0.4); }
+
+/* ─── Section title ─── */
+.section-title-slide {
+  display: flex; align-items: center; justify-content: center; height: 100%;
+  background: radial-gradient(ellipse at center, #0d1a3a 0%, var(--bg) 70%);
+}
+.section-title-slide .number { font-size: 180px; font-weight: 900; color: rgba(0,127,255,0.1); position: absolute; left: 120px; }
+.section-title-slide .content { text-align: left; margin-left: 200px; }
+.section-title-slide h2 { font-size: 56px; font-weight: 800; letter-spacing: -1px; }
+.section-title-slide p { font-size: 22px; color: var(--text-sec); margin-top: 12px; max-width: 600px; line-height: 1.5; }
+.section-title-slide .time { font-size: 14px; color: var(--text-muted); margin-top: 20px; display: flex; align-items: center; gap: 8px; }
+
+/* ─── Terminal ─── */
+.terminal-scene { padding: 60px 100px; background: var(--bg); }
+.terminal-header { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; }
+.terminal-header .dots { display: flex; gap: 8px; }
+.terminal-header .dot { width: 14px; height: 14px; border-radius: 50%; }
+.terminal-header .dot.red { background: var(--red); }
+.terminal-header .dot.yellow { background: var(--yellow); }
+.terminal-header .dot.green { background: var(--green); }
+.terminal-header .title { font-size: 14px; color: var(--text-muted); margin-left: 12px; }
+.terminal {
+  background: #0c0c14; border: 1px solid #2a2a3a; border-radius: 16px;
+  padding: 32px; font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 16px; line-height: 2; height: 800px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.term-line { opacity: 0; transform: translateY(4px); transition: opacity 0.3s, transform 0.3s; white-space: pre; }
+.term-line.show { opacity: 1; transform: none; }
+.term-prompt { color: var(--green); }
+.term-cmd { color: var(--text); font-weight: 600; }
+.term-output { color: var(--text-sec); }
+.term-info { color: #60a5fa; }
+.term-success { color: var(--green); }
+.term-warn { color: var(--yellow); }
+.term-dim { color: var(--text-muted); }
+
+/* ─── Setup Wizard ─── */
+.setup-scene { display: flex; align-items: center; justify-content: center; height: 100%; background: linear-gradient(135deg, #f7f9fc, #eef2f7); }
+.setup-window {
+  width: 800px; background: white; border-radius: 24px;
+  box-shadow: 0 30px 80px rgba(0,0,0,0.12); overflow: hidden;
+}
+.setup-top { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); padding: 28px 36px; color: white; }
+.setup-top h3 { font-size: 20px; font-weight: 700; }
+.setup-top p { font-size: 13px; opacity: 0.85; margin-top: 4px; }
+.setup-progress { display: flex; gap: 4px; margin: 20px 36px 0; }
+.setup-progress-step { flex: 1; height: 4px; border-radius: 2px; background: #e5e9f0; transition: background 0.5s; }
+.setup-progress-step.done { background: var(--green); }
+.setup-progress-step.active { background: var(--primary); }
+.setup-body { padding: 36px; }
+.setup-field { margin-bottom: 20px; }
+.setup-field label { display: block; font-size: 13px; font-weight: 600; color: #374151; margin-bottom: 6px; }
+.setup-field input, .setup-field select {
+  width: 100%; padding: 12px 16px; border: 1.5px solid #e5e9f0; border-radius: 12px;
+  font-size: 14px; color: #1a1a2e; background: #f7f9fc; outline: none;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+.setup-field input:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(0,127,255,0.1); }
+.setup-field .hint { font-size: 11px; color: #9ca3af; margin-top: 4px; }
+.setup-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.setup-btn {
+  padding: 12px 28px; border-radius: 12px; font-size: 14px; font-weight: 600;
+  border: none; cursor: pointer; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; box-shadow: 0 4px 16px rgba(0,127,255,0.3);
+}
+.setup-step-content { opacity: 0; transform: translateY(10px); transition: opacity 0.5s, transform 0.5s; }
+.setup-step-content.show { opacity: 1; transform: none; }
+.typing-cursor { display: inline-block; width: 2px; height: 16px; background: var(--primary); animation: blink 0.8s infinite; vertical-align: text-bottom; margin-left: 1px; }
+@keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0; } }
+
+/* ─── Chat simulation ─── */
+.chat-scene { display: flex; height: 100%; }
+.chat-website {
+  flex: 1; background: white; position: relative; overflow: hidden;
+}
+.chat-website-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  padding: 20px 48px; display: flex; align-items: center; justify-content: space-between;
+}
+.chat-website-header .logo-text { color: white; font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+.chat-website-nav { display: flex; gap: 32px; }
+.chat-website-nav a { color: rgba(255,255,255,0.85); text-decoration: none; font-size: 14px; font-weight: 500; }
+.chat-website-nav a.active { color: white; font-weight: 700; border-bottom: 2px solid white; padding-bottom: 2px; }
+.chat-website-body { padding: 60px 80px; color: #1a1a2e; }
+.chat-website-body h1 { font-size: 48px; font-weight: 800; letter-spacing: -1px; line-height: 1.15; }
+.chat-website-body h1 span { color: var(--primary); }
+.chat-website-body p { font-size: 18px; color: #5a6178; margin-top: 16px; max-width: 600px; line-height: 1.6; }
+.chat-website-body .cta-row { display: flex; gap: 16px; margin-top: 32px; }
+.chat-website-body .cta { padding: 14px 32px; border-radius: 12px; font-size: 15px; font-weight: 600; border: none; cursor: pointer; }
+.chat-website-body .cta-primary { background: var(--primary); color: white; }
+.chat-website-body .cta-secondary { background: #f0f4f8; color: #1a1a2e; }
+.chat-website-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-top: 48px; }
+.chat-website-card { background: #f7f9fc; border: 1px solid #e5e9f0; border-radius: 16px; padding: 28px; }
+.chat-website-card h3 { font-size: 18px; font-weight: 700; margin-bottom: 8px; }
+.chat-website-card p { font-size: 14px; color: #5a6178; line-height: 1.5; }
+
+/* Chat widget */
+.chat-widget {
+  position: absolute; bottom: 24px; right: 24px; width: 400px;
+  border-radius: 20px; overflow: hidden;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+  opacity: 0; transform: translateY(20px) scale(0.95);
+  transition: opacity 0.5s, transform 0.5s;
+  z-index: 10;
+}
+.chat-widget.show { opacity: 1; transform: none; }
+.chat-widget-header {
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  padding: 20px 24px; color: white;
+}
+.chat-widget-header h4 { font-size: 16px; font-weight: 700; }
+.chat-widget-header p { font-size: 12px; opacity: 0.8; margin-top: 2px; }
+.chat-widget-body {
+  background: white; padding: 20px; height: 400px; overflow-y: auto;
+  display: flex; flex-direction: column; gap: 12px;
+}
+.chat-msg { max-width: 85%; padding: 12px 16px; border-radius: 16px; font-size: 14px; line-height: 1.5; opacity: 0; transform: translateY(8px); transition: opacity 0.4s, transform 0.4s; }
+.chat-msg.show { opacity: 1; transform: none; }
+.chat-msg.bot { background: #f0f4f8; color: #1a1a2e; align-self: flex-start; border-bottom-left-radius: 4px; }
+.chat-msg.user { background: var(--primary); color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-msg.system { background: #fef3c7; color: #92400e; align-self: center; font-size: 12px; border-radius: 10px; text-align: center; }
+.chat-msg .typing-dots { display: flex; gap: 4px; padding: 4px 0; }
+.chat-msg .typing-dots span { width: 8px; height: 8px; border-radius: 50%; background: #9ca3b0; animation: typingBounce 1.2s infinite; }
+.chat-msg .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+.chat-msg .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+@keyframes typingBounce { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+.chat-widget-input {
+  background: white; border-top: 1px solid #e5e9f0; padding: 14px 20px; display: flex; gap: 10px;
+}
+.chat-widget-input input {
+  flex: 1; border: 1.5px solid #e5e9f0; border-radius: 12px; padding: 10px 14px;
+  font-size: 14px; outline: none; color: #1a1a2e;
+}
+.chat-widget-input button {
+  width: 40px; height: 40px; border-radius: 12px; border: none;
+  background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  color: white; cursor: pointer; display: flex; align-items: center; justify-content: center;
+}
+.chat-fab {
+  position: absolute; bottom: 24px; right: 24px; width: 64px; height: 64px;
+  border-radius: 50%; background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+  box-shadow: 0 8px 28px rgba(0,127,255,0.45); display: flex; align-items: center; justify-content: center;
+  z-index: 10; opacity: 0; transform: scale(0); transition: opacity 0.4s, transform 0.4s;
+}
+.chat-fab.show { opacity: 1; transform: scale(1); }
+
+/* Quick replies */
+.quick-replies { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.quick-reply { padding: 6px 14px; border-radius: 100px; background: rgba(0,127,255,0.08); color: var(--primary); font-size: 12px; font-weight: 600; border: 1px solid rgba(0,127,255,0.2); }
+
+/* Lead form */
+.lead-form { background: #f7f9fc; border: 1px solid #e5e9f0; border-radius: 14px; padding: 16px; }
+.lead-form h4 { font-size: 13px; font-weight: 700; color: #1a1a2e; margin-bottom: 12px; }
+.lead-form input { width: 100%; padding: 8px 12px; border: 1px solid #e5e9f0; border-radius: 8px; font-size: 13px; margin-bottom: 8px; outline: none; }
+.lead-form .submit-btn { width: 100%; padding: 10px; border: none; border-radius: 8px; background: var(--primary); color: white; font-size: 13px; font-weight: 600; cursor: pointer; }
+
+/* Dashboard panel */
+.dashboard-panel { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); opacity: 0; transition: opacity 0.6s; pointer-events: none; }
+.dashboard-panel.show { opacity: 1; pointer-events: auto; }
+.dashboard-sidebar { position: absolute; left: 0; top: 0; bottom: 0; width: 260px; background: var(--surface); border-right: 1px solid #2a2a3a; padding: 24px; }
+.dashboard-sidebar .brand { font-size: 18px; font-weight: 800; margin-bottom: 32px; }
+.dashboard-sidebar .brand span { color: var(--primary); }
+.dash-nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: 12px; color: var(--text-sec); font-size: 14px; margin-bottom: 4px; transition: all 0.2s; }
+.dash-nav-item.active { background: rgba(0,127,255,0.1); color: var(--primary); font-weight: 600; }
+.dashboard-main { position: absolute; left: 260px; top: 0; right: 0; bottom: 0; overflow: auto; padding: 32px; }
+.dash-notification {
+  background: linear-gradient(135deg, rgba(0,127,255,0.1), rgba(0,127,255,0.05));
+  border: 1px solid rgba(0,127,255,0.2); border-radius: 16px; padding: 20px 24px;
+  margin-bottom: 24px; display: flex; align-items: center; gap: 16px;
+  opacity: 0; transform: translateY(-8px); transition: opacity 0.5s, transform 0.5s;
+}
+.dash-notification.show { opacity: 1; transform: none; }
+.dash-notification .pulse { width: 12px; height: 12px; border-radius: 50%; background: var(--primary); animation: pulseRing 2s infinite; }
+@keyframes pulseRing { 0% { box-shadow: 0 0 0 0 rgba(0,127,255,0.5); } 70% { box-shadow: 0 0 0 12px rgba(0,127,255,0); } }
+.dash-conv-card {
+  background: var(--surface2); border: 1px solid #2a2a3a; border-radius: 16px; padding: 20px;
+  margin-bottom: 12px; opacity: 0; transition: opacity 0.4s;
+}
+.dash-conv-card.show { opacity: 1; }
+
+/* Narration box */
+.narration {
+  position: fixed; bottom: 32px; left: 50%; transform: translateX(-50%);
+  background: rgba(10,10,18,0.92); backdrop-filter: blur(20px);
+  border: 1px solid #2a2a3a; border-radius: 16px; padding: 16px 32px;
+  font-size: 16px; color: var(--text-sec); max-width: 800px; text-align: center;
+  z-index: 100; opacity: 0; transition: opacity 0.5s; line-height: 1.5;
+}
+.narration.show { opacity: 1; }
+
+/* Timeline bar */
+.timeline {
+  position: fixed; top: 0; left: 0; right: 0; height: 4px; z-index: 200;
+  background: rgba(255,255,255,0.05);
+}
+.timeline-fill { height: 100%; background: linear-gradient(90deg, var(--primary), #60a5fa); transition: width 0.5s ease; }
+
+/* Controls */
+.controls {
+  position: fixed; top: 16px; right: 24px; z-index: 200;
+  display: flex; gap: 8px; align-items: center;
+}
+.controls button {
+  padding: 8px 16px; border-radius: 10px; border: 1px solid #2a2a3a;
+  background: rgba(20,20,31,0.9); color: var(--text-sec); font-size: 13px;
+  cursor: pointer; backdrop-filter: blur(12px); font-weight: 500;
+}
+.controls button:hover { border-color: var(--primary); color: var(--primary); }
+.controls .time { font-size: 12px; color: var(--text-muted); font-family: monospace; min-width: 60px; }
+
+/* Highlight box */
+.highlight-box {
+  position: absolute; border: 2px solid var(--primary); border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,127,255,0.3); pointer-events: none;
+  opacity: 0; transition: opacity 0.5s;
+}
+.highlight-box.show { opacity: 1; }
+
+/* Animated gradient bg */
+.gradient-bg {
+  background: linear-gradient(-45deg, #0d1a3a, #0a0a12, #1a0d3a, #0a1a0d);
+  background-size: 400% 400%;
+  animation: gradientShift 15s ease infinite;
+}
+@keyframes gradientShift { 0% { background-position: 0% 50%; } 50% { background-position: 100% 50%; } 100% { background-position: 0% 50%; } }
+</style>
+</head>
+<body>
+
+<!-- Timeline -->
+<div class="timeline"><div class="timeline-fill" id="timelineFill" style="width:0%"></div></div>
+
+<!-- Controls -->
+<div class="controls">
+  <span class="time" id="timeDisplay">0:00</span>
+  <button id="btnPause" onclick="togglePause()">Pausa</button>
+  <button onclick="skipForward()">+30s</button>
+</div>
+
+<!-- Narration -->
+<div class="narration" id="narration"></div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 0: Title -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene gradient-bg" id="scene-0">
+  <div class="title-slide">
+    <div class="logo-mark">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <h1><span>Redegal Chatbot</span></h1>
+    <h2>IA + Click2Call + Dashboard de Agentes</h2>
+    <p class="subtitle">Demo completa: instalacion, flujo SEO/Boostic y proyecto Shopify Plus</p>
+    <div class="badge">15 minutos &middot; 3 escenarios</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 1: Section Title - Instalacion -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene gradient-bg" id="scene-1">
+  <div class="section-title-slide">
+    <div class="number">01</div>
+    <div class="content">
+      <h2>Instalacion</h2>
+      <p>Docker Compose + Setup Wizard en 5 pasos. Desde cero hasta chatbot funcionando.</p>
+      <div class="time">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        5 minutos
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 2: Terminal - Docker Compose -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene" id="scene-2">
+  <div class="terminal-scene">
+    <div class="terminal-header">
+      <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
+      <span class="title">Terminal — redegal-chatbot</span>
+    </div>
+    <div class="terminal" id="terminal-1">
+      <div class="term-line"><span class="term-prompt">~/redegal-chatbot $ </span><span class="term-cmd">docker compose up -d</span></div>
+      <div class="term-line"><span class="term-info">[+] Building 12.3s (14/14) FINISHED</span></div>
+      <div class="term-line"><span class="term-dim"> => [server] FROM node:20-alpine                          0.1s</span></div>
+      <div class="term-line"><span class="term-dim"> => [server] COPY package*.json ./                        0.1s</span></div>
+      <div class="term-line"><span class="term-dim"> => [server] RUN npm ci --production                      8.4s</span></div>
+      <div class="term-line"><span class="term-dim"> => [server] COPY . .                                    0.3s</span></div>
+      <div class="term-line"><span class="term-info">[+] Running 4/4</span></div>
+      <div class="term-line"><span class="term-success"> ✔ Container postgres-16   Started                      1.2s</span></div>
+      <div class="term-line"><span class="term-success"> ✔ Container redis-7        Started                      0.8s</span></div>
+      <div class="term-line"><span class="term-success"> ✔ Container chatbot-server  Started                      2.1s</span></div>
+      <div class="term-line"><span class="term-output"></span></div>
+      <div class="term-line"><span class="term-prompt">~/redegal-chatbot $ </span><span class="term-cmd">docker compose logs -f server</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-info">PostgreSQL connected</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-info">Redis connected</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-info">Loaded 4 language packs: es, en, pt, gl</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-info">Knowledge base: 47 entries loaded</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-warn">SIP: Not configured — set sip.domain, sip.extension to enable Click2Call</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-success">Redegal Chatbot server running on port 3000</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-dim">  Setup:     http://localhost:3000/setup</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-dim">  Dashboard: http://localhost:3000/dashboard</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-dim">  Widget:    http://localhost:3000/widget/test.html</span></div>
+      <div class="term-line"><span class="term-output"></span></div>
+      <div class="term-line"><span class="term-prompt">~/redegal-chatbot $ </span><span class="term-cmd">node scripts/create-agent.js admin admin123 "Admin" "es,en" "boostic,tech"</span></div>
+      <div class="term-line"><span class="term-success">✓ Agent created: admin (role: admin)</span></div>
+      <div class="term-line"><span class="term-prompt">~/redegal-chatbot $ </span><span class="term-cmd">curl -s http://localhost:3000/health | jq</span></div>
+      <div class="term-line"><span class="term-output">{</span></div>
+      <div class="term-line"><span class="term-output">  </span><span class="term-info">"status"</span><span class="term-output">: </span><span class="term-success">"ok"</span><span class="term-output">,</span></div>
+      <div class="term-line"><span class="term-output">  </span><span class="term-info">"postgres"</span><span class="term-output">: </span><span class="term-success">"ok"</span><span class="term-output">,</span></div>
+      <div class="term-line"><span class="term-output">  </span><span class="term-info">"redis"</span><span class="term-output">: </span><span class="term-success">"ok"</span><span class="term-output">,</span></div>
+      <div class="term-line"><span class="term-output">  </span><span class="term-info">"uptime"</span><span class="term-output">: </span><span class="term-warn">"12s"</span></div>
+      <div class="term-line"><span class="term-output">}</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 3: Setup Wizard -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene" id="scene-3" style="background: linear-gradient(135deg, #f7f9fc, #eef2f7);">
+  <div style="display:flex;align-items:center;justify-content:center;height:100%">
+    <div>
+      <!-- Browser chrome -->
+      <div style="background:#1a1a2e;border-radius:20px 20px 0 0;padding:14px 20px;display:flex;align-items:center;gap:10px;width:800px">
+        <div style="display:flex;gap:7px"><div style="width:12px;height:12px;border-radius:50%;background:#ef4444"></div><div style="width:12px;height:12px;border-radius:50%;background:#f59e0b"></div><div style="width:12px;height:12px;border-radius:50%;background:#10b981"></div></div>
+        <div style="flex:1;background:rgba(255,255,255,0.08);border-radius:8px;padding:6px 14px;font-size:12px;color:#9ca3b0;font-family:monospace">localhost:3000/setup</div>
+      </div>
+      <div class="setup-window" style="border-radius:0 0 20px 20px">
+        <div class="setup-top">
+          <h3>Redegal Chatbot — Setup</h3>
+          <p id="setupStepLabel">Paso 1 de 5 — Email y Notificaciones</p>
+        </div>
+        <div class="setup-progress" id="setupProgress">
+          <div class="setup-progress-step active"></div>
+          <div class="setup-progress-step"></div>
+          <div class="setup-progress-step"></div>
+          <div class="setup-progress-step"></div>
+          <div class="setup-progress-step"></div>
+        </div>
+        <div class="setup-body" id="setupBody">
+          <!-- Will be populated by JS -->
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 4: Section Title - Boostic/SEO -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene gradient-bg" id="scene-4">
+  <div class="section-title-slide">
+    <div class="number">02</div>
+    <div class="content">
+      <h2>Flujo Boostic / SEO</h2>
+      <p>Un visitante entra en redegal.com buscando servicios SEO. Interactua con el chatbot, recibe informacion y escala a un agente.</p>
+      <div class="time">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        5 minutos
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 5: Boostic website + chat -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene" id="scene-5">
+  <div class="chat-website" id="boosticSite">
+    <div class="chat-website-header">
+      <span class="logo-text">REDEGAL</span>
+      <div class="chat-website-nav">
+        <a href="#">Inicio</a>
+        <a href="#" class="active">Boostic SEO</a>
+        <a href="#">Binnacle</a>
+        <a href="#">Marketing</a>
+        <a href="#">Tech</a>
+        <a href="#">Contacto</a>
+      </div>
+    </div>
+    <div class="chat-website-body">
+      <h1>Boostic: <span>SEO & Growth</span></h1>
+      <p>Potencia tu visibilidad organica con estrategias data-driven. Analisis tecnico, contenidos optimizados y CRO para maximizar conversiones.</p>
+      <div class="cta-row">
+        <button class="cta cta-primary">Solicitar auditoria SEO</button>
+        <button class="cta cta-secondary">Ver casos de exito</button>
+      </div>
+      <div class="chat-website-cards">
+        <div class="chat-website-card">
+          <h3>SEO Tecnico</h3>
+          <p>Core Web Vitals, arquitectura web, indexacion avanzada y migracin sin perdida de trafico.</p>
+        </div>
+        <div class="chat-website-card">
+          <h3>Contenidos SEO</h3>
+          <p>Estrategia editorial, keyword research, contenido E-E-A-T y topic clusters.</p>
+        </div>
+        <div class="chat-website-card">
+          <h3>CRO & Analitica</h3>
+          <p>A/B testing, optimizacion de conversion, dashboards GA4 y atribucion multicanal.</p>
+        </div>
+      </div>
+    </div>
+    <!-- FAB -->
+    <div class="chat-fab" id="boosticFab">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <!-- Widget -->
+    <div class="chat-widget" id="boosticWidget">
+      <div class="chat-widget-header">
+        <h4>Redegal — Boostic SEO</h4>
+        <p>Respuesta media: 2 segundos</p>
+      </div>
+      <div class="chat-widget-body" id="boosticChat"></div>
+      <div class="chat-widget-input">
+        <input type="text" id="boosticInput" placeholder="Escribe tu mensaje..." readonly />
+        <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+    </div>
+    <!-- Dashboard overlay -->
+    <div class="dashboard-panel" id="boosticDashboard">
+      <div class="dashboard-sidebar">
+        <div class="brand">Redegal <span>Chat</span></div>
+        <div class="dash-nav-item active">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          Conversaciones
+        </div>
+        <div class="dash-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          Leads
+        </div>
+        <div class="dash-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          Analitica
+        </div>
+        <div class="dash-nav-item">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33"/></svg>
+          Configuracion
+        </div>
+      </div>
+      <div class="dashboard-main" id="boosticDashMain">
+        <h2 style="font-size:22px;font-weight:800;margin-bottom:24px">Conversaciones activas</h2>
+        <div class="dash-notification" id="boosticNotification">
+          <div class="pulse"></div>
+          <div>
+            <p style="font-size:14px;font-weight:600">Nuevo escalado — Boostic SEO</p>
+            <p style="font-size:12px;color:var(--text-sec)">Visitante solicita hablar con un experto SEO. Tel: +34 612 345 678</p>
+          </div>
+          <button style="margin-left:auto;padding:8px 20px;border-radius:10px;background:var(--primary);color:white;border:none;font-size:13px;font-weight:600">Atender</button>
+        </div>
+        <div class="dash-conv-card" id="dashConv1">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+            <div style="display:flex;align-items:center;gap:10px">
+              <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-dark));display:flex;align-items:center;justify-content:center;color:white;font-size:14px;font-weight:700">MC</div>
+              <div>
+                <p style="font-size:14px;font-weight:600">Maria Castro</p>
+                <p style="font-size:11px;color:var(--text-muted)">Boostic SEO &middot; Castellano</p>
+              </div>
+            </div>
+            <span style="padding:4px 12px;border-radius:100px;background:rgba(245,158,11,0.15);color:#f59e0b;font-size:11px;font-weight:600">Esperando agente</span>
+          </div>
+          <p style="font-size:13px;color:var(--text-sec);line-height:1.5">"Necesitamos mejorar nuestro SEO para un e-commerce con 15K productos. Tenemos problemas con Core Web Vitals..."</p>
+          <div style="display:flex;gap:6px;margin-top:12px">
+            <span style="padding:3px 10px;border-radius:6px;background:rgba(0,127,255,0.1);color:var(--primary);font-size:10px;font-weight:600">SEO Tecnico</span>
+            <span style="padding:3px 10px;border-radius:6px;background:rgba(16,185,129,0.1);color:var(--green);font-size:10px;font-weight:600">Lead score: 85</span>
+            <span style="padding:3px 10px;border-radius:6px;background:rgba(245,158,11,0.1);color:var(--yellow);font-size:10px;font-weight:600">Click2Call activo</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 6: Section Title - Shopify Plus -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene gradient-bg" id="scene-6">
+  <div class="section-title-slide">
+    <div class="number">03</div>
+    <div class="content">
+      <h2>Proyecto Shopify Plus</h2>
+      <p>Un director de e-commerce busca partner tecnologico para migrar a Shopify Plus. El chatbot cualifica, informa y conecta con Digital Tech.</p>
+      <div class="time">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        5 minutos
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 7: Shopify website + chat -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene" id="scene-7">
+  <div class="chat-website" id="shopifySite">
+    <div class="chat-website-header">
+      <span class="logo-text">REDEGAL</span>
+      <div class="chat-website-nav">
+        <a href="#">Inicio</a>
+        <a href="#">Boostic</a>
+        <a href="#">Binnacle</a>
+        <a href="#">Marketing</a>
+        <a href="#" class="active">Digital Tech</a>
+        <a href="#">Contacto</a>
+      </div>
+    </div>
+    <div class="chat-website-body">
+      <h1>Digital Tech: <span>E-Commerce</span></h1>
+      <p>Desarrollo e-commerce de alto rendimiento. Shopify Plus, Magento 2, soluciones headless. Partner certificado con +200 proyectos entregados.</p>
+      <div class="cta-row">
+        <button class="cta cta-primary">Solicitar presupuesto</button>
+        <button class="cta cta-secondary">Ver portfolio</button>
+      </div>
+      <div class="chat-website-cards">
+        <div class="chat-website-card">
+          <h3>Shopify Plus</h3>
+          <p>Migraciones, desarrollo custom, integraciones ERP/PIM y optimizacion de checkout.</p>
+        </div>
+        <div class="chat-website-card">
+          <h3>Magento 2</h3>
+          <p>B2B, multistore, catalogo masivo, PWA y performance en escala enterprise.</p>
+        </div>
+        <div class="chat-website-card">
+          <h3>Headless Commerce</h3>
+          <p>Next.js + Shopify Storefront API. Ultra-rapido, SEO nativo, experiencia premium.</p>
+        </div>
+      </div>
+    </div>
+    <!-- FAB -->
+    <div class="chat-fab" id="shopifyFab">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <!-- Widget -->
+    <div class="chat-widget" id="shopifyWidget">
+      <div class="chat-widget-header">
+        <h4>Redegal — Digital Tech</h4>
+        <p>Equipo de desarrollo disponible</p>
+      </div>
+      <div class="chat-widget-body" id="shopifyChat"></div>
+      <div class="chat-widget-input">
+        <input type="text" id="shopifyInput" placeholder="Escribe tu mensaje..." readonly />
+        <button><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════ -->
+<!-- SCENE 8: Closing -->
+<!-- ═══════════════════════════════════════════════ -->
+<div class="scene gradient-bg" id="scene-8">
+  <div class="title-slide">
+    <div class="logo-mark">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    </div>
+    <h1><span>Gracias</span></h1>
+    <h2>Redegal Chatbot — Listo para produccion</h2>
+    <p class="subtitle" style="max-width:700px">IA multi-proveedor &middot; Click2Call SIP &middot; Dashboard agentes &middot; 4 idiomas &middot; CRM &middot; Webhooks &middot; Plugins &middot; Multi-tenant</p>
+    <div class="badge">chatbot.redegal.com</div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════
+// Demo playback engine
+// ═══════════════════════════════════════════════
+
+let paused = false;
+let elapsed = 0;
+const TOTAL_DURATION = 900; // 15 min in seconds
+
+function togglePause() {
+  paused = !paused;
+  document.getElementById('btnPause').textContent = paused ? 'Play' : 'Pausa';
+}
+function skipForward() { elapsed = Math.min(elapsed + 30, TOTAL_DURATION); }
+
+// Time display
+setInterval(() => {
+  if (paused) return;
+  elapsed += 0.1;
+  const pct = (elapsed / TOTAL_DURATION) * 100;
+  document.getElementById('timelineFill').style.width = pct + '%';
+  const m = Math.floor(elapsed / 60);
+  const s = Math.floor(elapsed % 60);
+  document.getElementById('timeDisplay').textContent = m + ':' + String(s).padStart(2, '0');
+}, 100);
+
+function showScene(id) {
+  document.querySelectorAll('.scene').forEach(s => s.classList.remove('active'));
+  document.getElementById('scene-' + id).classList.add('active');
+}
+
+function narrate(text) {
+  const el = document.getElementById('narration');
+  el.textContent = text;
+  el.classList.add('show');
+}
+function hideNarration() {
+  document.getElementById('narration').classList.remove('show');
+}
+
+function wait(ms) {
+  return new Promise(resolve => {
+    const check = () => {
+      if (paused) { requestAnimationFrame(check); return; }
+      resolve();
+    };
+    setTimeout(check, ms);
+  });
+}
+
+function typeInInput(inputEl, text, delay = 40) {
+  return new Promise(async resolve => {
+    inputEl.value = '';
+    for (let i = 0; i < text.length; i++) {
+      await wait(delay);
+      inputEl.value += text[i];
+    }
+    resolve();
+  });
+}
+
+function addChatMsg(containerId, sender, content, extra) {
+  const container = document.getElementById(containerId);
+  const div = document.createElement('div');
+  div.className = `chat-msg ${sender}`;
+  div.innerHTML = content;
+  if (extra) div.innerHTML += extra;
+  container.appendChild(div);
+  container.scrollTop = container.scrollHeight;
+  requestAnimationFrame(() => div.classList.add('show'));
+  return div;
+}
+
+function addTypingIndicator(containerId) {
+  return addChatMsg(containerId, 'bot', '<div class="typing-dots"><span></span><span></span><span></span></div>');
+}
+
+async function showTerminalLines(termId, startDelay, lineDelay) {
+  const lines = document.querySelectorAll(`#${termId} .term-line`);
+  await wait(startDelay);
+  for (const line of lines) {
+    await wait(lineDelay);
+    line.classList.add('show');
+    const term = document.getElementById(termId);
+    term.scrollTop = term.scrollHeight;
+  }
+}
+
+// ═══════════════════════════════════════════════
+// SETUP WIZARD STEPS
+// ═══════════════════════════════════════════════
+
+const SETUP_STEPS = [
+  {
+    label: 'Paso 1 de 5 — Email y Notificaciones',
+    html: `
+      <div class="setup-step-content" id="setupContent">
+        <div class="setup-field"><label>Email de notificaciones *</label><input type="email" id="sf-email" /></div>
+        <div class="setup-row">
+          <div class="setup-field"><label>Host SMTP</label><input id="sf-smtp-host" /></div>
+          <div class="setup-field"><label>Puerto</label><input id="sf-smtp-port" value="587" /></div>
+        </div>
+        <div class="setup-row">
+          <div class="setup-field"><label>Usuario SMTP</label><input id="sf-smtp-user" /></div>
+          <div class="setup-field"><label>Password SMTP</label><input type="password" id="sf-smtp-pass" /></div>
+        </div>
+      </div>`,
+    fill: async () => {
+      await typeInInput(document.getElementById('sf-email'), 'comercial@redegal.com');
+      await wait(400);
+      await typeInInput(document.getElementById('sf-smtp-host'), 'smtp.gmail.com');
+    }
+  },
+  {
+    label: 'Paso 2 de 5 — SIP / Click2Call',
+    html: `
+      <div class="setup-step-content" id="setupContent">
+        <div class="setup-row">
+          <div class="setup-field"><label>Dominio SIP</label><input id="sf-sip-domain" /><p class="hint">Servidor SIP de la centralita cloud</p></div>
+          <div class="setup-field"><label>Puerto</label><input id="sf-sip-port" value="5060" /></div>
+        </div>
+        <div class="setup-row">
+          <div class="setup-field"><label>Extension SIP</label><input id="sf-sip-ext" /></div>
+          <div class="setup-field"><label>Password SIP</label><input type="password" id="sf-sip-pass" /></div>
+        </div>
+        <div class="setup-field"><label>Extensiones agentes</label><input id="sf-c2c-ext" /><p class="hint">Separadas por coma. Suenan a la vez.</p></div>
+      </div>`,
+    fill: async () => {
+      await typeInInput(document.getElementById('sf-sip-domain'), 'cloudpbx1584.vozelia.com');
+      await wait(300);
+      await typeInInput(document.getElementById('sf-sip-ext'), '108');
+      await wait(200);
+      document.getElementById('sf-sip-pass').value = '••••••••••';
+      await wait(300);
+      await typeInInput(document.getElementById('sf-c2c-ext'), '107,158,105');
+    }
+  },
+  {
+    label: 'Paso 3 de 5 — Verificacion',
+    html: `
+      <div class="setup-step-content" id="setupContent">
+        <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:14px;padding:24px;margin-bottom:16px">
+          <p style="font-size:14px;font-weight:700;color:#1e40af;margin-bottom:16px">Flujo Click2Call</p>
+          <p style="font-size:13px;color:#374151;line-height:2.2">
+            1. Visitante escribe su telefono en el widget<br>
+            2. Chatbot llama al visitante via PBX<br>
+            3. Visitante contesta → se transfiere a ext 107, 158, 105<br>
+            4. PBX conecta visitante con el agente
+          </p>
+        </div>
+      </div>`,
+    fill: async () => { await wait(500); }
+  },
+  {
+    label: 'Paso 4 de 5 — IA y Horario',
+    html: `
+      <div class="setup-step-content" id="setupContent">
+        <div class="setup-field"><label>Proveedor de IA</label><select id="sf-ai"><option value="gemini">Gemini 2.0 Flash (gratuito)</option><option value="claude">Claude (Anthropic)</option><option value="openai">OpenAI</option></select><p class="hint">Gemini es gratuito con 20 req/dia</p></div>
+        <div class="setup-row">
+          <div class="setup-field"><label>Hora inicio</label><input type="number" id="sf-h-start" value="9" /></div>
+          <div class="setup-field"><label>Hora fin</label><input type="number" id="sf-h-end" value="19" /></div>
+        </div>
+      </div>`,
+    fill: async () => { await wait(600); }
+  },
+  {
+    label: 'Paso 5 de 5 — Marca y Apariencia',
+    html: `
+      <div class="setup-step-content" id="setupContent">
+        <div class="setup-field"><label>Nombre de la empresa</label><input id="sf-brand-name" /></div>
+        <div class="setup-field"><label>Color primario</label>
+          <div style="display:flex;align-items:center;gap:12px">
+            <input type="color" id="sf-brand-color" value="#007fff" style="width:48px;height:40px;border:1px solid #e5e9f0;border-radius:10px;cursor:pointer;padding:2px" />
+            <input id="sf-brand-hex" value="#007fff" style="width:120px" />
+          </div>
+        </div>
+        <div style="margin-top:24px;display:flex;gap:16px;align-items:center">
+          <div style="width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,#007fff,#0059b3);display:flex;align-items:center;justify-content:center;box-shadow:0 4px 16px rgba(0,127,255,0.4)">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <div style="padding:10px 18px;border-radius:14px;background:#007fff;color:white;font-size:14px;font-weight:500">Hola, en que puedo ayudarte?</div>
+        </div>
+      </div>`,
+    fill: async () => {
+      await typeInInput(document.getElementById('sf-brand-name'), 'Redegal');
+    }
+  }
+];
+
+async function runSetupWizard() {
+  for (let i = 0; i < SETUP_STEPS.length; i++) {
+    const step = SETUP_STEPS[i];
+    document.getElementById('setupStepLabel').textContent = step.label;
+    document.getElementById('setupBody').innerHTML = step.html;
+
+    // Update progress
+    const progressSteps = document.querySelectorAll('#setupProgress .setup-progress-step');
+    progressSteps.forEach((ps, idx) => {
+      ps.className = 'setup-progress-step' + (idx < i ? ' done' : '') + (idx === i ? ' active' : '');
+    });
+
+    await wait(300);
+    const content = document.getElementById('setupContent');
+    if (content) content.classList.add('show');
+
+    await wait(600);
+    await step.fill();
+    await wait(1500);
+  }
+
+  // Completion
+  document.getElementById('setupBody').innerHTML = `
+    <div class="setup-step-content show" style="text-align:center;padding:40px 0">
+      <div style="width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#10b981,#059669);display:flex;align-items:center;justify-content:center;margin:0 auto 24px;box-shadow:0 8px 24px rgba(16,185,129,0.3)">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <h3 style="font-size:22px;font-weight:700;color:#1a1a2e;margin-bottom:8px">Setup completado</h3>
+      <p style="font-size:14px;color:#5a6178">Tu chatbot esta configurado y listo.</p>
+    </div>`;
+  document.querySelectorAll('#setupProgress .setup-progress-step').forEach(ps => ps.className = 'setup-progress-step done');
+  document.getElementById('setupStepLabel').textContent = 'Completado';
+}
+
+// ═══════════════════════════════════════════════
+// BOOSTIC CHAT CONVERSATION
+// ═══════════════════════════════════════════════
+
+async function runBoosticChat() {
+  const chatId = 'boosticChat';
+  const inputEl = document.getElementById('boosticInput');
+
+  // Show FAB
+  await wait(1500);
+  document.getElementById('boosticFab').classList.add('show');
+  narrate('El boton flotante del chatbot aparece en la esquina inferior derecha');
+
+  await wait(3000);
+  // Open widget
+  document.getElementById('boosticFab').classList.remove('show');
+  document.getElementById('boosticWidget').classList.add('show');
+  narrate('El visitante abre el chatbot. Se detecta automaticamente que esta en /boostic');
+
+  await wait(1500);
+  addChatMsg(chatId, 'bot', 'Hola! Veo que estas interesado en nuestros servicios <strong>Boostic SEO & Growth</strong>. En que puedo ayudarte?');
+  await wait(500);
+  addChatMsg(chatId, 'bot', '<div class="quick-replies"><span class="quick-reply">Auditoria SEO</span><span class="quick-reply">Mejorar Core Web Vitals</span><span class="quick-reply">Estrategia de contenidos</span><span class="quick-reply">Ver precios</span></div>');
+
+  await wait(3000);
+  narrate('El visitante escribe su consulta sobre SEO tecnico');
+  await typeInInput(inputEl, 'Tenemos un e-commerce con 15K productos y problemas de Core Web Vitals');
+  await wait(800);
+  addChatMsg(chatId, 'user', 'Tenemos un e-commerce con 15K productos y problemas de Core Web Vitals');
+  inputEl.value = '';
+
+  await wait(1000);
+  const typing1 = addTypingIndicator(chatId);
+  await wait(2500);
+  typing1.remove();
+  addChatMsg(chatId, 'bot', 'Entiendo perfectamente. Con un catalogo de 15K productos, los problemas de Core Web Vitals suelen estar relacionados con:<br><br><strong>1. Largest Contentful Paint (LCP)</strong> — Imagenes de producto sin lazy loading u optimizar<br><strong>2. Cumulative Layout Shift (CLS)</strong> — Elementos que cargan sin dimensiones reservadas<br><strong>3. Interaction to Next Paint (INP)</strong> — JavaScript pesado en listing pages<br><br>Nuestro equipo Boostic ha resuelto casos similares con resultados de hasta <strong>+45% en trafico organico</strong> en 6 meses.');
+
+  await wait(4000);
+  narrate('El chatbot ofrece opciones de contacto al detectar interes comercial');
+  addChatMsg(chatId, 'bot', 'Quieres que te pase con un experto SEO? Podemos hacer una auditoria tecnica gratuita de tu web.<div class="quick-replies"><span class="quick-reply">Hablar con un experto</span><span class="quick-reply">Dejar mis datos</span><span class="quick-reply">Solicitar auditoria</span></div>');
+
+  await wait(3000);
+  await typeInInput(inputEl, 'Si, quiero hablar con alguien');
+  await wait(600);
+  addChatMsg(chatId, 'user', 'Si, quiero hablar con alguien');
+  inputEl.value = '';
+
+  await wait(1000);
+  addChatMsg(chatId, 'bot', 'Perfecto. Para conectarte con un experto, necesito algunos datos:');
+  await wait(500);
+
+  // Lead form
+  addChatMsg(chatId, 'bot', `<div class="lead-form">
+    <h4>Datos de contacto</h4>
+    <input id="lead-name" placeholder="Nombre *" value="" />
+    <input id="lead-email" placeholder="Email *" value="" />
+    <input id="lead-phone" placeholder="Telefono" value="" />
+    <input id="lead-company" placeholder="Empresa" value="" />
+    <button class="submit-btn">Enviar</button>
+  </div>`);
+
+  await wait(1500);
+  narrate('El visitante completa el formulario de lead. Se captura y se puntua automaticamente.');
+  const nameInput = document.getElementById('lead-name');
+  const emailInput = document.getElementById('lead-email');
+  const phoneInput = document.getElementById('lead-phone');
+  const companyInput = document.getElementById('lead-company');
+  if (nameInput) await typeInInput(nameInput, 'Maria Castro');
+  await wait(300);
+  if (emailInput) await typeInInput(emailInput, 'maria@tiendaonline.es');
+  await wait(300);
+  if (phoneInput) await typeInInput(phoneInput, '+34 612 345 678');
+  await wait(300);
+  if (companyInput) await typeInInput(companyInput, 'TiendaOnline.es');
+
+  await wait(1500);
+  addChatMsg(chatId, 'system', 'Lead capturado — Score: 85/100 — BU: Boostic SEO');
+
+  await wait(1000);
+  addChatMsg(chatId, 'bot', 'Gracias Maria! Te estamos conectando con un experto del equipo Boostic...');
+  await wait(1000);
+  addChatMsg(chatId, 'system', 'Click2Call: Llamando a +34 612 345 678...');
+  await wait(2000);
+  addChatMsg(chatId, 'system', 'Extensiones 107, 158, 105 sonando...');
+
+  await wait(3000);
+  narrate('En el dashboard del agente, aparece la notificacion de escalado en tiempo real');
+
+  // Show dashboard
+  document.getElementById('boosticDashboard').classList.add('show');
+  await wait(1000);
+  document.getElementById('boosticNotification').classList.add('show');
+  await wait(1000);
+  document.getElementById('dashConv1').classList.add('show');
+
+  await wait(5000);
+  hideNarration();
+}
+
+// ═══════════════════════════════════════════════
+// SHOPIFY CHAT CONVERSATION
+// ═══════════════════════════════════════════════
+
+async function runShopifyChat() {
+  const chatId = 'shopifyChat';
+  const inputEl = document.getElementById('shopifyInput');
+
+  await wait(1500);
+  document.getElementById('shopifyFab').classList.add('show');
+  narrate('Un director de e-commerce visita la seccion Digital Tech buscando partner Shopify Plus');
+
+  await wait(3000);
+  document.getElementById('shopifyFab').classList.remove('show');
+  document.getElementById('shopifyWidget').classList.add('show');
+
+  await wait(1000);
+  addChatMsg(chatId, 'bot', 'Hola! Bienvenido a <strong>Redegal Digital Tech</strong>. Somos especialistas en desarrollo e-commerce. En que puedo ayudarte?');
+  await wait(500);
+  addChatMsg(chatId, 'bot', '<div class="quick-replies"><span class="quick-reply">Shopify Plus</span><span class="quick-reply">Magento 2</span><span class="quick-reply">Headless Commerce</span><span class="quick-reply">Presupuesto</span></div>');
+
+  await wait(3000);
+  narrate('El visitante pregunta especificamente por migracion a Shopify Plus');
+  await typeInInput(inputEl, 'Estamos considerando migrar de WooCommerce a Shopify Plus. Es factible?');
+  await wait(800);
+  addChatMsg(chatId, 'user', 'Estamos considerando migrar de WooCommerce a Shopify Plus. Es factible?');
+  inputEl.value = '';
+
+  await wait(1200);
+  const typing1 = addTypingIndicator(chatId);
+  await wait(3000);
+  typing1.remove();
+  addChatMsg(chatId, 'bot', 'Absolutamente! La migracion de WooCommerce a Shopify Plus es uno de nuestros servicios mas demandados. Como partner certificado, hemos realizado <strong>+50 migraciones</strong> exitosas.<br><br>Lo que incluimos:<br><br>• <strong>Migracion de datos</strong>: Productos, clientes, pedidos historicos, URL redirects<br>• <strong>Desarrollo custom</strong>: Theme a medida, checkout personalizado (Plus exclusive)<br>• <strong>Integraciones</strong>: ERP, PIM, CRM, pasarelas de pago locales<br>• <strong>SEO preservation</strong>: 301 redirects, structured data, sitemap<br><br>El proceso tipico dura entre 8-16 semanas dependiendo de la complejidad.');
+
+  await wait(5000);
+  narrate('El visitante profundiza en aspectos tecnicos. El chatbot responde con conocimiento especializado.');
+  await typeInInput(inputEl, 'Tenemos integraciones con SAP y un catalogo de 8000 referencias con variantes');
+  await wait(800);
+  addChatMsg(chatId, 'user', 'Tenemos integraciones con SAP y un catalogo de 8000 referencias con variantes');
+  inputEl.value = '';
+
+  await wait(1500);
+  const typing2 = addTypingIndicator(chatId);
+  await wait(3000);
+  typing2.remove();
+  addChatMsg(chatId, 'bot', 'Perfecto, 8K referencias con variantes es un volumen muy manejable para Shopify Plus (soporta hasta 200K).<br><br>Para la <strong>integracion con SAP</strong>, tenemos experiencia con:<br>• <strong>SAP Business One</strong> → Conector nativo + middleware<br>• <strong>SAP S/4HANA</strong> → API REST + webhooks bidireccionales<br>• Sincronizacion en tiempo real de stock, precios y pedidos<br><br>Con Shopify Plus tendrias acceso a <strong>Shopify Flow</strong> para automatizar procesos y <strong>checkout extensibility</strong> para personalizar al 100% la experiencia de compra.');
+
+  await wait(4000);
+  await typeInInput(inputEl, 'Cual seria el presupuesto aproximado para un proyecto asi?');
+  await wait(800);
+  addChatMsg(chatId, 'user', 'Cual seria el presupuesto aproximado para un proyecto asi?');
+  inputEl.value = '';
+
+  await wait(1200);
+  const typing3 = addTypingIndicator(chatId);
+  await wait(2500);
+  typing3.remove();
+  narrate('Al detectar intencion de compra (presupuesto), el chatbot ofrece contacto directo');
+  addChatMsg(chatId, 'bot', 'Para un proyecto con integracion SAP, 8K productos y desarrollo custom, el rango tipico es de <strong>25.000€ - 65.000€</strong> dependiendo del alcance.<br><br>Para darte un presupuesto preciso, lo ideal seria una reunion de discovery con nuestro equipo tech. Te puedo conectar ahora?<div class="quick-replies"><span class="quick-reply">Hablar con equipo tech</span><span class="quick-reply">Solicitar presupuesto por email</span><span class="quick-reply">Llamarme ahora</span></div>');
+
+  await wait(4000);
+  await typeInInput(inputEl, 'Prefiero que me llameis');
+  await wait(600);
+  addChatMsg(chatId, 'user', 'Prefiero que me llameis');
+  inputEl.value = '';
+
+  await wait(800);
+  addChatMsg(chatId, 'bot', `<div class="lead-form">
+    <h4>Te llamamos ahora</h4>
+    <input id="sp-name" placeholder="Nombre *" />
+    <input id="sp-email" placeholder="Email *" />
+    <input id="sp-phone" placeholder="Telefono *" />
+    <input id="sp-company" placeholder="Empresa" />
+    <button class="submit-btn">Llamarme ahora</button>
+  </div>`);
+
+  await wait(1000);
+  narrate('El visitante deja sus datos. Se activa Click2Call via SIP para conectar con Digital Tech.');
+  const spName = document.getElementById('sp-name');
+  const spEmail = document.getElementById('sp-email');
+  const spPhone = document.getElementById('sp-phone');
+  const spCompany = document.getElementById('sp-company');
+  if (spName) await typeInInput(spName, 'Carlos Martinez');
+  await wait(200);
+  if (spEmail) await typeInInput(spEmail, 'carlos@fashionbrand.es');
+  await wait(200);
+  if (spPhone) await typeInInput(spPhone, '+34 666 789 012');
+  await wait(200);
+  if (spCompany) await typeInInput(spCompany, 'Fashion Brand SL');
+
+  await wait(1500);
+  addChatMsg(chatId, 'system', 'Lead capturado — Score: 92/100 — BU: Digital Tech');
+  await wait(800);
+  addChatMsg(chatId, 'system', 'SIP: INVITE +34666789012@cloudpbx1584.vozelia.com');
+  await wait(1500);
+  addChatMsg(chatId, 'system', 'Click2Call: Llamando... ext 107, 158, 105 sonando');
+  await wait(2000);
+  addChatMsg(chatId, 'bot', 'Perfecto Carlos! Te estamos llamando ahora al +34 666 789 012. Un experto de Digital Tech te atendera en segundos.');
+  await wait(2000);
+  addChatMsg(chatId, 'system', 'SIP: REFER aceptado — transferido a ext 158 (David)');
+
+  await wait(4000);
+  hideNarration();
+}
+
+// ═══════════════════════════════════════════════
+// MAIN TIMELINE
+// ═══════════════════════════════════════════════
+
+async function main() {
+  // Scene 0: Title (0:00 - 0:08)
+  showScene(0);
+  await wait(8000);
+
+  // Scene 1: Section - Instalacion (0:08 - 0:14)
+  showScene(1);
+  narrate('Seccion 1: Instalacion completa con un solo comando Docker Compose');
+  await wait(6000);
+  hideNarration();
+
+  // Scene 2: Terminal (0:14 - 1:40)
+  showScene(2);
+  narrate('Docker Compose levanta PostgreSQL, Redis y el servidor Node.js automaticamente');
+  await showTerminalLines('terminal-1', 500, 600);
+  await wait(3000);
+  narrate('Servidor arrancado. Setup wizard disponible en /setup');
+  await wait(4000);
+  hideNarration();
+
+  // Scene 3: Setup Wizard (1:40 - 5:00)
+  showScene(3);
+  narrate('El Setup Wizard guia la configuracion inicial en 5 pasos sencillos');
+  await wait(2000);
+  hideNarration();
+  await runSetupWizard();
+  narrate('Configuracion completada. El chatbot esta listo para recibir visitantes.');
+  await wait(4000);
+  hideNarration();
+
+  // Scene 4: Section - Boostic (5:00 - 5:06)
+  showScene(4);
+  narrate('Seccion 2: Flujo completo de un visitante interesado en servicios SEO');
+  await wait(6000);
+  hideNarration();
+
+  // Scene 5: Boostic Chat (5:06 - 10:00)
+  showScene(5);
+  await runBoosticChat();
+  await wait(4000);
+
+  // Scene 6: Section - Shopify (10:00 - 10:06)
+  showScene(6);
+  narrate('Seccion 3: Proyecto Shopify Plus — cualificacion tecnica y Click2Call');
+  await wait(6000);
+  hideNarration();
+
+  // Scene 7: Shopify Chat (10:06 - 14:50)
+  showScene(7);
+  await runShopifyChat();
+  await wait(4000);
+
+  // Scene 8: Closing (14:50 - 15:00)
+  showScene(8);
+  narrate('Redegal Chatbot: IA conversacional + Click2Call SIP + Dashboard en tiempo real');
+  await wait(10000);
+  hideNarration();
+}
+
+main();
+</script>
+</body>
+</html>

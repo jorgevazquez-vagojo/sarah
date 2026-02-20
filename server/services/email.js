@@ -10,6 +10,12 @@
 const nodemailer = require('nodemailer');
 const { logger } = require('../utils/logger');
 const { db } = require('../utils/db');
+
+// Prevent XSS in HTML emails
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
 const settings = require('./settings');
 
 let transporter = null;
@@ -93,7 +99,7 @@ async function notifyEscalation(conversationId, visitorId, businessLine, languag
       [conversationId]
     );
     contextSnippet = msgs.rows.reverse()
-      .map((m) => `<strong>${m.sender === 'visitor' ? 'Visitante' : m.sender}:</strong> ${m.content}`)
+      .map((m) => `<strong>${escapeHtml(m.sender === 'visitor' ? 'Visitante' : m.sender)}:</strong> ${escapeHtml(m.content)}`)
       .join('<br>');
   } catch {}
 
@@ -220,7 +226,7 @@ async function sendConversationSummary(conversationId) {
       return `<tr>
         <td style="padding:5px 8px;font-size:11px;color:#9CA3AF;white-space:nowrap;vertical-align:top">${time}</td>
         <td style="padding:5px 8px;font-size:11px;font-weight:600;color:${senderColors[m.sender] || '#64748B'};white-space:nowrap;vertical-align:top">${label}${agentName}</td>
-        <td style="padding:5px 8px;font-size:13px;color:#1A1A2E;line-height:1.5">${m.content}</td>
+        <td style="padding:5px 8px;font-size:13px;color:#1A1A2E;line-height:1.5">${escapeHtml(m.content)}</td>
       </tr>`;
     }).join('');
 
