@@ -63,9 +63,9 @@ initAgentHandler(wssAgent);
 const { initSipSignaling } = require('./ws/sip-signaling');
 initSipSignaling(wssSip);
 
-// ─── Asterisk AMI for Click2Call ───
-const { initAMI } = require('./services/asterisk-ami');
-initAMI();
+// ─── SIP Click2Call (Vozelia Cloud PBX) ───
+const { initSipClick2Call } = require('./services/sip-click2call');
+initSipClick2Call();
 
 // ─── Email notifications ───
 const { initEmail } = require('./services/email');
@@ -147,8 +147,8 @@ app.get('/widget/test.html', (_req, res) => {
         <p>Claude (primario) + Gemini (fallback gratuito) + OpenAI. Cambio automatico si falla.</p>
       </div>
       <div class="card">
-        <h3>VoIP WebRTC</h3>
-        <p>Llamadas directas desde el widget via SIP.js + Asterisk. Solo en horario laboral.</p>
+        <h3>VoIP Click2Call</h3>
+        <p>Llamadas via SIP + Vozelia Cloud PBX. Solo en horario laboral.</p>
       </div>
     </div>
 

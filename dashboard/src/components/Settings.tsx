@@ -479,8 +479,8 @@ type SettingsCategory = 'health' | 'email' | 'pbx' | 'extensions' | 'ai' | 'bran
 const SETTING_CATEGORIES: { id: SettingsCategory; label: string; icon: string }[] = [
   { id: 'health', label: 'Estado', icon: 'M22 12h-4l-3 9L9 3l-3 9H2' },
   { id: 'email', label: 'Email/SMTP', icon: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z' },
-  { id: 'pbx', label: 'PBX/AMI', icon: 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72' },
-  { id: 'extensions', label: 'Extensiones BU', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' },
+  { id: 'pbx', label: 'SIP/Click2Call', icon: 'M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72' },
+  { id: 'extensions', label: 'Click2Call', icon: 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2' },
   { id: 'ai', label: 'IA/Horario', icon: 'M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z' },
   { id: 'branding', label: 'Marca', icon: 'M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z' },
 ];
@@ -549,18 +549,18 @@ function SystemPanel() {
     }
   };
 
-  const handleTestAmi = async () => {
+  const handleTestSip = async () => {
     setTestResult(null);
     try {
-      const res = await api.testAmi({
-        host: settings['ami.host'] || '',
-        port: settings['ami.port'] || '5038',
-        user: settings['ami.user'] || '',
-        password: settings['ami.password'] || '',
+      const res = await api.testSip({
+        domain: settings['sip.domain'] || '',
+        port: settings['sip.port'] || '5060',
+        extension: settings['sip.extension'] || '',
+        password: settings['sip.password'] || '',
       });
-      setTestResult({ type: 'ami', ok: res.success, msg: res.message });
+      setTestResult({ type: 'sip', ok: res.success, msg: res.message });
     } catch (e: any) {
-      setTestResult({ type: 'ami', ok: false, msg: e.message });
+      setTestResult({ type: 'sip', ok: false, msg: e.message });
     }
   };
 
@@ -716,54 +716,40 @@ function SystemPanel() {
         </div>
       )}
 
-      {/* PBX / AMI */}
+      {/* SIP / Click2Call */}
       {category === 'pbx' && (
-        <div className="space-y-4">
-          <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Asterisk AMI</h3>
-            <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Conexion a la centralita para Click2Call automatico</p>
-            <div className="grid grid-cols-2 gap-3">
-              <InputField label="Host AMI" settingKey="ami.host" />
-              <InputField label="Puerto" settingKey="ami.port" type="number" />
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              <InputField label="Usuario AMI" settingKey="ami.user" />
-              <InputField label="Password AMI" settingKey="ami.password" type="password" />
-            </div>
-            <div className="flex items-center gap-3 mt-2">
-              <button onClick={handleTestAmi} className="px-3 py-1.5 text-[11px] rounded-lg font-medium transition-all"
-                style={{ background: 'var(--rd-bg)', border: '1px solid var(--rd-border)', color: 'var(--rd-text-secondary)' }}>
-                Probar conexion AMI
-              </button>
-              {testResult?.type === 'ami' && (
-                <span className={`text-xs font-medium ${testResult.ok ? 'text-emerald-600' : 'text-red-500'}`}>
-                  {testResult.msg}
-                </span>
-              )}
-            </div>
+        <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
+          <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Registro SIP</h3>
+          <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Conexion SIP a la centralita cloud (Vozelia, 3CX, Asterisk) para Click2Call</p>
+          <div className="grid grid-cols-2 gap-3">
+            <InputField label="Dominio SIP" settingKey="sip.domain" hint="ej: cloudpbx1584.vozelia.com" />
+            <InputField label="Puerto" settingKey="sip.port" type="number" />
           </div>
-          <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
-            <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Click2Call</h3>
-            <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Parametros de la llamada de callback</p>
-            <div className="grid grid-cols-3 gap-3">
-              <InputField label="Extension destino" settingKey="click2call.extension" hint="Extension por defecto" />
-              <InputField label="Contexto" settingKey="click2call.context" />
-              <InputField label="Trunk" settingKey="click2call.trunk" />
-            </div>
+          <div className="grid grid-cols-2 gap-3">
+            <InputField label="Extension SIP" settingKey="sip.extension" hint="Extension del chatbot en la PBX" />
+            <InputField label="Password SIP" settingKey="sip.password" type="password" />
+          </div>
+          <div className="flex items-center gap-3 mt-2">
+            <button onClick={handleTestSip} className="px-3 py-1.5 text-[11px] rounded-lg font-medium transition-all"
+              style={{ background: 'var(--rd-bg)', border: '1px solid var(--rd-border)', color: 'var(--rd-text-secondary)' }}>
+              Probar conexion SIP
+            </button>
+            {testResult?.type === 'sip' && (
+              <span className={`text-xs font-medium ${testResult.ok ? 'text-emerald-600' : 'text-red-500'}`}>
+                {testResult.msg}
+              </span>
+            )}
           </div>
         </div>
       )}
 
-      {/* BU Extensions */}
+      {/* Click2Call Extensions */}
       {category === 'extensions' && (
         <div className="rounded-2xl p-5" style={{ background: 'var(--rd-surface)', border: '1px solid var(--rd-border)' }}>
-          <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Extensiones por Linea de Negocio</h3>
-          <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Extension PBX que suena cuando un visitante escala en cada BU</p>
-          <InputField label="Boostic (SEO & Growth)" settingKey="bu.ext.boostic" />
-          <InputField label="Binnacle (BI)" settingKey="bu.ext.binnacle" />
-          <InputField label="Marketing Digital" settingKey="bu.ext.marketing" />
-          <InputField label="Digital Tech" settingKey="bu.ext.tech" />
-          <InputField label="Extension por defecto" settingKey="bu.ext.default" hint="Se usa si no hay extension asignada a la BU" />
+          <h3 className="text-sm font-bold mb-1" style={{ color: 'var(--rd-text)' }}>Click2Call — Extensiones de agentes</h3>
+          <p className="text-xs mb-5" style={{ color: 'var(--rd-text-muted)' }}>Extensiones que suenan cuando un visitante solicita llamada. Todas suenan a la vez (ring group).</p>
+          <InputField label="Extensiones (separadas por coma)" settingKey="click2call.extensions" hint="ej: 107,158,105 — todas suenan simultaneamente" />
+          <InputField label="Nombre CallerID" settingKey="click2call.callerid_name" hint="Nombre que aparece en el telefono del agente" />
         </div>
       )}
 

@@ -22,23 +22,13 @@ const DEFAULTS = {
   'smtp.from': 'chatbot@redegal.com',
   'notification.email': '',
 
-  // Asterisk AMI
-  'ami.host': '',
-  'ami.port': '5038',
-  'ami.user': 'chatbot',
-  'ami.password': '',
-
-  // Click2Call
-  'click2call.extension': '100',
-  'click2call.context': 'from-internal',
-  'click2call.trunk': 'PJSIP/trunk',
-
-  // BU Extensions
-  'bu.ext.boostic': '',
-  'bu.ext.binnacle': '',
-  'bu.ext.marketing': '',
-  'bu.ext.tech': '',
-  'bu.ext.default': '100',
+  // SIP / Click2Call (Vozelia Cloud PBX)
+  'sip.domain': '',
+  'sip.port': '5060',
+  'sip.extension': '',
+  'sip.password': '',
+  'click2call.extensions': '',
+  'click2call.callerid_name': 'Lead Web',
 
   // AI
   'ai.provider': 'gemini',
@@ -67,18 +57,12 @@ const ENV_MAP = {
   'smtp.password': 'SMTP_PASSWORD',
   'smtp.from': 'SMTP_FROM',
   'notification.email': 'NOTIFICATION_EMAIL',
-  'ami.host': 'ASTERISK_AMI_HOST',
-  'ami.port': 'ASTERISK_AMI_PORT',
-  'ami.user': 'ASTERISK_AMI_USER',
-  'ami.password': 'ASTERISK_AMI_PASSWORD',
-  'click2call.extension': 'CLICK2CALL_EXTENSION',
-  'click2call.context': 'CLICK2CALL_CONTEXT',
-  'click2call.trunk': 'CLICK2CALL_TRUNK',
-  'bu.ext.boostic': 'BU_EXT_BOOSTIC',
-  'bu.ext.binnacle': 'BU_EXT_BINNACLE',
-  'bu.ext.marketing': 'BU_EXT_MARKETING',
-  'bu.ext.tech': 'BU_EXT_TECH',
-  'bu.ext.default': 'BU_EXT_DEFAULT',
+  'sip.domain': 'SIP_DOMAIN',
+  'sip.port': 'SIP_PORT',
+  'sip.extension': 'SIP_EXTENSION',
+  'sip.password': 'SIP_PASSWORD',
+  'click2call.extensions': 'CLICK2CALL_EXTENSIONS',
+  'click2call.callerid_name': 'CLICK2CALL_CALLERID_NAME',
   'ai.provider': 'AI_PROVIDER',
   'hours.timezone': 'TIMEZONE',
   'hours.start': 'BUSINESS_HOURS_START',
@@ -88,7 +72,7 @@ const ENV_MAP = {
 
 // Settings that should never be returned to the client in plain text
 const SENSITIVE_KEYS = new Set([
-  'smtp.password', 'ami.password',
+  'smtp.password', 'sip.password',
 ]);
 
 // ─── Load all settings from DB ───

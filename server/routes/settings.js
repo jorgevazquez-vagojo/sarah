@@ -6,7 +6,7 @@
  * GET  /api/settings/setup     → Check if setup is needed
  * POST /api/settings/setup     → Complete initial setup (no auth if first time)
  * POST /api/settings/test-smtp → Test SMTP connection
- * POST /api/settings/test-ami  → Test AMI connection
+ * POST /api/settings/test-sip  → Test SIP connectivity (UDP)
  */
 
 const { Router } = require('express');
@@ -29,7 +29,7 @@ router.post('/setup', async (req, res) => {
     return res.status(403).json({ error: 'Setup already completed. Use the admin panel to change settings.' });
   }
 
-  const { smtp, ami, click2call, buExtensions, notificationEmail, ai, hours, brand } = req.body;
+  const { smtp, sip, click2call, notificationEmail, ai, hours, brand } = req.body;
 
   const toSave = {};
 
@@ -42,28 +42,18 @@ router.post('/setup', async (req, res) => {
     if (smtp.from) toSave['smtp.from'] = smtp.from;
   }
 
-  // AMI
-  if (ami) {
-    if (ami.host) toSave['ami.host'] = ami.host;
-    if (ami.port) toSave['ami.port'] = String(ami.port);
-    if (ami.user) toSave['ami.user'] = ami.user;
-    if (ami.password) toSave['ami.password'] = ami.password;
+  // SIP (Vozelia Cloud PBX)
+  if (sip) {
+    if (sip.domain) toSave['sip.domain'] = sip.domain;
+    if (sip.port) toSave['sip.port'] = String(sip.port);
+    if (sip.extension) toSave['sip.extension'] = sip.extension;
+    if (sip.password) toSave['sip.password'] = sip.password;
   }
 
   // Click2Call
   if (click2call) {
-    if (click2call.extension) toSave['click2call.extension'] = click2call.extension;
-    if (click2call.context) toSave['click2call.context'] = click2call.context;
-    if (click2call.trunk) toSave['click2call.trunk'] = click2call.trunk;
-  }
-
-  // BU Extensions
-  if (buExtensions) {
-    if (buExtensions.boostic) toSave['bu.ext.boostic'] = buExtensions.boostic;
-    if (buExtensions.binnacle) toSave['bu.ext.binnacle'] = buExtensions.binnacle;
-    if (buExtensions.marketing) toSave['bu.ext.marketing'] = buExtensions.marketing;
-    if (buExtensions.tech) toSave['bu.ext.tech'] = buExtensions.tech;
-    if (buExtensions.default) toSave['bu.ext.default'] = buExtensions.default;
+    if (click2call.extensions) toSave['click2call.extensions'] = click2call.extensions;
+    if (click2call.callerIdName) toSave['click2call.callerid_name'] = click2call.callerIdName;
   }
 
   // Notification email
@@ -159,24 +149,62 @@ router.post('/test-smtp', async (req, res) => {
   }
 });
 
-// ─── Test AMI connection ───
-router.post('/test-ami', async (req, res) => {
-  const { host, port, user, password } = req.body;
-  if (!host || !user || !password) {
-    return res.status(400).json({ error: 'host, user, password required' });
+// ─── Test SIP connectivity (UDP OPTIONS ping) ───
+router.post('/test-sip', async (req, res) => {
+  const { domain, port, extension, password } = req.body;
+  if (!domain || !extension) {
+    return res.status(400).json({ error: 'domain and extension required' });
   }
   try {
-    const net = require('net');
+    const dgram = require('dgram');
+    const crypto = require('crypto');
+    const sipPort = parseInt(port || '5060', 10);
+    const branch = 'z9hG4bK' + crypto.randomBytes(6).toString('hex');
+    const callId = crypto.randomBytes(8).toString('hex');
+    const tag = crypto.randomBytes(4).toString('hex');
+
     const result = await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => { socket.destroy(); reject(new Error('Connection timeout')); }, 5000);
-      const socket = net.createConnection({ host, port: parseInt(port || '5038', 10) }, () => {
-        clearTimeout(timeout);
-        socket.destroy();
-        resolve(true);
+      const socket = dgram.createSocket('udp4');
+      const timeout = setTimeout(() => { socket.close(); reject(new Error('SIP timeout — no response from server')); }, 5000);
+
+      socket.bind(0, () => {
+        const localPort = socket.address().port;
+        const localIp = '0.0.0.0';
+        const msg = [
+          `OPTIONS sip:${domain} SIP/2.0`,
+          `Via: SIP/2.0/UDP ${localIp}:${localPort};branch=${branch};rport`,
+          `From: <sip:${extension}@${domain}>;tag=${tag}`,
+          `To: <sip:${domain}>`,
+          `Call-ID: ${callId}`,
+          `CSeq: 1 OPTIONS`,
+          `Max-Forwards: 70`,
+          `User-Agent: RedegalChatbot/1.0`,
+          `Content-Length: 0`,
+          ``,
+          ``,
+        ].join('\r\n');
+
+        socket.on('message', (buf) => {
+          clearTimeout(timeout);
+          const str = buf.toString();
+          const match = str.match(/^SIP\/2\.0\s+(\d+)/);
+          socket.close();
+          if (match) {
+            const code = parseInt(match[1]);
+            if (code < 400) resolve(`SIP OK — ${code}`);
+            else resolve(`SIP response ${code}`);
+          } else {
+            resolve('SIP response received');
+          }
+        });
+
+        const buf = Buffer.from(msg);
+        socket.send(buf, 0, buf.length, sipPort, domain);
       });
-      socket.on('error', (e) => { clearTimeout(timeout); reject(e); });
+
+      socket.on('error', (e) => { clearTimeout(timeout); socket.close(); reject(e); });
     });
-    res.json({ success: true, message: 'AMI connection OK' });
+    res.json({ success: true, message: result });
   } catch (e) {
     res.json({ success: false, message: e.message });
   }

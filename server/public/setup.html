@@ -275,90 +275,82 @@
     </div>
   </div>
 
-  <!-- Step 2: PBX / AMI -->
+  <!-- Step 2: SIP / Click2Call (Vozelia Cloud PBX) -->
   <div class="step" data-step="1">
     <div class="step-icon">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
       </svg>
     </div>
-    <h3 class="step-title">Centralita / PBX <span class="optional">Opcional</span></h3>
-    <p class="step-desc">Configura Asterisk AMI para lanzar llamadas automaticas cuando un visitante pide hablar con alguien.</p>
+    <h3 class="step-title">Centralita SIP / Click2Call <span class="optional">Opcional</span></h3>
+    <p class="step-desc">Configura la conexion SIP a tu centralita cloud (Vozelia, 3CX, Asterisk...) para lanzar llamadas automaticas cuando un visitante pide hablar con alguien.</p>
 
-    <p class="section-title">Conexion Asterisk AMI</p>
+    <p class="section-title">Registro SIP</p>
     <div class="field-row">
       <div class="field">
-        <label>Host AMI</label>
-        <input type="text" id="amiHost" placeholder="192.168.1.100" />
+        <label>Dominio SIP</label>
+        <input type="text" id="sipDomain" placeholder="cloudpbx1584.vozelia.com" />
+        <p class="hint">Servidor SIP de la centralita cloud</p>
       </div>
       <div class="field">
         <label>Puerto</label>
-        <input type="number" id="amiPort" value="5038" />
+        <input type="number" id="sipPort" value="5060" />
       </div>
     </div>
     <div class="field-row">
       <div class="field">
-        <label>Usuario AMI</label>
-        <input type="text" id="amiUser" value="chatbot" />
+        <label>Extension SIP</label>
+        <input type="text" id="sipExtension" placeholder="108" />
+        <p class="hint">Extension que usara el chatbot para originar llamadas</p>
       </div>
       <div class="field">
-        <label>Password AMI</label>
-        <input type="password" id="amiPassword" placeholder="" />
+        <label>Password SIP</label>
+        <input type="password" id="sipPassword" placeholder="" />
       </div>
     </div>
     <div style="display:flex;align-items:center;gap:8px;margin-top:4px;margin-bottom:16px">
-      <button class="btn-test" onclick="testAmi()">Probar conexion AMI</button>
-      <div id="amiTestResult" class="test-result"></div>
+      <button class="btn-test" onclick="testSip()">Probar registro SIP</button>
+      <div id="sipTestResult" class="test-result"></div>
     </div>
 
-    <p class="section-title">Click2Call</p>
-    <div class="field-row-3">
-      <div class="field">
-        <label>Extension destino</label>
-        <input type="text" id="c2cExtension" value="100" />
-        <p class="hint">Extension por defecto</p>
-      </div>
-      <div class="field">
-        <label>Contexto</label>
-        <input type="text" id="c2cContext" value="from-internal" />
-      </div>
-      <div class="field">
-        <label>Trunk</label>
-        <input type="text" id="c2cTrunk" value="PJSIP/trunk" />
-      </div>
+    <p class="section-title">Click2Call — Extensiones de agentes</p>
+    <div class="field">
+      <label>Extensiones que recogen llamadas</label>
+      <input type="text" id="c2cExtensions" placeholder="107,158,105" />
+      <p class="hint">Separadas por coma. Todas suenan a la vez cuando un visitante solicita llamada</p>
+    </div>
+    <div class="field">
+      <label>Nombre CallerID</label>
+      <input type="text" id="c2cCallerIdName" value="Lead Web" />
+      <p class="hint">Nombre que aparece en el telefono del agente cuando suena la llamada</p>
     </div>
   </div>
 
-  <!-- Step 3: BU Extensions -->
+  <!-- Step 3: (Reserved — former BU Extensions, now merged into SIP step) -->
   <div class="step" data-step="2">
     <div class="step-icon">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
       </svg>
     </div>
-    <h3 class="step-title">Extensiones por Linea de Negocio</h3>
-    <p class="step-desc">Asigna una extension PBX a cada linea de negocio. Cuando un visitante pida hablar con alguien, se llamara a la extension correspondiente.</p>
+    <h3 class="step-title">Verificacion de Telefonia</h3>
+    <p class="step-desc">Resumen de la configuracion de Click2Call. Cuando un visitante solicite hablar con un agente, el chatbot llamara a su telefono y transferira la llamada a las extensiones configuradas.</p>
 
-    <div class="field">
-      <label>Boostic (SEO & Growth)</label>
-      <input type="text" id="buExtBoostic" placeholder="101" />
+    <div style="padding:20px;border-radius:14px;border:1px solid var(--border);background:var(--bg);margin-bottom:16px">
+      <p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px">Flujo Click2Call</p>
+      <div style="font-size:12px;color:var(--text-secondary);line-height:2">
+        <p>1. Visitante escribe su telefono en el widget</p>
+        <p>2. Chatbot llama al visitante via PBX (trunk PSTN)</p>
+        <p>3. Visitante contesta → se transfiere a las extensiones de agentes</p>
+        <p>4. PBX conecta visitante con el agente que responde</p>
+      </div>
     </div>
-    <div class="field">
-      <label>Binnacle (BI)</label>
-      <input type="text" id="buExtBinnacle" placeholder="102" />
-    </div>
-    <div class="field">
-      <label>Marketing Digital</label>
-      <input type="text" id="buExtMarketing" placeholder="103" />
-    </div>
-    <div class="field">
-      <label>Digital Tech</label>
-      <input type="text" id="buExtTech" placeholder="104" />
-    </div>
-    <div class="field">
-      <label>Extension por defecto <span class="required">*</span></label>
-      <input type="text" id="buExtDefault" value="100" />
-      <p class="hint">Se usa si no hay extension asignada a la BU o si no se detecta BU</p>
+
+    <div style="padding:16px;border-radius:12px;background:rgba(0,127,255,0.06);border:1px solid rgba(0,127,255,0.15)">
+      <p style="font-size:11px;color:var(--primary);font-weight:600">Nota</p>
+      <p style="font-size:11px;color:var(--text-secondary);line-height:1.6;margin-top:4px">
+        Si no configuraste SIP en el paso anterior, las solicitudes de llamada se guardaran como leads y los agentes podran devolver la llamada manualmente desde el dashboard.
+      </p>
     </div>
   </div>
 
@@ -478,8 +470,8 @@
 <script>
 const STEPS = [
   { label: 'Email', required: ['notificationEmail'] },
-  { label: 'PBX', required: [] },
-  { label: 'Extensiones', required: [] },
+  { label: 'SIP/Click2Call', required: [] },
+  { label: 'Verificacion', required: [] },
   { label: 'IA/Horario', required: [] },
   { label: 'Marca', required: [] },
 ];
@@ -567,23 +559,15 @@ async function saveSetup() {
       password: val('smtpPassword'),
       from: val('smtpFrom'),
     },
-    ami: {
-      host: val('amiHost'),
-      port: val('amiPort'),
-      user: val('amiUser'),
-      password: val('amiPassword'),
+    sip: {
+      domain: val('sipDomain'),
+      port: val('sipPort'),
+      extension: val('sipExtension'),
+      password: val('sipPassword'),
     },
     click2call: {
-      extension: val('c2cExtension'),
-      context: val('c2cContext'),
-      trunk: val('c2cTrunk'),
-    },
-    buExtensions: {
-      boostic: val('buExtBoostic'),
-      binnacle: val('buExtBinnacle'),
-      marketing: val('buExtMarketing'),
-      tech: val('buExtTech'),
-      default: val('buExtDefault'),
+      extensions: val('c2cExtensions'),
+      callerIdName: val('c2cCallerIdName'),
     },
     ai: { provider: val('aiProvider') },
     hours: {
@@ -651,22 +635,22 @@ async function testSmtp() {
   setTimeout(() => { btn.className = 'btn-test'; btn.textContent = 'Probar conexion SMTP'; }, 4000);
 }
 
-async function testAmi() {
-  const btn = document.querySelector('[onclick="testAmi()"]');
-  const result = document.getElementById('amiTestResult');
+async function testSip() {
+  const btn = document.querySelector('[onclick="testSip()"]');
+  const result = document.getElementById('sipTestResult');
   btn.className = 'btn-test testing';
   btn.textContent = 'Probando...';
   result.classList.remove('show', 'success', 'error');
 
   try {
-    const res = await fetch('/api/settings/test-ami', {
+    const res = await fetch('/api/settings/test-sip', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        host: val('amiHost'),
-        port: val('amiPort'),
-        user: val('amiUser'),
-        password: val('amiPassword'),
+        domain: val('sipDomain'),
+        port: val('sipPort'),
+        extension: val('sipExtension'),
+        password: val('sipPassword'),
       }),
     });
     const data = await res.json();
@@ -680,7 +664,7 @@ async function testAmi() {
     btn.className = 'btn-test error';
     btn.textContent = 'Error';
   }
-  setTimeout(() => { btn.className = 'btn-test'; btn.textContent = 'Probar conexion AMI'; }, 4000);
+  setTimeout(() => { btn.className = 'btn-test'; btn.textContent = 'Probar registro SIP'; }, 4000);
 }
 
 // Live preview for branding step

@@ -77,8 +77,8 @@ export const api = {
     request('/settings', { method: 'PUT', body: JSON.stringify({ settings }) }),
   testSmtp: (data: { host: string; port: string; user: string; password: string }) =>
     request('/settings/test-smtp', { method: 'POST', body: JSON.stringify(data) }),
-  testAmi: (data: { host: string; port: string; user: string; password: string }) =>
-    request('/settings/test-ami', { method: 'POST', body: JSON.stringify(data) }),
+  testSip: (data: { domain: string; port: string; extension: string; password: string }) =>
+    request('/settings/test-sip', { method: 'POST', body: JSON.stringify(data) }),
 };
 
 export function createAgentWS(token: string): WebSocket {

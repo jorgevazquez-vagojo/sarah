@@ -486,33 +486,9 @@ async function handleEscalate(ws, visitorId) {
 
   db.trackEvent({ eventType: 'escalation_requested', conversationId: conv.id, visitorId, businessLine: conv.business_line }).catch(() => {});
 
-  // Email notification + AMI call to BU extension (business hours only)
+  // Email notification (business hours only)
   if (isBusinessHours()) {
     notifyEscalation(conv.id, visitorId, conv.business_line, lang).catch((e) => logger.warn('Escalation email error:', e.message));
-
-    // Ring the BU extension on the PBX so someone picks up
-    const { ami } = require('../services/asterisk-ami');
-    if (ami.connected) {
-      const buLine = (conv.business_line || 'default').toUpperCase();
-      const buExt = process.env[`BU_EXT_${buLine}`] || process.env.BU_EXT_DEFAULT || process.env.CLICK2CALL_EXTENSION;
-      if (buExt) {
-        const context = process.env.CLICK2CALL_CONTEXT || 'from-internal';
-        ami.sendAction({
-          Action: 'Originate',
-          Channel: `Local/${buExt}@${context}`,
-          Application: 'Playback',
-          Data: 'custom/lead-web-waiting',
-          CallerID: `"Lead Web - ${conv.business_line || 'General'}" <0000>`,
-          Timeout: '25000',
-          Async: 'true',
-          Variable: `CONV_ID=${conv.id},BUSINESS_LINE=${conv.business_line || 'general'}`,
-        }).then(() => {
-          logger.info(`AMI: Rang BU extension ${buExt} for escalation (conv ${conv.id})`);
-        }).catch((e) => {
-          logger.warn(`AMI: Failed to ring BU extension ${buExt}:`, e.message);
-        });
-      }
-    }
   }
 }
 
@@ -560,11 +536,11 @@ async function handleRequestCall(ws, visitorId, msg) {
 
   await transition(conv.id, 'request_call');
 
-  // Attempt AMI originate (callback to visitor's phone → PBX extension)
-  const { ami } = require('../services/asterisk-ami');
-  if (!ami.connected) {
-    // AMI not available: save lead with phone for manual callback
-    logger.warn('AMI not connected — saving phone for manual callback');
+  // Attempt SIP Click2Call (Vozelia Cloud PBX)
+  const { sipClient } = require('../services/sip-click2call');
+  if (!sipClient.registered) {
+    // SIP not available: save lead with phone for manual callback
+    logger.warn('SIP not registered — saving phone for manual callback');
     send(ws, 'call_queued', {
       callId,
       message: t(lang, 'call_queued'),
@@ -581,26 +557,9 @@ async function handleRequestCall(ws, visitorId, msg) {
       mode: 'manual_callback',
     });
   } else {
-    // AMI connected: originate the call
+    // SIP registered: originate the call
     try {
-      // Get visitor name from lead if available
-      let visitorName = null;
-      try {
-        const leadResult = await db.query(
-          `SELECT name FROM leads WHERE conversation_id = $1 ORDER BY created_at DESC LIMIT 1`,
-          [conv.id]
-        );
-        if (leadResult.rows[0]) visitorName = leadResult.rows[0].name;
-      } catch {}
-
-      await ami.originate({
-        visitorPhone: phone,
-        callId,
-        extension: process.env.CLICK2CALL_EXTENSION || '100',
-        businessLine: conv.business_line,
-        visitorName,
-        context: process.env.CLICK2CALL_CONTEXT || 'from-internal',
-      });
+      await sipClient.click2call(phone, conv.business_line);
 
       send(ws, 'call_initiated', {
         callId,
@@ -615,10 +574,10 @@ async function handleRequestCall(ws, visitorId, msg) {
         phone,
         language: lang,
         businessLine: conv.business_line,
-        mode: 'ami_callback',
+        mode: 'sip_click2call',
       });
     } catch (e) {
-      logger.error('AMI originate failed:', e.message);
+      logger.error('SIP Click2Call failed:', e.message);
 
       // Update call record as failed
       await db.query(`UPDATE calls SET status = 'failed' WHERE call_id = $1`, [callId]).catch(() => {});
