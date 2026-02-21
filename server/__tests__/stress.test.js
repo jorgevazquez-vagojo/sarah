@@ -1,5 +1,5 @@
 /**
- * Stress / Load Tests for Redegal Chatbot Server
+ * Stress / Load Tests for RDGBot Server
  *
  * Tests server internal handling capacity with mocked external dependencies.
  * Run: npx jest stress.test.js --forceExit
@@ -118,9 +118,9 @@ jest.mock('../services/call-recording', () => ({
   logCallEnd: jest.fn().mockResolvedValue(undefined),
 }));
 
-jest.mock('../services/sip-click2call', () => ({
-  sipClient: { registered: false, click2call: jest.fn(), init: jest.fn() },
-  initSipClick2Call: jest.fn(),
+jest.mock('../services/sip-rdgphone', () => ({
+  sipClient: { registered: false, rdgphone: jest.fn(), init: jest.fn() },
+  initSipRDGPhone: jest.fn(),
 }));
 
 jest.mock('../services/ai', () => ({

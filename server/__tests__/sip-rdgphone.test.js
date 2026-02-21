@@ -1,4 +1,4 @@
-// SIP Click2Call tests — pure functions + class behavior
+// SIP RDGPhone tests — pure functions + class behavior
 jest.mock('../utils/logger', () => ({ logger: { info: jest.fn(), warn: jest.fn(), error: jest.fn(), debug: jest.fn() } }));
 jest.mock('../services/settings', () => ({ getMany: jest.fn() }));
 jest.mock('../services/call-recording', () => ({ logCallStart: jest.fn().mockResolvedValue(null), logCallEnd: jest.fn().mockResolvedValue(null) }));
@@ -20,13 +20,13 @@ const path = require('path');
 const crypto = require('crypto');
 
 // Extract pure functions by eval-ing only the function definitions
-const srcPath = path.join(__dirname, '..', 'services', 'sip-click2call.js');
+const srcPath = path.join(__dirname, '..', 'services', 'sip-rdgphone.js');
 const src = fs.readFileSync(srcPath, 'utf8');
 
 // We'll test through the module interface
-const { sipClient } = require('../services/sip-click2call');
+const { sipClient } = require('../services/sip-rdgphone');
 
-describe('SipClick2Call', () => {
+describe('SipRDGPhone', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
@@ -455,10 +455,10 @@ describe('SipClick2Call', () => {
     });
   });
 
-  describe('click2call', () => {
+  describe('rdgphone', () => {
     test('throws when not registered', async () => {
       sipClient.registered = false;
-      await expect(sipClient.click2call('+34612345678', 'boostic', 'conv-1'))
+      await expect(sipClient.rdgphone('+34612345678', 'boostic', 'conv-1'))
         .rejects.toThrow('SIP not registered');
     });
   });

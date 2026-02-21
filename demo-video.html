@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Redegal Chatbot — Demo 15 min</title>
+<title>RDGBot — Demo 15 min</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 :root {
@@ -296,8 +296,8 @@ body {
     <div class="logo-mark">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </div>
-    <h1><span>Redegal Chatbot</span></h1>
-    <h2>IA + Click2Call + Dashboard de Agentes</h2>
+    <h1><span>RDGBot</span></h1>
+    <h2>IA + RDGPhone + Dashboard de Agentes</h2>
     <p class="subtitle">Demo completa: instalacion, flujo SEO/Boostic y proyecto Shopify Plus</p>
     <div class="badge">15 minutos &middot; 3 escenarios</div>
   </div>
@@ -327,10 +327,10 @@ body {
   <div class="terminal-scene">
     <div class="terminal-header">
       <div class="dots"><div class="dot red"></div><div class="dot yellow"></div><div class="dot green"></div></div>
-      <span class="title">Terminal — redegal-chatbot</span>
+      <span class="title">Terminal — rdgbot</span>
     </div>
     <div class="terminal" id="terminal-1">
-      <div class="term-line"><span class="term-prompt">~/redegal-chatbot $ </span><span class="term-cmd">docker compose up -d</span></div>
+      <div class="term-line"><span class="term-prompt">~/rdgbot $ </span><span class="term-cmd">docker compose up -d</span></div>
       <div class="term-line"><span class="term-info">[+] Building 12.3s (14/14) FINISHED</span></div>
       <div class="term-line"><span class="term-dim"> => [server] FROM node:20-alpine                          0.1s</span></div>
       <div class="term-line"><span class="term-dim"> => [server] COPY package*.json ./                        0.1s</span></div>
@@ -341,20 +341,20 @@ body {
       <div class="term-line"><span class="term-success"> ✔ Container redis-7        Started                      0.8s</span></div>
       <div class="term-line"><span class="term-success"> ✔ Container chatbot-server  Started                      2.1s</span></div>
       <div class="term-line"><span class="term-output"></span></div>
-      <div class="term-line"><span class="term-prompt">~/redegal-chatbot $ </span><span class="term-cmd">docker compose logs -f server</span></div>
+      <div class="term-line"><span class="term-prompt">~/rdgbot $ </span><span class="term-cmd">docker compose logs -f server</span></div>
       <div class="term-line"><span class="term-output">server  | </span><span class="term-info">PostgreSQL connected</span></div>
       <div class="term-line"><span class="term-output">server  | </span><span class="term-info">Redis connected</span></div>
       <div class="term-line"><span class="term-output">server  | </span><span class="term-info">Loaded 4 language packs: es, en, pt, gl</span></div>
       <div class="term-line"><span class="term-output">server  | </span><span class="term-info">Knowledge base: 47 entries loaded</span></div>
-      <div class="term-line"><span class="term-output">server  | </span><span class="term-warn">SIP: Not configured — set sip.domain, sip.extension to enable Click2Call</span></div>
-      <div class="term-line"><span class="term-output">server  | </span><span class="term-success">Redegal Chatbot server running on port 3000</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-warn">SIP: Not configured — set sip.domain, sip.extension to enable RDGPhone</span></div>
+      <div class="term-line"><span class="term-output">server  | </span><span class="term-success">RDGBot server running on port 3000</span></div>
       <div class="term-line"><span class="term-output">server  | </span><span class="term-dim">  Setup:     http://localhost:3000/setup</span></div>
       <div class="term-line"><span class="term-output">server  | </span><span class="term-dim">  Dashboard: http://localhost:3000/dashboard</span></div>
       <div class="term-line"><span class="term-output">server  | </span><span class="term-dim">  Widget:    http://localhost:3000/widget/test.html</span></div>
       <div class="term-line"><span class="term-output"></span></div>
-      <div class="term-line"><span class="term-prompt">~/redegal-chatbot $ </span><span class="term-cmd">node scripts/create-agent.js admin admin123 "Admin" "es,en" "boostic,tech"</span></div>
+      <div class="term-line"><span class="term-prompt">~/rdgbot $ </span><span class="term-cmd">node scripts/create-agent.js admin admin123 "Admin" "es,en" "boostic,tech"</span></div>
       <div class="term-line"><span class="term-success">✓ Agent created: admin (role: admin)</span></div>
-      <div class="term-line"><span class="term-prompt">~/redegal-chatbot $ </span><span class="term-cmd">curl -s http://localhost:3000/health | jq</span></div>
+      <div class="term-line"><span class="term-prompt">~/rdgbot $ </span><span class="term-cmd">curl -s http://localhost:3000/health | jq</span></div>
       <div class="term-line"><span class="term-output">{</span></div>
       <div class="term-line"><span class="term-output">  </span><span class="term-info">"status"</span><span class="term-output">: </span><span class="term-success">"ok"</span><span class="term-output">,</span></div>
       <div class="term-line"><span class="term-output">  </span><span class="term-info">"postgres"</span><span class="term-output">: </span><span class="term-success">"ok"</span><span class="term-output">,</span></div>
@@ -378,7 +378,7 @@ body {
       </div>
       <div class="setup-window" style="border-radius:0 0 20px 20px">
         <div class="setup-top">
-          <h3>Redegal Chatbot — Setup</h3>
+          <h3>RDGBot — Setup</h3>
           <p id="setupStepLabel">Paso 1 de 5 — Email y Notificaciones</p>
         </div>
         <div class="setup-progress" id="setupProgress">
@@ -513,7 +513,7 @@ body {
           <div style="display:flex;gap:6px;margin-top:12px">
             <span style="padding:3px 10px;border-radius:6px;background:rgba(0,127,255,0.1);color:var(--primary);font-size:10px;font-weight:600">SEO Tecnico</span>
             <span style="padding:3px 10px;border-radius:6px;background:rgba(16,185,129,0.1);color:var(--green);font-size:10px;font-weight:600">Lead score: 85</span>
-            <span style="padding:3px 10px;border-radius:6px;background:rgba(245,158,11,0.1);color:var(--yellow);font-size:10px;font-weight:600">Click2Call activo</span>
+            <span style="padding:3px 10px;border-radius:6px;background:rgba(245,158,11,0.1);color:var(--yellow);font-size:10px;font-weight:600">RDGPhone activo</span>
           </div>
         </div>
       </div>
@@ -604,8 +604,8 @@ body {
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
     </div>
     <h1><span>Gracias</span></h1>
-    <h2>Redegal Chatbot — Listo para produccion</h2>
-    <p class="subtitle" style="max-width:700px">IA multi-proveedor &middot; Click2Call SIP &middot; Dashboard agentes &middot; 4 idiomas &middot; CRM &middot; Webhooks &middot; Plugins &middot; Multi-tenant</p>
+    <h2>RDGBot — Listo para produccion</h2>
+    <p class="subtitle" style="max-width:700px">IA multi-proveedor &middot; RDGPhone SIP &middot; Dashboard agentes &middot; 4 idiomas &middot; CRM &middot; Webhooks &middot; Plugins &middot; Multi-tenant</p>
     <div class="badge">chatbot.redegal.com</div>
   </div>
 </div>
@@ -724,7 +724,7 @@ const SETUP_STEPS = [
     }
   },
   {
-    label: 'Paso 2 de 5 — SIP / Click2Call',
+    label: 'Paso 2 de 5 — SIP / RDGPhone',
     html: `
       <div class="setup-step-content" id="setupContent">
         <div class="setup-row">
@@ -752,7 +752,7 @@ const SETUP_STEPS = [
     html: `
       <div class="setup-step-content" id="setupContent">
         <div style="background:#f0f7ff;border:1px solid #bfdbfe;border-radius:14px;padding:24px;margin-bottom:16px">
-          <p style="font-size:14px;font-weight:700;color:#1e40af;margin-bottom:16px">Flujo Click2Call</p>
+          <p style="font-size:14px;font-weight:700;color:#1e40af;margin-bottom:16px">Flujo RDGPhone</p>
           <p style="font-size:13px;color:#374151;line-height:2.2">
             1. Visitante escribe su telefono en el widget<br>
             2. Chatbot llama al visitante via PBX<br>
@@ -914,7 +914,7 @@ async function runBoosticChat() {
   await wait(1000);
   addChatMsg(chatId, 'bot', 'Gracias Maria! Te estamos conectando con un experto del equipo Boostic...');
   await wait(1000);
-  addChatMsg(chatId, 'system', 'Click2Call: Llamando a +34 612 345 678...');
+  addChatMsg(chatId, 'system', 'RDGPhone: Llamando a +34 612 345 678...');
   await wait(2000);
   addChatMsg(chatId, 'system', 'Extensiones 107, 158, 105 sonando...');
 
@@ -1009,7 +1009,7 @@ async function runShopifyChat() {
   </div>`);
 
   await wait(1000);
-  narrate('El visitante deja sus datos. Se activa Click2Call via SIP para conectar con Digital Tech.');
+  narrate('El visitante deja sus datos. Se activa RDGPhone via SIP para conectar con Digital Tech.');
   const spName = document.getElementById('sp-name');
   const spEmail = document.getElementById('sp-email');
   const spPhone = document.getElementById('sp-phone');
@@ -1027,7 +1027,7 @@ async function runShopifyChat() {
   await wait(800);
   addChatMsg(chatId, 'system', 'SIP: INVITE +34666789012@cloudpbx1584.vozelia.com');
   await wait(1500);
-  addChatMsg(chatId, 'system', 'Click2Call: Llamando... ext 107, 158, 105 sonando');
+  addChatMsg(chatId, 'system', 'RDGPhone: Llamando... ext 107, 158, 105 sonando');
   await wait(2000);
   addChatMsg(chatId, 'bot', 'Perfecto Carlos! Te estamos llamando ahora al +34 666 789 012. Un experto de Digital Tech te atendera en segundos.');
   await wait(2000);
@@ -1084,7 +1084,7 @@ async function main() {
 
   // Scene 6: Section - Shopify (10:00 - 10:06)
   showScene(6);
-  narrate('Seccion 3: Proyecto Shopify Plus — cualificacion tecnica y Click2Call');
+  narrate('Seccion 3: Proyecto Shopify Plus — cualificacion tecnica y RDGPhone');
   await wait(6000);
   hideNarration();
 
@@ -1095,7 +1095,7 @@ async function main() {
 
   // Scene 8: Closing (14:50 - 15:00)
   showScene(8);
-  narrate('Redegal Chatbot: IA conversacional + Click2Call SIP + Dashboard en tiempo real');
+  narrate('RDGBot: IA conversacional + RDGPhone SIP + Dashboard en tiempo real');
   await wait(10000);
   hideNarration();
 }

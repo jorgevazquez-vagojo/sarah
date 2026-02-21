@@ -1,5 +1,5 @@
 // ════════════════════════════════════════════
-// Redegal Chatbot - Video Demo v2.0.0
+// RDGBot - Video Demo v2.0.0
 // ════════════════════════════════════════════
 
 let demoRunning = false;

@@ -1,5 +1,5 @@
 # Janus Gateway — General Configuration
-# WebRTC-to-SIP bridge for Redegal Chatbot Click2Call
+# WebRTC-to-SIP bridge for RDGBot RDGPhone
 
 general: {
   configs_folder = "/etc/janus"

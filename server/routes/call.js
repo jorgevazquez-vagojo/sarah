@@ -14,7 +14,7 @@ const {
   startMonitoring, stopMonitoring,
   cleanupOldRecordings, RECORDINGS_DIR,
 } = require('../services/call-recording');
-const { sipClient } = require('../services/sip-click2call');
+const { sipClient } = require('../services/sip-rdgphone');
 
 const router = Router();
 

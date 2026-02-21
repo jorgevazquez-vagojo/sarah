@@ -45,7 +45,7 @@ const DURATION_MS = 15 * 60 * 1000 + 10_000; // 15 min + 10s buffer
   const video = page.video();
   if (video) {
     const videoPath = await video.path();
-    const finalPath = path.join(OUTPUT_DIR, 'Redegal-Chatbot-Demo-15min.webm');
+    const finalPath = path.join(OUTPUT_DIR, 'RDGBot-Demo-15min.webm');
 
     // Rename to final name
     const fs = require('fs');

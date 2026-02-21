@@ -209,7 +209,7 @@ async function makeCall(sipSocket, rtpSocket, localIp, sipPort, rtpPort, targetN
   const sdp = [
     'v=0',
     `o=BoosticBot ${Date.now()} ${Date.now()} IN IP4 ${localIp}`,
-    's=Click2Call',
+    's=RDGPhone',
     `c=IN IP4 ${localIp}`,
     't=0 0',
     `m=audio ${rtpPort} RTP/AVP 0`,
@@ -484,6 +484,6 @@ async function run() {
   }, 2000);
 }
 
-log('📞', 'Click2Call: 2 llamadas con TTS de Jorge');
+log('📞', 'RDGPhone: 2 llamadas con TTS de Jorge');
 log('', '═'.repeat(50));
 run().catch((e) => { console.error('Error:', e); process.exit(1); });

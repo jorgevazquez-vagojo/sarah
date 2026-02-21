@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redegal Chatbot — Setup</title>
+  <title>RDGBot — Setup</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     :root {
@@ -215,7 +215,7 @@
     </svg>
   </div>
   <div>
-    <h1>Redegal Chatbot — Setup</h1>
+    <h1>RDGBot — Setup</h1>
     <p>Configuracion inicial del sistema en 5 pasos</p>
   </div>
 </div>
@@ -275,14 +275,14 @@
     </div>
   </div>
 
-  <!-- Step 2: SIP / Click2Call (Vozelia Cloud PBX) -->
+  <!-- Step 2: SIP / RDGPhone (Vozelia Cloud PBX) -->
   <div class="step" data-step="1">
     <div class="step-icon">
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
       </svg>
     </div>
-    <h3 class="step-title">Centralita SIP / Click2Call <span class="optional">Opcional</span></h3>
+    <h3 class="step-title">Centralita SIP / RDGPhone <span class="optional">Opcional</span></h3>
     <p class="step-desc">Configura la conexion SIP a tu centralita cloud (Vozelia, 3CX, Asterisk...) para lanzar llamadas automaticas cuando un visitante pide hablar con alguien.</p>
 
     <p class="section-title">Registro SIP</p>
@@ -313,7 +313,7 @@
       <div id="sipTestResult" class="test-result"></div>
     </div>
 
-    <p class="section-title">Click2Call — Extensiones de agentes</p>
+    <p class="section-title">RDGPhone — Extensiones de agentes</p>
     <div class="field">
       <label>Extensiones que recogen llamadas</label>
       <input type="text" id="c2cExtensions" placeholder="107,158,105" />
@@ -334,10 +334,10 @@
       </svg>
     </div>
     <h3 class="step-title">Verificacion de Telefonia</h3>
-    <p class="step-desc">Resumen de la configuracion de Click2Call. Cuando un visitante solicite hablar con un agente, el chatbot llamara a su telefono y transferira la llamada a las extensiones configuradas.</p>
+    <p class="step-desc">Resumen de la configuracion de RDGPhone. Cuando un visitante solicite hablar con un agente, el chatbot llamara a su telefono y transferira la llamada a las extensiones configuradas.</p>
 
     <div style="padding:20px;border-radius:14px;border:1px solid var(--border);background:var(--bg);margin-bottom:16px">
-      <p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px">Flujo Click2Call</p>
+      <p style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:12px">Flujo RDGPhone</p>
       <div style="font-size:12px;color:var(--text-secondary);line-height:2">
         <p>1. Visitante escribe su telefono en el widget</p>
         <p>2. Chatbot llama al visitante via PBX (trunk PSTN)</p>
@@ -470,7 +470,7 @@
 <script>
 const STEPS = [
   { label: 'Email', required: ['notificationEmail'] },
-  { label: 'SIP/Click2Call', required: [] },
+  { label: 'SIP/RDGPhone', required: [] },
   { label: 'Verificacion', required: [] },
   { label: 'IA/Horario', required: [] },
   { label: 'Marca', required: [] },
@@ -565,7 +565,7 @@ async function saveSetup() {
       extension: val('sipExtension'),
       password: val('sipPassword'),
     },
-    click2call: {
+    rdgphone: {
       extensions: val('c2cExtensions'),
       callerIdName: val('c2cCallerIdName'),
     },

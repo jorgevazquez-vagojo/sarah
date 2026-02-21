@@ -1,4 +1,4 @@
-// WebRTC Click2Call client — real implementation using browser WebRTC API
+// WebRTC RDGPhone client — real implementation using browser WebRTC API
 // Signaling goes through /ws/sip WebSocket, audio flows peer-to-peer
 
 import { AudioQualityMonitor } from './audio-quality';

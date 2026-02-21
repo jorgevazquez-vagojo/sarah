@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-# ─── Redegal Chatbot - Installer ───
+# ─── RDGBot - Installer ───
 # Usage: chmod +x setup.sh && ./setup.sh
 
 BOLD='\033[1m'
@@ -24,7 +24,7 @@ echo " |  _ <  __/ (_| |  __/ (_| | (_| | | | |___| | | | (_| | |_| |_) | (_) | 
 echo " |_| \\_\\___|\\__,_|\\___|\\__, |\\__,_|_|  \\____|_| |_|\\__,_|\\__|_.__/ \\___/ \\__|"
 echo "                       |___/                                                  "
 echo -e "${NC}"
-echo "  Chatbot IA + WebPhone VoIP Widget"
+echo "  Chatbot IA + RDGPhone VoIP Widget"
 echo "  4 idiomas | 4 lineas de negocio | CRM | Webhooks"
 echo ""
 
@@ -79,7 +79,7 @@ else
 POSTGRES_HOST=${HAS_DOCKER:+postgres}${HAS_DOCKER:+}
 POSTGRES_HOST=${POSTGRES_HOST:-localhost}
 POSTGRES_PORT=5432
-POSTGRES_DB=redegal_chatbot
+POSTGRES_DB=rdgbot
 POSTGRES_USER=redegal
 POSTGRES_PASSWORD=${DB_PASS}
 
@@ -155,12 +155,12 @@ if [ "$HAS_DOCKER" = true ]; then
 else
   step "5/8 Modo local (sin Docker)"
   warn "Necesitas PostgreSQL y Redis corriendo localmente:"
-  echo "  - PostgreSQL en localhost:5432 con DB 'redegal_chatbot'"
+  echo "  - PostgreSQL en localhost:5432 con DB 'rdgbot'"
   echo "  - Redis en localhost:6379"
   echo ""
   echo "  Para crear la DB:"
-  echo "    createdb redegal_chatbot"
-  echo "    psql redegal_chatbot < server/config/init.sql"
+  echo "    createdb rdgbot"
+  echo "    psql rdgbot < server/config/init.sql"
 fi
 
 # ─── 6. Initialize database ───
@@ -172,10 +172,10 @@ else
   if command -v psql >/dev/null 2>&1; then
     # Try to apply schema
     source .env 2>/dev/null || true
-    PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "${POSTGRES_HOST:-localhost}" -U "${POSTGRES_USER:-redegal}" -d "${POSTGRES_DB:-redegal_chatbot}" -f server/config/init.sql >/dev/null 2>&1 && log "Schema aplicado" || warn "No se pudo aplicar schema (psql). Hazlo manualmente."
+    PGPASSWORD="${POSTGRES_PASSWORD}" psql -h "${POSTGRES_HOST:-localhost}" -U "${POSTGRES_USER:-redegal}" -d "${POSTGRES_DB:-rdgbot}" -f server/config/init.sql >/dev/null 2>&1 && log "Schema aplicado" || warn "No se pudo aplicar schema (psql). Hazlo manualmente."
   else
     warn "psql no encontrado. Aplica el schema manualmente:"
-    echo "    psql redegal_chatbot < server/config/init.sql"
+    echo "    psql rdgbot < server/config/init.sql"
   fi
 fi
 
@@ -219,7 +219,7 @@ echo "    - Configura webhooks desde el dashboard > Ajustes"
 echo ""
 echo -e "  ${BOLD}Embeber en tu web:${NC}"
 echo '    <script>'
-echo '      window.RedegalChatbot = {'
+echo '      window.RdgBot = {'
 echo "        baseUrl: 'https://tu-dominio.com/widget',"
 echo "        apiUrl: 'wss://tu-dominio.com/ws/chat',"
 echo "        configUrl: 'https://tu-dominio.com/api/config/widget',"

@@ -1,7 +1,7 @@
-# Investigacion: Soluciones WebPhone y WebRTC para Widget Chatbot Redegal
+# Investigacion: Soluciones RDGPhone y WebRTC para Widget Chatbot Redegal
 
 **Fecha**: 2026-02-20
-**Objetivo**: Analizar las principales soluciones WebPhone/Click2Call del mercado para mejorar nuestro widget WebPhone integrado en el chatbot Redegal.
+**Objetivo**: Analizar las principales soluciones RDGPhone/RDGPhone del mercado para mejorar nuestro widget RDGPhone integrado en el chatbot Redegal.
 
 ---
 
@@ -11,9 +11,9 @@
 - **Razon social**: Premium Leads, S.L. (antes IP Web Services, S.L.)
 - **Ubicacion**: Manuel Murguia S/N, Casa del Agua, Planta 1a, 15011 A Coruna
 - **NIF**: B70545843
-- **Marca**: Webphone (webphone.net) + IPGlobal (ipglobal.es)
+- **Marca**: Webphone (rdgphone.net) + IPGlobal (ipglobal.es)
 - **Reconocimiento**: Premiada en la IV edicion del campus SeedRocket (Barcelona)
-- **Plataforma interna**: MARCO (users.webphone.net) -- panel de gestion de clientes
+- **Plataforma interna**: MARCO (users.rdgphone.net) -- panel de gestion de clientes
 
 ### Producto: Click to Call Webphone
 **Modelo de negocio**: Boton "click to call" que convierte visitas web en llamadas telefonicas. NO es WebRTC puro en navegador, sino callback telefono-a-telefono.
@@ -176,7 +176,7 @@ call.on('warning-cleared', (warningName) => {
 
 ---
 
-## 6. 3CX WebPhone
+## 6. 3CX RDGPhone
 
 ### Arquitectura
 - **Tipo**: PBX completa con WebRTC web client integrado
@@ -235,7 +235,7 @@ webrtc=yes
 ```
 
 ### Relevancia para nuestro proyecto
-Nuestro backend SIP actual (`sip-click2call.js`) usa UDP raw contra Vozelia. La alternativa seria usar SIP.js en el navegador directamente contra un Asterisk/FreePBX con WebSocket, lo que daria control total del audio WebRTC.
+Nuestro backend SIP actual (`sip-rdgphone.js`) usa UDP raw contra Vozelia. La alternativa seria usar SIP.js en el navegador directamente contra un Asterisk/FreePBX con WebSocket, lo que daria control total del audio WebRTC.
 
 ---
 
@@ -293,7 +293,7 @@ Nuestro backend SIP actual (`sip-click2call.js`) usa UDP raw contra Vozelia. La 
 
 ### Limitaciones conocidas
 - **No expone AMI** (es cloud PBX, no Asterisk accesible)
-- **SIP standard** sobre UDP/TCP (nuestro `sip-click2call.js` ya lo maneja)
+- **SIP standard** sobre UDP/TCP (nuestro `sip-rdgphone.js` ya lo maneja)
 - **No WebSocket SIP** nativo (limitacion para WebRTC directo desde browser)
 
 ---
@@ -423,11 +423,11 @@ const stream = await navigator.mediaDevices.getUserMedia({
 
 ## 15. PLAN DE MEJORAS PARA NUESTRO WEBPHONE
 
-### Estado actual de nuestro widget (`/Users/jorgevazquez/redegal-chatbot/`)
+### Estado actual de nuestro widget (`/Users/jorgevazquez/rdgbot/`)
 
 **Lo que ya tenemos**:
 - `widget/src/lib/sip-client.ts` -- Cliente WebRTC con signaling via WebSocket
-- `server/services/sip-click2call.js` -- SIP UDP contra Vozelia (REGISTER + INVITE + REFER)
+- `server/services/sip-rdgphone.js` -- SIP UDP contra Vozelia (REGISTER + INVITE + REFER)
 - `server/ws/sip-signaling.js` -- WebSocket signaling bridge
 - CallView en Widget con formulario de telefono y estados basicos
 - Integracion con colas de negocio (boostic, binnacle, marketing, tech)
@@ -575,7 +575,7 @@ Al terminar la llamada:
 
 ## 16. COMPARATIVA RESUMEN
 
-| Proveedor | Tipo | WebRTC Nativo | Click2Call | Video | Screen Share | STT | Precio |
+| Proveedor | Tipo | WebRTC Nativo | RDGPhone | Video | Screen Share | STT | Precio |
 |-----------|------|:---:|:---:|:---:|:---:|:---:|--------|
 | **IPGlobal/Webphone** | Callback | No | Si | Si | Si | No | Desde 50EUR prepago |
 | **Twilio** | CPaaS | Si | Si | Si | No | Si (add-on) | $0.013/min |
@@ -711,4 +711,4 @@ async function pollQuality(pc: RTCPeerConnection): Promise<CallQualityMetrics | 
    - **Queue position** (reduce abandono de llamada en cola)
    - **Callback scheduling** (captura leads 24/7)
 
-6. **Diferenciador clave**: Ningun competidor tiene un chatbot IA + WebPhone + dashboard de agentes integrado en un solo widget. Esa es nuestra ventaja competitiva.
+6. **Diferenciador clave**: Ningun competidor tiene un chatbot IA + RDGPhone + dashboard de agentes integrado en un solo widget. Esa es nuestra ventaja competitiva.

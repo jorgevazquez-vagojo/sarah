@@ -549,8 +549,8 @@ async function handleRequestCall(ws, visitorId, msg) {
 
   await transition(conv.id, 'request_call');
 
-  // Attempt SIP Click2Call (Vozelia Cloud PBX)
-  const { sipClient } = require('../services/sip-click2call');
+  // Attempt SIP RDGPhone (Vozelia Cloud PBX)
+  const { sipClient } = require('../services/sip-rdgphone');
   if (!sipClient.registered) {
     // SIP not available: save lead with phone for manual callback
     logger.warn('SIP not registered — saving phone for manual callback');
@@ -572,7 +572,7 @@ async function handleRequestCall(ws, visitorId, msg) {
   } else {
     // SIP registered: originate the call
     try {
-      await sipClient.click2call(phone, conv.business_line);
+      await sipClient.rdgphone(phone, conv.business_line);
 
       send(ws, 'call_initiated', {
         callId,
@@ -587,10 +587,10 @@ async function handleRequestCall(ws, visitorId, msg) {
         phone,
         language: lang,
         businessLine: conv.business_line,
-        mode: 'sip_click2call',
+        mode: 'sip_rdgphone',
       });
     } catch (e) {
-      logger.error('SIP Click2Call failed:', e.message);
+      logger.error('SIP RDGPhone failed:', e.message);
 
       // Update call record as failed
       await db.query(`UPDATE calls SET status = 'failed' WHERE call_id = $1`, [callId]).catch(() => {});

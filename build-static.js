@@ -102,8 +102,8 @@ php = php.replace(/<\?php\s*\n\s*\$testimonials\s*=\s*\[[\s\S]*?endforeach;\s*\?
 
 // Handle chatbot widget conditional — replace with real widget loader
 php = php.replace(/<!-- Chatbot Widget -->[\s\S]*?<\?php\s+endif;\s*\?>/, '');
-// Handle webphone widget conditional
-php = php.replace(/<!-- WebPhone Widget -->[\s\S]*?<\?php\s+endif;\s*\?>/, '');
+// Handle rdgphone widget conditional
+php = php.replace(/<!-- RDGPhone Widget -->[\s\S]*?<\?php\s+endif;\s*\?>/, '');
 
 // Handle social links
 php = php.replace(/<\?php\s+redegal_social_links\(\);\s*\?>/g, generateSocialLinks());
@@ -126,7 +126,7 @@ php = php.replace('</head>',
 php = php.replace('</body>',
 `<!-- Real Chatbot Widget (Shadow DOM, connects to backend) -->
 <script>
-  window.RedegalChatbot = {
+  window.RdgBot = {
     baseUrl: window.location.origin + '/widget',
     apiUrl: (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws/chat',
     configUrl: window.location.origin + '/api/config/widget',
@@ -136,9 +136,9 @@ php = php.replace('</body>',
 </script>
 <script>
 (function(){
-  var BASE = window.RedegalChatbot && window.RedegalChatbot.baseUrl ? window.RedegalChatbot.baseUrl : '/widget';
+  var BASE = window.RdgBot && window.RdgBot.baseUrl ? window.RdgBot.baseUrl : '/widget';
   var host = document.createElement('div');
-  host.id = 'redegal-chatbot-host';
+  host.id = 'rdgbot-host';
   host.style.cssText = 'position:fixed;z-index:2147483647;bottom:0;right:0;';
   document.body.appendChild(host);
   var shadow = host.attachShadow({ mode: 'open' });
@@ -147,13 +147,13 @@ php = php.replace('</body>',
   link.href = BASE + '/widget.css';
   shadow.appendChild(link);
   var mount = document.createElement('div');
-  mount.id = 'redegal-chatbot-root';
+  mount.id = 'rdgbot-root';
   shadow.appendChild(mount);
   var script = document.createElement('script');
   script.src = BASE + '/widget.js';
   script.onload = function(){
-    if(typeof window.__redegalWidgetInit === 'function'){
-      window.__redegalWidgetInit(mount, window.RedegalChatbot || {});
+    if(typeof window.__rdgbotInit === 'function'){
+      window.__rdgbotInit(mount, window.RdgBot || {});
     }
   };
   document.body.appendChild(script);

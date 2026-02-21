@@ -32,7 +32,7 @@ jest.mock('../services/call-recording', () => ({
   cleanupOldRecordings: jest.fn().mockResolvedValue({ filesDeleted: 0 }),
   RECORDINGS_DIR: '/tmp/test-recordings',
 }));
-jest.mock('../services/sip-click2call', () => ({
+jest.mock('../services/sip-rdgphone', () => ({
   sipClient: {
     registered: true,
     config: { domain: 'pbx.example.com', extension: '100' },

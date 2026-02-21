@@ -705,10 +705,10 @@
     if (input) input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); send(); } });
   }
 
-  /* -- 19. WebPhone ------------------------------------------------------ */
+  /* -- 19. RDGPhone ------------------------------------------------------ */
 
   function initWebphone() {
-    var trigger = qs('.webphone-trigger');
+    var trigger = qs('.rdgphone-trigger');
     if (!trigger) return;
     trigger.addEventListener('click', function () { window.location.href = 'tel:+34988549858'; });
   }

@@ -206,7 +206,7 @@ export function Widget(props: WidgetConfig) {
     if (chat.showLeadForm) { setView('lead_form'); chat.clearLeadForm(); }
   }, [chat.showLeadForm]);
 
-  // Click2Call: show phone form when server requests it
+  // RDGPhone: show phone form when server requests it
   useEffect(() => {
     if (chat.showPhoneForm) {
       setView('call');

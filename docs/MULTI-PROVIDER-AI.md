@@ -2,7 +2,7 @@
 
 ## Visión General
 
-El sistema de chatbot y Click2Call de Redegal soporta **tres proveedores de IA principales** para maximizar disponibilidad y flexibilidad:
+El sistema de chatbot y RDGPhone de Redegal soporta **tres proveedores de IA principales** para maximizar disponibilidad y flexibilidad:
 
 - **Claude (Anthropic)** — Proveedor por defecto
 - **Gemini (Google)** — Fallback gratuito
@@ -163,9 +163,9 @@ Usuario escribe → Webhook recibido → Detectar idioma
 
 ---
 
-## 5. Integración en Click2Call (VoIP)
+## 5. Integración en RDGPhone (VoIP)
 
-El sistema Click2Call utiliza IA en dos puntos clave:
+El sistema RDGPhone utiliza IA en dos puntos clave:
 
 ### 5.1 Speech-to-Text (STT)
 
@@ -209,7 +209,7 @@ Si Claude agota créditos:
 
 ```bash
 # 1. Conectarse al servidor
-ssh root@redegal-chatbot-prod
+ssh root@rdgbot-prod
 
 # 2. Editar archivo .env
 nano /app/.env
@@ -279,7 +279,7 @@ curl http://localhost:3000/api/system/ai-provider \
 │   └── ...
 └── services/
     ├── conversation.js         # Servicio de conversación
-    └── click2call.js          # Servicio VoIP/STT
+    └── rdgphone.js          # Servicio VoIP/STT
 ```
 
 ### Flujo de Inicialización
@@ -418,7 +418,7 @@ AI_PROVIDER=gemini
 - [ ] Logs muestran "AI Provider initialized: claude"
 - [ ] Dashboard muestra proveedor activo
 - [ ] Conversación de prueba funciona en idioma nativo
-- [ ] Click2Call STT capta audio correctamente
+- [ ] RDGPhone STT capta audio correctamente
 - [ ] Fallback a Gemini funciona si Claude se desactiva
 - [ ] Métricas de latencia visibles en dashboard
 

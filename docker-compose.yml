@@ -2,7 +2,7 @@ services:
   postgres:
     image: pgvector/pgvector:pg16
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-redegal_chatbot}
+      POSTGRES_DB: ${POSTGRES_DB:-rdgbot}
       POSTGRES_USER: ${POSTGRES_USER:-redegal}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD}
     ports:

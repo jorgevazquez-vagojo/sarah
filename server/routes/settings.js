@@ -29,7 +29,7 @@ router.post('/setup', async (req, res) => {
     return res.status(403).json({ error: 'Setup already completed. Use the admin panel to change settings.' });
   }
 
-  const { smtp, sip, click2call, notificationEmail, ai, hours, brand } = req.body;
+  const { smtp, sip, rdgphone, notificationEmail, ai, hours, brand } = req.body;
 
   const toSave = {};
 
@@ -50,10 +50,10 @@ router.post('/setup', async (req, res) => {
     if (sip.password) toSave['sip.password'] = sip.password;
   }
 
-  // Click2Call
-  if (click2call) {
-    if (click2call.extensions) toSave['click2call.extensions'] = click2call.extensions;
-    if (click2call.callerIdName) toSave['click2call.callerid_name'] = click2call.callerIdName;
+  // RDGPhone
+  if (rdgphone) {
+    if (rdgphone.extensions) toSave['rdgphone.extensions'] = rdgphone.extensions;
+    if (rdgphone.callerIdName) toSave['rdgphone.callerid_name'] = rdgphone.callerIdName;
   }
 
   // Notification email
@@ -178,7 +178,7 @@ router.post('/test-sip', requireAgent, requireRole('admin'), async (req, res) =>
           `Call-ID: ${callId}`,
           `CSeq: 1 OPTIONS`,
           `Max-Forwards: 70`,
-          `User-Agent: RedegalChatbot/1.0`,
+          `User-Agent: RdgBot/1.0`,
           `Content-Length: 0`,
           ``,
           ``,

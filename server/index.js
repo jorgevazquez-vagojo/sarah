@@ -90,9 +90,9 @@ initAgentHandler(wssAgent);
 const { initSipSignaling } = require('./ws/sip-signaling');
 initSipSignaling(wssSip);
 
-// ─── SIP Click2Call (Vozelia Cloud PBX) ───
-const { initSipClick2Call } = require('./services/sip-click2call');
-initSipClick2Call();
+// ─── SIP RDGPhone (Vozelia Cloud PBX) ───
+const { initSipRDGPhone } = require('./services/sip-rdgphone');
+initSipRDGPhone();
 
 // ─── Email notifications ───
 const { initEmail } = require('./services/email');
@@ -142,7 +142,7 @@ app.get('/widget/test.html', (_req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Redegal Chatbot - Widget Demo</title>
+  <title>RDGBot - Widget Demo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
@@ -165,8 +165,8 @@ app.get('/widget/test.html', (_req, res) => {
 </head>
 <body>
   <div class="demo-page">
-    <h1>Redegal Chatbot</h1>
-    <p>Widget premium con chatbot IA, webphone VoIP, 4 idiomas y configuracion completa. Prueba el widget en la esquina inferior derecha.</p>
+    <h1>RDGBot</h1>
+    <p>Widget premium con chatbot IA, rdgphone VoIP, 4 idiomas y configuracion completa. Prueba el widget en la esquina inferior derecha.</p>
 
     <div class="cards">
       <div class="card">
@@ -182,7 +182,7 @@ app.get('/widget/test.html', (_req, res) => {
         <p>Claude (primario) + Gemini (fallback gratuito) + OpenAI. Cambio automatico si falla.</p>
       </div>
       <div class="card">
-        <h3>VoIP Click2Call</h3>
+        <h3>VoIP RDGPhone</h3>
         <p>Llamadas via SIP + Vozelia Cloud PBX. Solo en horario laboral.</p>
       </div>
     </div>
@@ -214,7 +214,7 @@ app.get('/widget/test.html', (_req, res) => {
   </div>
 
   <script>
-    window.RedegalChatbot = {
+    window.RdgBot = {
       baseUrl: window.location.origin + '/widget',
       apiUrl: 'ws://' + window.location.host + '/ws/chat',
       configUrl: window.location.origin + '/api/config/widget',

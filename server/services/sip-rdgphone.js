@@ -1,8 +1,8 @@
 /**
- * SIP Click2Call — Vozelia Cloud PBX
+ * SIP RDGPhone — Vozelia Cloud PBX
  *
  * Registers SIP extension on PBX via UDP.
- * Click2Call flow:
+ * RDGPhone flow:
  *   1. INVITE visitor's phone from our extension (PBX routes via trunk)
  *   2. Visitor answers → REFER to agent extensions (sequential)
  *   3. PBX bridges visitor ↔ agent, our leg disconnects
@@ -107,7 +107,7 @@ function buildSipRequest(method, uri, opts) {
   if (contact) msg += `Contact: ${contact}\r\n`;
   if (auth) msg += `${authHeader || 'Authorization'}: ${auth}\r\n`;
   msg += `Max-Forwards: 70\r\n`;
-  msg += `User-Agent: RedegalChatbot/1.0\r\n`;
+  msg += `User-Agent: RdgBot/1.0\r\n`;
   if (extraHeaders) {
     for (const [k, v] of Object.entries(extraHeaders)) msg += `${k}: ${v}\r\n`;
   }
@@ -142,7 +142,7 @@ function buildDummySdp(localIp, rtpPort) {
   return [
     'v=0',
     `o=RedegalBot ${Date.now()} ${Date.now()} IN IP4 ${localIp}`,
-    's=Click2Call',
+    's=RDGPhone',
     `c=IN IP4 ${localIp}`,
     't=0 0',
     `m=audio ${rtpPort} RTP/AVP 0 8 101`,
@@ -155,10 +155,10 @@ function buildDummySdp(localIp, rtpPort) {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// SIP Click2Call Client
+// SIP RDGPhone Client
 // ═══════════════════════════════════════════════════════════════
 
-class SipClick2Call extends EventEmitter {
+class SipRDGPhone extends EventEmitter {
   constructor() {
     super();
     this.socket = null;
@@ -177,19 +177,19 @@ class SipClick2Call extends EventEmitter {
   async init() {
     const cfg = await settings.getMany([
       'sip.domain', 'sip.port', 'sip.extension', 'sip.password',
-      'click2call.extensions', 'click2call.callerid_name',
+      'rdgphone.extensions', 'rdgphone.callerid_name',
     ]);
     this.config = {
       domain: cfg['sip.domain'],
       port: parseInt(cfg['sip.port'] || '5060', 10),
       extension: cfg['sip.extension'],
       password: cfg['sip.password'],
-      ringExtensions: (cfg['click2call.extensions'] || '').split(',').map((e) => e.trim()).filter(Boolean),
-      callerIdName: cfg['click2call.callerid_name'] || 'Lead Web',
+      ringExtensions: (cfg['rdgphone.extensions'] || '').split(',').map((e) => e.trim()).filter(Boolean),
+      callerIdName: cfg['rdgphone.callerid_name'] || 'Lead Web',
     };
 
     if (!this.config.domain || !this.config.extension || !this.config.password) {
-      logger.warn('SIP: Not configured — set sip.domain, sip.extension, sip.password to enable Click2Call');
+      logger.warn('SIP: Not configured — set sip.domain, sip.extension, sip.password to enable RDGPhone');
       return;
     }
 
@@ -433,7 +433,7 @@ class SipClick2Call extends EventEmitter {
 
     const extensions = this.config.ringExtensions;
     if (!extensions.length) {
-      logger.warn('SIP: No click2call extensions configured — hanging up');
+      logger.warn('SIP: No rdgphone extensions configured — hanging up');
       this.sendBye(callId);
       call.reject(new Error('No agent extensions configured'));
       return;
@@ -624,17 +624,17 @@ class SipClick2Call extends EventEmitter {
   // ─── Public API ───
 
   /**
-   * Click2Call: call visitor and transfer to agent extensions.
+   * RDGPhone: call visitor and transfer to agent extensions.
    * @param {string} visitorPhone - Visitor's phone number
    * @param {string} [businessLine] - For logging/CallerID context
    * @returns {Promise<{success: boolean, transferredTo: string}>}
    */
-  async click2call(visitorPhone, businessLine, conversationId) {
+  async rdgphone(visitorPhone, businessLine, conversationId) {
     if (!this.registered) {
-      throw new Error('SIP not registered — Click2Call unavailable');
+      throw new Error('SIP not registered — RDGPhone unavailable');
     }
 
-    logger.info(`SIP: Click2Call — calling ${visitorPhone} (BU: ${businessLine || 'general'})`);
+    logger.info(`SIP: RDGPhone — calling ${visitorPhone} (BU: ${businessLine || 'general'})`);
 
     // Log call start
     const callId = this.activeCalls.size > 0
@@ -648,13 +648,13 @@ class SipClick2Call extends EventEmitter {
 
     try {
       const result = await this.originate(visitorPhone);
-      logger.info(`SIP: Click2Call success — ${visitorPhone} → ext ${result.transferredTo}`);
+      logger.info(`SIP: RDGPhone success — ${visitorPhone} → ext ${result.transferredTo}`);
 
       // Update call recording with transferred extension
       logCallEnd({ callId, status: 'transferred' }).catch(() => {});
       return result;
     } catch (e) {
-      logger.error(`SIP: Click2Call failed — ${visitorPhone}: ${e.message}`);
+      logger.error(`SIP: RDGPhone failed — ${visitorPhone}: ${e.message}`);
       logCallEnd({ callId, duration: 0, status: 'failed' }).catch(() => {});
       throw e;
     }
@@ -678,9 +678,9 @@ function extractTag(toHeader) {
 }
 
 // ─── Singleton ───
-const sipClient = new SipClick2Call();
+const sipClient = new SipRDGPhone();
 
-async function initSipClick2Call() {
+async function initSipRDGPhone() {
   try {
     await sipClient.init();
   } catch (e) {
@@ -688,4 +688,4 @@ async function initSipClick2Call() {
   }
 }
 
-module.exports = { sipClient, initSipClick2Call };
+module.exports = { sipClient, initSipRDGPhone };

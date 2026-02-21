@@ -1,11 +1,11 @@
 // ~3KB lightweight bootstrap — loads the full widget async
 (function () {
-  const cfg = (window as any).RedegalChatbot || {};
+  const cfg = (window as any).RdgBot || {};
   const baseUrl = cfg.baseUrl || '';
 
   // Create Shadow DOM container
   const host = document.createElement('div');
-  host.id = 'redegal-chatbot-host';
+  host.id = 'rdgbot-host';
   host.style.cssText = 'position:fixed;bottom:0;right:0;z-index:2147483647;';
   document.body.appendChild(host);
 
@@ -19,14 +19,14 @@
 
   // Mount point
   const mount = document.createElement('div');
-  mount.id = 'redegal-chatbot-root';
+  mount.id = 'rdgbot-root';
   shadow.appendChild(mount);
 
   // Load widget JS
   const script = document.createElement('script');
   script.src = `${baseUrl}/widget.js`;
   script.onload = () => {
-    const init = (window as any).__redegalWidgetInit;
+    const init = (window as any).__rdgbotInit;
     if (init) init(mount, cfg);
   };
   document.head.appendChild(script);

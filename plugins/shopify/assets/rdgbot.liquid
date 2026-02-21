@@ -1,0 +1,30 @@
+{% comment %}
+  RDGBot - Shopify Theme Snippet
+
+  Usage: Add to theme.liquid before </body>:
+    {% render 'rdgbot' %}
+
+  Configure in Shopify Admin > Theme > Customize > Theme settings
+{% endcomment %}
+
+{% if settings.rdgbot_enabled %}
+<script>
+  window.RdgBot = {
+    baseUrl: '{{ settings.rdgbot_server_url | append: "/widget" }}',
+    apiUrl: '{{ settings.rdgbot_server_url | replace: "https://", "wss://" | replace: "http://", "ws://" | append: "/ws/chat" }}',
+    configUrl: '{{ settings.rdgbot_server_url | append: "/api/config/widget" }}',
+    language: '{{ settings.rdgbot_language | default: "auto" }}',
+    primaryColor: '{{ settings.rdgbot_primary_color | default: "#007fff" }}',
+    theme: {
+      branding: {
+        companyName: '{{ shop.name }}',
+        logoUrl: '{{ settings.rdgbot_logo | image_url: width: 200 }}'
+      },
+      layout: {
+        position: '{{ settings.rdgbot_position | default: "bottom-right" }}'
+      }
+    }
+  };
+</script>
+<script src="{{ settings.rdgbot_server_url | append: '/widget/loader.js' }}" async></script>
+{% endif %}

@@ -1,5 +1,5 @@
 /**
- * Asterisk AMI Client — Click2Call via callback
+ * Asterisk AMI Client — RDGPhone via callback
  *
  * Flow:
  *   1. Visitor enters phone number in widget
@@ -32,7 +32,7 @@ class AsteriskAMI extends EventEmitter {
     const password = cfg['ami.password'];
 
     if (!host || !password) {
-      logger.warn('AMI: ami.host or ami.password not configured — Click2Call disabled');
+      logger.warn('AMI: ami.host or ami.password not configured — RDGPhone disabled');
       return;
     }
 
@@ -157,7 +157,7 @@ class AsteriskAMI extends EventEmitter {
   }
 
   /**
-   * Click2Call: Originate a callback call
+   * RDGPhone: Originate a callback call
    *
    * @param {string} visitorPhone - Visitor's phone number (E.164 or national)
    * @param {object} options
@@ -178,10 +178,10 @@ class AsteriskAMI extends EventEmitter {
       throw new Error('Invalid phone number');
     }
 
-    const c2cCfg = await settings.getMany(['click2call.extension', 'click2call.context', 'click2call.trunk']);
-    const targetExtension = extension || c2cCfg['click2call.extension'] || '100';
-    const dialContext = context || c2cCfg['click2call.context'] || 'from-internal';
-    const trunk = c2cCfg['click2call.trunk'] || 'PJSIP/trunk';
+    const c2cCfg = await settings.getMany(['rdgphone.extension', 'rdgphone.context', 'rdgphone.trunk']);
+    const targetExtension = extension || c2cCfg['rdgphone.extension'] || '100';
+    const dialContext = context || c2cCfg['rdgphone.context'] || 'from-internal';
+    const trunk = c2cCfg['rdgphone.trunk'] || 'PJSIP/trunk';
     const callerIdName = visitorName
       ? `Lead Web - ${visitorName}`
       : businessLine
@@ -235,7 +235,7 @@ async function initAMI() {
       }
     });
   } else {
-    logger.warn('AMI: Not configured — set ami.host and ami.password via Setup or .env to enable Click2Call');
+    logger.warn('AMI: Not configured — set ami.host and ami.password via Setup or .env to enable RDGPhone');
   }
 }
 

@@ -4,7 +4,7 @@ const { logger } = require('./logger');
 const pool = new Pool({
   host: process.env.POSTGRES_HOST || 'postgres',
   port: parseInt(process.env.POSTGRES_PORT || '5432'),
-  database: process.env.POSTGRES_DB || 'redegal_chatbot',
+  database: process.env.POSTGRES_DB || 'rdgbot',
   user: process.env.POSTGRES_USER || 'redegal',
   password: process.env.POSTGRES_PASSWORD,
   max: 20,

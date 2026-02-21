@@ -1,40 +1,40 @@
 [
   {
-    "name": "Redegal Chatbot",
+    "name": "RDGBot",
     "settings": [
       {
         "type": "checkbox",
-        "id": "redegal_chatbot_enabled",
+        "id": "rdgbot_enabled",
         "label": "Enable Chatbot Widget",
         "default": false
       },
       {
         "type": "text",
-        "id": "redegal_chatbot_server_url",
+        "id": "rdgbot_server_url",
         "label": "Chatbot Server URL",
         "default": "https://chatbot.redegal.com",
-        "info": "URL of your Redegal Chatbot server"
+        "info": "URL of your RDGBot server"
       },
       {
         "type": "text",
-        "id": "redegal_chatbot_api_key",
+        "id": "rdgbot_api_key",
         "label": "API Key",
         "info": "Your widget API key"
       },
       {
         "type": "color",
-        "id": "redegal_chatbot_primary_color",
+        "id": "rdgbot_primary_color",
         "label": "Primary Color",
         "default": "#007fff"
       },
       {
         "type": "image_picker",
-        "id": "redegal_chatbot_logo",
+        "id": "rdgbot_logo",
         "label": "Chat Logo"
       },
       {
         "type": "select",
-        "id": "redegal_chatbot_language",
+        "id": "rdgbot_language",
         "label": "Default Language",
         "default": "auto",
         "options": [
@@ -47,7 +47,7 @@
       },
       {
         "type": "select",
-        "id": "redegal_chatbot_position",
+        "id": "rdgbot_position",
         "label": "Widget Position",
         "default": "bottom-right",
         "options": [

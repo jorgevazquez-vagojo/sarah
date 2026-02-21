@@ -3402,14 +3402,14 @@ img {
    25. WEBPHONE
    ========================================================================== */
 
-.webphone-widget {
+.rdgphone-widget {
   position: fixed;
   bottom: calc(var(--space-xl) + 56px + var(--space-md));
   right: var(--space-xl);
   z-index: var(--z-overlay);
 }
 
-.webphone-trigger {
+.rdgphone-trigger {
   width: 48px;
   height: 48px;
   border-radius: 50%;
@@ -3425,12 +3425,12 @@ img {
     box-shadow var(--duration-normal) var(--ease-out-expo);
 }
 
-.webphone-trigger:hover {
+.rdgphone-trigger:hover {
   transform: scale(1.08);
   box-shadow: 0 6px 24px rgba(var(--r-accent-rgb), 0.4);
 }
 
-.webphone-trigger svg {
+.rdgphone-trigger svg {
   width: 20px;
   height: 20px;
 }
@@ -4053,7 +4053,7 @@ body.loaded .reveal {
   .cursor,
   .reading-progress,
   .chatbot-widget,
-  .webphone-widget,
+  .rdgphone-widget,
   .cookie-consent,
   .search-overlay,
   .scroll-indicator,

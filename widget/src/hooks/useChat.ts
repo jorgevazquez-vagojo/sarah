@@ -152,7 +152,7 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
       setShowLeadForm(true);
     });
 
-    // Click2Call: callback flow responses
+    // RDGPhone: callback flow responses
     ws.on('show_phone_form', () => {
       setShowPhoneForm(true);
     });

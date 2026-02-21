@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
--- Redegal Chatbot + WebPhone — Premium Schema
+-- RDGBot + RDGPhone — Premium Schema
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

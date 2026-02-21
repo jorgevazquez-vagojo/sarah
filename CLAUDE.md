@@ -4,10 +4,10 @@
 - Git remotes: `origin` (GitHub jorgevazquez-vagojo) y `gitlab` (git.redegal.net jorge.vazquez)
 - **Auto-guardado**: al acercarse al limite de contexto, guardar estado en `~/.claude/projects/-Users-jorgevazquez/memory/session-state.md` (ver `~/.claude/CLAUDE.md` para formato completo)
 
-# Redegal Chatbot + WebPhone Widget
+# RDGBot + RDGPhone Widget
 
 ## Project Overview
-Widget embebible para web corporativa Redegal: chatbot IA + webphone VoIP + dashboard agentes.
+Widget embebible para web corporativa Redegal: chatbot IA + rdgphone VoIP + dashboard agentes.
 Multi-tenant, 4 idiomas (es/en/pt/gl), 4 lineas de negocio, parametrizable al completo.
 
 ## Architecture

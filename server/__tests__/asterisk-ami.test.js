@@ -210,9 +210,9 @@ describe('AsteriskAMI', () => {
 
       const settings = require('../services/settings');
       settings.getMany.mockResolvedValue({
-        'click2call.extension': '100',
-        'click2call.context': 'from-internal',
-        'click2call.trunk': 'PJSIP/vozelia',
+        'rdgphone.extension': '100',
+        'rdgphone.context': 'from-internal',
+        'rdgphone.trunk': 'PJSIP/vozelia',
       });
 
       const originatePromise = ami.originate({

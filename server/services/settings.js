@@ -22,13 +22,13 @@ const DEFAULTS = {
   'smtp.from': 'chatbot@redegal.com',
   'notification.email': '',
 
-  // SIP / Click2Call (Vozelia Cloud PBX)
+  // SIP / RDGPhone (Vozelia Cloud PBX)
   'sip.domain': '',
   'sip.port': '5060',
   'sip.extension': '',
   'sip.password': '',
-  'click2call.extensions': '',
-  'click2call.callerid_name': 'Lead Web',
+  'rdgphone.extensions': '',
+  'rdgphone.callerid_name': 'Lead Web',
 
   // AI
   'ai.provider': 'gemini',
@@ -61,8 +61,8 @@ const ENV_MAP = {
   'sip.port': 'SIP_PORT',
   'sip.extension': 'SIP_EXTENSION',
   'sip.password': 'SIP_PASSWORD',
-  'click2call.extensions': 'CLICK2CALL_EXTENSIONS',
-  'click2call.callerid_name': 'CLICK2CALL_CALLERID_NAME',
+  'rdgphone.extensions': 'CLICK2CALL_EXTENSIONS',
+  'rdgphone.callerid_name': 'CLICK2CALL_CALLERID_NAME',
   'ai.provider': 'AI_PROVIDER',
   'hours.timezone': 'TIMEZONE',
   'hours.start': 'BUSINESS_HOURS_START',
