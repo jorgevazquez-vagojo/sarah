@@ -1,6 +1,7 @@
 services:
   postgres:
     image: pgvector/pgvector:pg16
+    restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-rdgbot}
       POSTGRES_USER: ${POSTGRES_USER:-redegal}
@@ -17,6 +18,7 @@ services:
 
   redis:
     image: redis:7-alpine
+    restart: unless-stopped
     command: redis-server --requirepass ${REDIS_PASSWORD:?Set REDIS_PASSWORD} --appendonly yes
     ports:
       - "127.0.0.1:6379:6379"
@@ -49,9 +51,9 @@ services:
   janus:
     image: canyan/janus-gateway:latest
     ports:
-      - "8088:8088"                    # REST API (server → janus)
-      - "8188:8188"                    # WebSocket (widget → janus)
-      - "7088:7088"                    # Admin API
+      - "127.0.0.1:8088:8088"          # REST API (server → janus, internal only)
+      - "8188:8188"                    # WebSocket (widget → janus via nginx)
+      - "127.0.0.1:7088:7088"         # Admin API (internal only)
       - "10000-10200:10000-10200/udp"  # RTP media
     volumes:
       - ./janus/janus.jcfg:/etc/janus/janus.jcfg:ro

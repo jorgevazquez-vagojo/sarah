@@ -16,3 +16,29 @@ dist/
 
 # --- Keep example/template only ---
 !.env.example
+
+# --- Binary/media files (use external storage) ---
+*.mp4
+*.mp3
+*.wav
+*.webm
+*.mkv
+*.mov
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+*.ico
+
+# --- Demo build artifacts ---
+demo/tmp-walkthrough/
+demo/video-build/
+
+# --- Test files with credentials ---
+test-sip.js
+test-call-*.js
+
+# --- Preview images ---
+preview-*.jpg
+preview-*.png

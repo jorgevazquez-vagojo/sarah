@@ -15,10 +15,10 @@ admin: {
   admin_base_path = "/admin"
   admin_http = true
   admin_port = 7088
-  admin_ip = "0.0.0.0"
+  admin_ip = "127.0.0.1"
   admin_https = false
 }
 
 cors: {
-  allow_origin = "*"
+  allow_origin = "https://redegal.com,https://www.redegal.com"
 }

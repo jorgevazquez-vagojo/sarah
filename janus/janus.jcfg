@@ -6,8 +6,8 @@ general: {
   plugins_folder = "/usr/lib/janus/plugins"
   transports_folder = "/usr/lib/janus/transports"
   log_to_stdout = true
-  debug_level = 4
-  admin_secret = "janus-admin-secret"
+  debug_level = 3
+  admin_secret = "rdg-janus-Xp4Km7Nq2Rs9Tw6Vy3Bz8Fd0Hj1Lk5"
   server_name = "Redegal Janus Gateway"
   session_timeout = 60
   candidates_timeout = 45

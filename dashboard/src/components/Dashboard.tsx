@@ -95,6 +95,18 @@ export function Dashboard({ token, agent, onLogout }: Props) {
   const callTimerRef = useRef<number | null>(null);
   const remoteAudioRef = useRef<HTMLAudioElement | null>(null);
 
+  // Refs to hold latest values for stable WS handler (avoids stale closures)
+  const activeConvRef = useRef(activeConv);
+  const tabRef = useRef(tab);
+  const incomingCallRef = useRef(incomingCall);
+  const activeCallRef = useRef(activeCall);
+
+  // Keep refs in sync with state
+  useEffect(() => { activeConvRef.current = activeConv; }, [activeConv]);
+  useEffect(() => { tabRef.current = tab; }, [tab]);
+  useEffect(() => { incomingCallRef.current = incomingCall; }, [incomingCall]);
+  useEffect(() => { activeCallRef.current = activeCall; }, [activeCall]);
+
   // Dark mode
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
@@ -148,7 +160,7 @@ export function Dashboard({ token, agent, onLogout }: Props) {
               businessLine: msg.businessLine,
               createdAt: new Date().toISOString(),
             }]);
-            if (tab !== 'queue') setUnreadCount((c) => c + 1);
+            if (tabRef.current !== 'queue') setUnreadCount((c) => c + 1);
             break;
           case 'queue_remove':
             setQueue((prev) => prev.filter((q) => q.conversationId !== msg.conversationId));
@@ -169,7 +181,7 @@ export function Dashboard({ token, agent, onLogout }: Props) {
             }]);
             break;
           case 'visitor_message':
-            if (msg.conversationId === activeConv) {
+            if (msg.conversationId === activeConvRef.current) {
               setMessages((prev) => [...prev, {
                 sender: 'visitor',
                 content: msg.content,
@@ -197,7 +209,7 @@ export function Dashboard({ token, agent, onLogout }: Props) {
             break;
           case 'call_taken':
             // Another agent took the call
-            if (incomingCall?.callId === msg.callId) setIncomingCall(null);
+            if (incomingCallRef.current?.callId === msg.callId) setIncomingCall(null);
             break;
         }
       };
@@ -213,25 +225,6 @@ export function Dashboard({ token, agent, onLogout }: Props) {
       wsRef.current?.close();
     };
   }, [token]);
-
-  // Update activeConv ref for WS messages
-  useEffect(() => {
-    const ref = wsRef.current;
-    if (!ref) return;
-    const origHandler = ref.onmessage;
-    ref.onmessage = (event) => {
-      const msg = JSON.parse(event.data);
-      if (msg.type === 'visitor_message' && msg.conversationId === activeConv) {
-        setMessages((prev) => [...prev, {
-          sender: 'visitor',
-          content: msg.content,
-          timestamp: msg.timestamp,
-        }]);
-      } else if (origHandler) {
-        origHandler.call(ref, event);
-      }
-    };
-  }, [activeConv]);
 
   const handleAccept = (conversationId: string) => {
     sendWS('accept_conversation', { conversationId });
@@ -399,7 +392,7 @@ export function Dashboard({ token, agent, onLogout }: Props) {
     };
 
     ws.onclose = () => {
-      if (activeCall) cleanupCall();
+      if (activeCallRef.current) cleanupCall();
     };
   }
 
