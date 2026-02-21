@@ -173,6 +173,8 @@ async function handleMessage(ws, visitorId, msg) {
     case 'offline_form': return handleOfflineForm(ws, visitorId, msg);
     case 'escalate': return handleEscalate(ws, visitorId);
     case 'request_call': return handleRequestCall(ws, visitorId, msg);
+    case 'request_webrtc_call': return handleRequestWebRTCCall(ws, visitorId, msg);
+    case 'webrtc_hangup': return handleWebRTCHangup(ws, visitorId, msg);
     case 'csat': return handleCsat(ws, visitorId, msg);
     case 'page_context': return handlePageContext(ws, visitorId, msg);
     case 'search_kb': return handleSearchKB(ws, visitorId, msg);
@@ -339,7 +341,7 @@ async function handleChat(ws, visitorId, msg) {
   const { response, detectedLine } = await generateResponse({
     message: msg.content,
     language,
-    businessLine: conv.business_line || detectedLine,
+    businessLine: conv.business_line || null,
     conversationHistory: history,
   });
 
@@ -605,6 +607,110 @@ async function handleRequestCall(ws, visitorId, msg) {
 
   // Email BU contacts about call request
   notifyCallRequest(conv.id, phone, conv.business_line).catch((e) => logger.warn('Call notification email error:', e.message));
+}
+
+// ─── WebRTC Call via Janus Gateway (browser-based call, no phone needed) ───
+async function handleRequestWebRTCCall(ws, visitorId, _msg) {
+  const conv = await db.getActiveConversation(visitorId);
+  if (!conv) return;
+
+  const session = (await sessionStore.get(visitorId)) || {};
+  const lang = session.language || 'es';
+
+  // VoIP only during business hours
+  if (!isBusinessHours()) {
+    send(ws, 'message', {
+      sender: 'system',
+      content: t(lang, 'offline_message', {
+        start: process.env.BUSINESS_HOURS_START || '9',
+        end: process.env.BUSINESS_HOURS_END || '19',
+      }),
+      timestamp: new Date().toISOString(),
+    });
+    send(ws, 'show_offline_form', {});
+    return;
+  }
+
+  const callId = uuid();
+
+  // Save call record with webrtc mode
+  try {
+    await db.query(
+      `INSERT INTO calls (call_id, conversation_id, visitor_id, business_line, status, metadata, created_at)
+       VALUES ($1, $2, $3, $4, 'setup', $5, NOW())`,
+      [callId, conv.id, visitorId, conv.business_line, JSON.stringify({ mode: 'webrtc' })]
+    );
+  } catch (e) {
+    logger.warn('Failed to create webrtc call record:', e.message);
+  }
+
+  // Determine target extension based on business line
+  const extensions = (process.env.CLICK2CALL_EXTENSIONS || '107').split(',');
+  const targetExt = extensions[0]; // Primary agent extension
+
+  // Send Janus connection details to widget
+  const janusWsUrl = process.env.JANUS_PUBLIC_WS || `ws://${process.env.SERVER_PUBLIC_IP || 'localhost'}:8188`;
+  const sipProxy = process.env.SIP_DOMAIN || 'cloudpbx1584.vozelia.com';
+  const sipUser = process.env.SIP_EXTENSION || '108';
+  const sipPassword = process.env.SIP_PASSWORD || '';
+  const targetUri = `sip:${targetExt}@${sipProxy}`;
+
+  send(ws, 'webrtc_ready', {
+    callId,
+    janusWsUrl,
+    sipProxy,
+    sipUser,
+    sipPassword,
+    targetUri,
+    iceServers: [
+      { urls: 'stun:stun.l.google.com:19302' },
+      { urls: 'stun:stun1.l.google.com:19302' },
+    ],
+  });
+
+  // Notify agents via Redis
+  await redis.publish('call:incoming', {
+    callId,
+    conversationId: conv.id,
+    visitorId,
+    language: lang,
+    businessLine: conv.business_line,
+    mode: 'webrtc',
+    targetExtension: targetExt,
+  });
+
+  // Log recording start
+  const { logCallStart } = require('../services/call-recording');
+  logCallStart({
+    callId,
+    conversationId: conv.id,
+    visitorPhone: 'webrtc',
+    agentExtension: targetExt,
+    businessLine: conv.business_line,
+  }).catch(() => {});
+
+  triggerWebhooks('call.started', { callId, conversationId: conv.id, visitorId, mode: 'webrtc', businessLine: conv.business_line }).catch(() => {});
+  db.trackEvent({ eventType: 'webrtc_call_requested', conversationId: conv.id, visitorId, data: { callId } }).catch(() => {});
+
+  logger.info(`WebRTC call initiated: callId=${callId}, visitor=${visitorId}, target=${targetUri}`);
+}
+
+// ─── WebRTC Hangup: visitor or agent ends the Janus-based call ───
+async function handleWebRTCHangup(ws, visitorId, msg) {
+  const callId = msg.callId;
+  if (!callId) return;
+
+  const { logCallEnd } = require('../services/call-recording');
+  const duration = typeof msg.duration === 'number' ? msg.duration : 0;
+
+  // Update call status
+  await db.query(`UPDATE calls SET status = 'ended' WHERE call_id = $1`, [callId]).catch(() => {});
+  await logCallEnd({ callId, duration, status: 'ended' }).catch(() => {});
+
+  triggerWebhooks('call.ended', { callId, visitorId, duration, mode: 'webrtc' }).catch(() => {});
+  db.trackEvent({ eventType: 'webrtc_call_ended', visitorId, data: { callId, duration } }).catch(() => {});
+
+  logger.info(`WebRTC call ended: callId=${callId}, duration=${duration}s`);
 }
 
 async function handleCsat(ws, visitorId, msg) {

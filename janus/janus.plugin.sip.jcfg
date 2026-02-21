@@ -1,0 +1,18 @@
+# Janus SIP Plugin Configuration
+# Bridges WebRTC audio to Vozelia Cloud PBX via SIP/UDP
+
+general: {
+  # Local IP for SIP — set to server public IP at deploy time
+  # Overridden by JANUS_SIP_LOCAL_IP env var
+  # local_ip = "37.27.92.122"
+  # sdp_ip = "37.27.92.122"
+
+  # SIP/UDP only (Vozelia doesn't support TLS)
+  local_media_ip = "0.0.0.0"
+  rtp_port_range = "10000-10200"
+  user_agent = "Redegal WebPhone/1.0"
+
+  # Registration keepalive
+  register_ttl = 3600
+  behind_nat = true
+}

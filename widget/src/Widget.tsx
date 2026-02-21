@@ -214,6 +214,24 @@ export function Widget(props: WidgetConfig) {
     }
   }, [chat.showPhoneForm]);
 
+  // WebRTC via Janus: when server sends webrtc_ready, start the call
+  useEffect(() => {
+    if (chat.webrtcConfig) {
+      const cfg = chat.webrtcConfig;
+      setView('call');
+      sip.startCall({
+        janusWsUrl: cfg.janusWsUrl,
+        sipProxy: cfg.sipProxy,
+        sipUser: cfg.sipUser,
+        sipPassword: cfg.sipPassword,
+        targetUri: cfg.targetUri,
+        callId: cfg.callId,
+        iceServers: cfg.iceServers,
+      });
+      chat.clearWebrtcConfig();
+    }
+  }, [chat.webrtcConfig]);
+
   const handleToggle = () => {
     if (isOpen) {
       setIsClosing(true);
@@ -415,7 +433,7 @@ export function Widget(props: WidgetConfig) {
               <WelcomeView theme={theme} t={t} darkMode={darkMode}
                 onStartChat={() => setView('chat')}
                 onSelectLine={(l) => { chat.setBusinessLine(l); setView('chat'); }}
-                onOpenHelp={() => setView('help')} />
+                />
             ) : view === 'offline_form' ? (
               <OfflineFormView theme={theme} t={t}
                 onSubmit={(data) => { chat.submitOfflineForm({ ...data, language: chat.language }); }} />
@@ -425,19 +443,21 @@ export function Widget(props: WidgetConfig) {
             ) : view === 'call' ? (
               <CallView theme={theme} t={t} callStatus={chat.callStatus}
                 onRequestCall={(phone) => chat.requestCall(phone)}
+                onRequestWebRTCCall={() => chat.requestWebRTCCall()}
                 onBack={() => { chat.resetCallStatus(); sip.hangup(); setView('chat'); }}
                 sipState={sip.callState}
                 isMuted={sip.isMuted}
                 onToggleMute={sip.toggleMute}
-                onHangup={sip.hangup}
+                onHangup={() => {
+                  // Notify server of hangup for recording
+                  if (chat.callStatus.callId) {
+                    chat.sendWebRTCHangup(chat.callStatus.callId);
+                  }
+                  sip.hangup();
+                }}
                 qualityMetrics={callQuality.metrics}
                 qualitySignal={callQuality.signal}
                 qualityWarnings={callQuality.warnings} />
-            ) : view === 'help' ? (
-              <HelpCenterView theme={theme} t={t}
-                kbResults={chat.kbResults} onSearch={chat.searchKB}
-                onBack={() => setView(chat.messages.length > 0 ? 'chat' : 'welcome')}
-                onStartChat={(q) => { chat.sendMessage(q); setView('chat'); }} />
             ) : view === 'lead_form' ? (
               <LeadFormView theme={theme} t={t}
                 onSubmit={(data) => { chat.submitLead(data); chat.clearLeadForm(); setView('chat'); }}
@@ -452,7 +472,6 @@ export function Widget(props: WidgetConfig) {
                 onQuickReply={chat.sendQuickReply}
                 onUpload={(f) => chat.uploadFile(f, props.baseUrl?.replace('/widget', '') || '')}
                 onLeadForm={() => setView('lead_form')}
-                onHelp={() => setView('help')}
               />
             )}
           </div>
@@ -494,9 +513,9 @@ function HeaderBtn({ onClick, children, color }: { onClick: () => void; children
 // ──────────────────────────────────────────────────────────
 // WELCOME VIEW (Intercom-style home screen)
 // ──────────────────────────────────────────────────────────
-function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine, onOpenHelp }: {
+function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine }: {
   theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string; darkMode: boolean;
-  onStartChat: () => void; onSelectLine: (l: string) => void; onOpenHelp: () => void;
+  onStartChat: () => void; onSelectLine: (l: string) => void;
 }) {
   return (
     <div className="rc-slide-up" style={{ padding: '28px 20px 20px', overflowY: 'auto' }}>
@@ -547,19 +566,6 @@ function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine, onOpenHelp
         {t('greeting').split('!')[0] || t('new_conversation')}
         <span style={{ display: 'flex' }}>{I.arrowRight}</span>
       </button>
-      <button onClick={onOpenHelp} style={{
-        width: '100%', marginTop: 10, padding: '11px 20px',
-        background: 'var(--rc-surface)', border: '1.5px solid var(--rc-border)',
-        borderRadius: 'var(--rc-radius-pill)', cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-        color: 'var(--rc-text-secondary)', fontWeight: 600, fontSize: 13,
-        transition: 'all 0.2s',
-      }}
-        onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--rc-primary)'; e.currentTarget.style.color = 'var(--rc-primary)'; }}
-        onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--rc-border)'; e.currentTarget.style.color = 'var(--rc-text-secondary)'; }}
-      >
-        {I.book} {t('help_center')}
-      </button>
     </div>
   );
 }
@@ -567,10 +573,10 @@ function WelcomeView({ theme, t, darkMode, onStartChat, onSelectLine, onOpenHelp
 // ──────────────────────────────────────────────────────────
 // CHAT VIEW
 // ──────────────────────────────────────────────────────────
-function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, onCsat, isBusinessHours, onQuickReply, onUpload, onLeadForm, onHelp }: {
+function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, onCsat, isBusinessHours, onQuickReply, onUpload, onLeadForm }: {
   theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string; messages: ChatMessage[]; isTyping: boolean;
   onSend: (m: string) => void; onEscalate: () => void; onCall: () => void; onCsat: () => void; isBusinessHours: boolean;
-  onQuickReply?: (v: string) => void; onUpload?: (f: File) => Promise<any>; onLeadForm?: () => void; onHelp?: () => void;
+  onQuickReply?: (v: string) => void; onUpload?: (f: File) => Promise<any>; onLeadForm?: () => void;
 }) {
   const { features } = theme;
   const [input, setInput] = useState('');
@@ -665,11 +671,6 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
         {isBusinessHours && features.enableVoip && (
           <button className="rc-btn-ghost" onClick={onCall}>
             {I.phone} {t('call')}
-          </button>
-        )}
-        {onHelp && (
-          <button className="rc-btn-ghost" onClick={onHelp}>
-            {I.book} {t('help_center') || 'Ayuda'}
           </button>
         )}
         {features.enableCsat && messages.length > 2 && (
@@ -819,129 +820,6 @@ function RichContentBlock({ content, theme, onQuickReply }: {
   }
 
   return null;
-}
-
-// ──────────────────────────────────────────────────────────
-// HELP CENTER VIEW (in-widget KB search)
-// ──────────────────────────────────────────────────────────
-function HelpCenterView({ theme, t, kbResults, onSearch, onBack, onStartChat }: {
-  theme: ThemeConfig; t: (k: string, vars?: Record<string, string>) => string;
-  kbResults: { id: number; title: string; content: string; category?: string; businessLine?: string }[];
-  onSearch: (q: string) => void; onBack: () => void; onStartChat: (q: string) => void;
-}) {
-  const [query, setQuery] = useState('');
-  const [expanded, setExpanded] = useState<number | null>(null);
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (query.trim().length >= 2) onSearch(query.trim());
-  };
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
-      {/* Header */}
-      <div style={{ padding: '16px 18px', borderBottom: '1px solid var(--rc-border)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-          <button onClick={onBack} style={{
-            background: 'none', border: 'none', cursor: 'pointer', padding: 4,
-            color: 'var(--rc-text-secondary)', display: 'flex',
-          }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="15 18 9 12 15 6"/>
-            </svg>
-          </button>
-          <h4 style={{ fontSize: 16, fontWeight: 700, color: 'var(--rc-text)', margin: 0 }}>
-            {t('help_center')}
-          </h4>
-        </div>
-        <form onSubmit={handleSearch} style={{ display: 'flex', gap: 8 }}>
-          <input
-            type="text" value={query} onChange={e => setQuery(e.target.value)}
-            placeholder={t('search_placeholder') || 'Buscar en la base de conocimiento...'}
-            className="rc-input-focus"
-            style={{
-              flex: 1, padding: '10px 16px', border: '1.5px solid var(--rc-border)',
-              borderRadius: 'var(--rc-radius-pill)', fontSize: 13, outline: 'none',
-              background: 'var(--rc-surface)', color: 'var(--rc-text)',
-            }}
-          />
-          <button type="submit" disabled={query.trim().length < 2} style={{
-            width: 38, height: 38, borderRadius: 19, border: 'none',
-            background: query.trim().length >= 2 ? 'var(--rc-primary)' : 'var(--rc-surface)',
-            color: query.trim().length >= 2 ? 'white' : 'var(--rc-text-tertiary)',
-            cursor: query.trim().length >= 2 ? 'pointer' : 'default',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-          }}>
-            {I.search}
-          </button>
-        </form>
-      </div>
-
-      {/* Results */}
-      <div className="rc-scrollbar" style={{ flex: 1, overflowY: 'auto', padding: '12px 16px' }}>
-        {kbResults.length === 0 && query.length > 0 && (
-          <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--rc-text-secondary)' }}>
-            <p style={{ fontSize: 13, marginBottom: 16 }}>{t('no_results') || 'No se encontraron resultados'}</p>
-            <button onClick={() => onStartChat(query)} className="rc-btn-primary" style={{ padding: '9px 20px', fontSize: 13 }}>
-              💬 {t('ask_agent') || 'Preguntar al asistente'}
-            </button>
-          </div>
-        )}
-        {kbResults.length === 0 && query.length === 0 && (
-          <div style={{ textAlign: 'center', padding: '32px 16px', color: 'var(--rc-text-secondary)' }}>
-            <div style={{ fontSize: 36, marginBottom: 12 }}>📚</div>
-            <p style={{ fontSize: 13, lineHeight: 1.5 }}>{t('help_center_intro')}</p>
-          </div>
-        )}
-        {kbResults.map((r) => (
-          <div key={r.id} style={{
-            marginBottom: 8, border: '1px solid var(--rc-border)',
-            borderRadius: 10, overflow: 'hidden', background: 'var(--rc-bg)',
-          }}>
-            <button onClick={() => setExpanded(expanded === r.id ? null : r.id)} style={{
-              width: '100%', padding: '12px 14px', border: 'none',
-              background: 'transparent', cursor: 'pointer', textAlign: 'left',
-              display: 'flex', alignItems: 'center', gap: 8,
-            }}>
-              <span style={{
-                fontSize: 10, padding: '2px 8px', borderRadius: 4,
-                background: 'var(--rc-primary-light)', color: 'var(--rc-primary)',
-                fontWeight: 600, flexShrink: 0,
-              }}>
-                {r.category || r.businessLine || 'General'}
-              </span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--rc-text)', flex: 1 }}>
-                {r.title}
-              </span>
-              <span style={{
-                transition: 'transform 0.2s', display: 'flex',
-                transform: expanded === r.id ? 'rotate(180deg)' : 'rotate(0deg)',
-                color: 'var(--rc-text-tertiary)',
-              }}>
-                {I.minimize}
-              </span>
-            </button>
-            {expanded === r.id && (
-              <div className="rc-fade-in" style={{
-                padding: '0 14px 12px', fontSize: 12, color: 'var(--rc-text-secondary)',
-                lineHeight: 1.6, borderTop: '1px solid var(--rc-border-subtle)',
-                paddingTop: 10,
-              }}>
-                {r.content}
-                <button onClick={() => onStartChat(r.title)} style={{
-                  display: 'block', marginTop: 10, fontSize: 12, fontWeight: 600,
-                  color: 'var(--rc-primary)', background: 'none', border: 'none',
-                  cursor: 'pointer', padding: 0,
-                }}>
-                  💬 {t('ask_more')}
-                </button>
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
-  );
 }
 
 // ──────────────────────────────────────────────────────────
@@ -1475,11 +1353,12 @@ type CallViewState = 'idle' | 'preflight' | 'calling' | 'ringing' | 'queued' | '
 // CALL VIEW — Premium 9-state visual experience
 // Inspired by 3CX, iOS Phone, Ramotion concepts
 // ──────────────────────────────────────────────────────────
-function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMuted, onToggleMute, onHangup, qualityMetrics, qualitySignal, qualityWarnings, queuePosition, estimatedWait, onHold, callEnded, callDuration, onSubmitCsat, onRetry }: {
+function CallView({ theme, t, callStatus, onRequestCall, onRequestWebRTCCall, onBack, sipState, isMuted, onToggleMute, onHangup, qualityMetrics, qualitySignal, qualityWarnings, queuePosition, estimatedWait, onHold, callEnded, callDuration, onSubmitCsat, onRetry }: {
   theme: ThemeConfig;
   t: (k: string, vars?: Record<string, string>) => string;
   callStatus: { callId?: string; status: string; message?: string };
   onRequestCall: (phone: string) => void;
+  onRequestWebRTCCall?: () => void;
   onBack: () => void;
   sipState?: string;
   isMuted?: boolean;
@@ -2013,8 +1892,80 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
     }
   };
 
-  // ─── IDLE STATE: Phone callback form (original flow) ───
+  const [callMode, setCallMode] = useState<'choose' | 'callback'>('choose');
+
+  // ─── IDLE STATE: Choose call mode (WebRTC browser or callback) ───
   if (state === 'idle') {
+    // Mode selection screen
+    if (callMode === 'choose') {
+      return (
+        <div style={{
+          padding: '32px 28px', textAlign: 'center',
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+          animation: 'rc-state-enter 0.4s var(--rc-ease-out-expo) forwards',
+        }}>
+          {renderPhoneIcon()}
+
+          <div>
+            <p style={{ fontSize: 15, fontWeight: 700, color: 'var(--rc-text)', marginBottom: 4 }}>
+              {t('call_how_to_call')}
+            </p>
+            <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
+              {t('call_choose_mode')}
+            </p>
+          </div>
+
+          {/* Browser call button (WebRTC via Janus) */}
+          {onRequestWebRTCCall && (
+            <button onClick={onRequestWebRTCCall} style={{
+              width: '100%', padding: '14px 16px', borderRadius: 14, border: 'none',
+              background: `linear-gradient(135deg, ${theme.colors.gradientFrom}, ${theme.colors.gradientTo})`,
+              color: 'white', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+              boxShadow: '0 2px 10px rgba(0,127,255,0.25)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+              transition: 'all 0.25s',
+            }}
+              onMouseEnter={e => (e.currentTarget.style.transform = 'translateY(-1px)')}
+              onMouseLeave={e => (e.currentTarget.style.transform = 'translateY(0)')}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                <line x1="8" y1="21" x2="16" y2="21"/>
+                <line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+              {t('call_from_browser')}
+            </button>
+          )}
+
+          {/* Callback button */}
+          <button onClick={() => setCallMode('callback')} style={{
+            width: '100%', padding: '14px 16px', borderRadius: 14,
+            border: '1.5px solid var(--rc-border)', background: 'var(--rc-surface)',
+            color: 'var(--rc-text)', fontSize: 14, fontWeight: 600, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10,
+            transition: 'all 0.25s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'var(--rc-primary)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'var(--rc-border)')}
+          >
+            {I.phone}
+            {t('call_callback_me')}
+          </button>
+
+          <button onClick={onBack} style={{
+            fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
+            border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
+          >
+            {t('call_back_to_chat')}
+          </button>
+        </div>
+      );
+    }
+
+    // Callback phone form (existing flow)
     return (
       <div style={{
         padding: '32px 28px', textAlign: 'center',
@@ -2030,14 +1981,6 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
           <p style={{ fontSize: 12, color: 'var(--rc-text-tertiary)', lineHeight: 1.5 }}>
             {t('call_enter_phone')}
           </p>
-          <span style={{
-            display: 'inline-block', marginTop: 6, padding: '2px 10px', borderRadius: 20,
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.06em',
-            textTransform: 'uppercase' as const,
-            background: `linear-gradient(135deg, ${theme.colors.gradientFrom}22, ${theme.colors.gradientTo}22)`,
-            color: 'var(--rc-primary)', border: '1px solid var(--rc-primary)',
-            opacity: 0.7,
-          }}>{t('call_version_beta')}</span>
         </div>
 
         <form onSubmit={handleSubmit} style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: 12 }}>
@@ -2080,15 +2023,26 @@ function CallView({ theme, t, callStatus, onRequestCall, onBack, sipState, isMut
           </button>
         </form>
 
-        <button onClick={onBack} style={{
-          fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
-          border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
-        }}
-          onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
-          onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
-        >
-          {t('call_back_to_chat')}
-        </button>
+        <div style={{ display: 'flex', gap: 16 }}>
+          <button onClick={() => setCallMode('choose')} style={{
+            fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
+            border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
+          >
+            {t('call_back')}
+          </button>
+          <button onClick={onBack} style={{
+            fontSize: 12, color: 'var(--rc-text-tertiary)', background: 'none',
+            border: 'none', cursor: 'pointer', fontWeight: 500, transition: 'color 0.15s',
+          }}
+            onMouseEnter={e => (e.currentTarget.style.color = 'var(--rc-text-secondary)')}
+            onMouseLeave={e => (e.currentTarget.style.color = 'var(--rc-text-tertiary)')}
+          >
+            {t('call_back_to_chat')}
+          </button>
+        </div>
       </div>
     );
   }

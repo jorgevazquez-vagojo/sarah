@@ -46,6 +46,24 @@ services:
       - ./widget/dist:/app/public/widget:ro
       - ./dashboard/dist:/app/public/dashboard:ro
 
+  janus:
+    image: canyan/janus-gateway:latest
+    ports:
+      - "8088:8088"                    # REST API (server → janus)
+      - "8188:8188"                    # WebSocket (widget → janus)
+      - "7088:7088"                    # Admin API
+      - "10000-10200:10000-10200/udp"  # RTP media
+    volumes:
+      - ./janus/janus.jcfg:/etc/janus/janus.jcfg:ro
+      - ./janus/janus.transport.http.jcfg:/etc/janus/janus.transport.http.jcfg:ro
+      - ./janus/janus.transport.websockets.jcfg:/etc/janus/janus.transport.websockets.jcfg:ro
+      - ./janus/janus.plugin.sip.jcfg:/etc/janus/janus.plugin.sip.jcfg:ro
+      - ./janus/recordings:/tmp/janus-recordings
+    environment:
+      - JANUS_NAT_1_1_MAPPING=${SERVER_PUBLIC_IP:-}
+      - JANUS_SIP_LOCAL_IP=${SERVER_PUBLIC_IP:-}
+    restart: unless-stopped
+
 volumes:
   pgdata:
   redisdata:

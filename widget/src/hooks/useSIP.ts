@@ -1,5 +1,6 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { createSipClient, SipClient, SipConfig } from '../lib/sip-client';
+import { createJanusClient, JanusCallConfig } from '../lib/janus-client';
 import { AudioQualityMonitor } from '../lib/audio-quality';
 
 export type CallState = 'idle' | 'registering' | 'registered' | 'calling' | 'ringing' | 'active' | 'ended';
@@ -10,19 +11,23 @@ export function useSIP() {
   const [qualityMonitor, setQualityMonitor] = useState<AudioQualityMonitor | null>(null);
   const clientRef = useRef<SipClient | null>(null);
 
-  // Start a call with dynamic config (received from server via call_ready)
-  const startCall = useCallback(async (config: SipConfig) => {
+  // Start a call — auto-detects mode from config type
+  const startCall = useCallback(async (config: SipConfig | JanusCallConfig) => {
     // Destroy previous client if any
     if (clientRef.current) {
       clientRef.current.destroy();
       clientRef.current = null;
     }
 
-    const client = createSipClient(config);
+    // Detect mode: JanusCallConfig has janusWsUrl, SipConfig has wssUrl
+    const client = 'janusWsUrl' in config
+      ? createJanusClient(config as JanusCallConfig)
+      : createSipClient(config as SipConfig);
+
     clientRef.current = client;
     client.onStateChange((state) => setCallState(state as CallState));
 
-    // Expose the quality monitor from the SIP client
+    // Expose the quality monitor from the client
     setQualityMonitor(client.getQualityMonitor());
 
     try {

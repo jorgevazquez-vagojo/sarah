@@ -245,6 +245,66 @@ async function cleanupOldRecordings() {
   }
 }
 
+// ─── Janus recording import ───
+
+const JANUS_RECORDINGS_DIR = path.join(__dirname, '..', '..', 'janus', 'recordings');
+
+async function fetchJanusRecording(callId) {
+  ensureRecordingsDir();
+
+  // Janus saves recordings as .mjr files (Janus recording format)
+  // Look for files matching the callId pattern
+  const possibleFiles = [
+    path.join(JANUS_RECORDINGS_DIR, `${callId}-audio.mjr`),
+    path.join(JANUS_RECORDINGS_DIR, `${callId}.mjr`),
+    path.join(JANUS_RECORDINGS_DIR, `call-${callId}.mjr`),
+  ];
+
+  let sourceFile = null;
+  for (const f of possibleFiles) {
+    if (fs.existsSync(f)) {
+      sourceFile = f;
+      break;
+    }
+  }
+
+  // Also check for .wav files (post-processed by janus-pp-rec)
+  if (!sourceFile) {
+    const wavFiles = [
+      path.join(JANUS_RECORDINGS_DIR, `${callId}.wav`),
+      path.join(JANUS_RECORDINGS_DIR, `${callId}-audio.wav`),
+    ];
+    for (const f of wavFiles) {
+      if (fs.existsSync(f)) {
+        sourceFile = f;
+        break;
+      }
+    }
+  }
+
+  if (!sourceFile) {
+    logger.warn(`No Janus recording found for call ${callId}`);
+    return null;
+  }
+
+  // Copy to our recordings directory
+  const ext = path.extname(sourceFile);
+  const destPath = getRecordingPath(callId, ext.slice(1) || 'mjr');
+  fs.copyFileSync(sourceFile, destPath);
+
+  const stats = fs.statSync(destPath);
+  const url = `/api/calls/recordings/${path.basename(destPath)}`;
+
+  await db.query(
+    `UPDATE call_recordings SET recording_url = $2, recording_path = $3, file_size_bytes = $4
+     WHERE call_id = $1`,
+    [callId, url, destPath, stats.size]
+  );
+
+  logger.info(`Janus recording imported: ${destPath} (${(stats.size / 1024).toFixed(1)} KB)`);
+  return url;
+}
+
 // ─── Call stats ───
 
 async function getCallStats() {
@@ -296,6 +356,7 @@ module.exports = {
   logCallStart,
   logCallEnd,
   saveRecording,
+  fetchJanusRecording,
   transcribeCall,
   getCallRecordings,
   getCallDetail,

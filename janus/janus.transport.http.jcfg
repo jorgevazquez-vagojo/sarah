@@ -1,0 +1,24 @@
+# Janus HTTP/REST Transport
+# Server uses this to control Janus sessions
+
+general: {
+  json = "indented"
+  base_path = "/janus"
+  http = true
+  port = 8088
+  ip = "0.0.0.0"
+  https = false
+  access_log = "/dev/null"
+}
+
+admin: {
+  admin_base_path = "/admin"
+  admin_http = true
+  admin_port = 7088
+  admin_ip = "0.0.0.0"
+  admin_https = false
+}
+
+cors: {
+  allow_origin = "*"
+}

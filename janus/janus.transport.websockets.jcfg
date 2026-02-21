@@ -1,0 +1,17 @@
+# Janus WebSocket Transport
+# Widget connects here for WebRTC signaling
+
+general: {
+  json = "indented"
+  ws = true
+  ws_port = 8188
+  ws_ip = "0.0.0.0"
+  # WSS disabled — handled by nginx reverse proxy in production
+  wss = false
+  ws_logging = "err,warn"
+  ws_acl = "0.0.0.0/0"
+}
+
+admin: {
+  admin_ws = false
+}

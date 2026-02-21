@@ -56,6 +56,7 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
   const [showLeadForm, setShowLeadForm] = useState(false);
   const [showPhoneForm, setShowPhoneForm] = useState(false);
   const [callStatus, setCallStatus] = useState<{ callId?: string; status: 'idle' | 'requesting' | 'ringing' | 'queued' | 'error'; message?: string }>({ status: 'idle' });
+  const [webrtcConfig, setWebrtcConfig] = useState<any>(null);
   const wsRef = useRef<WSClient | null>(null);
 
   useEffect(() => {
@@ -168,6 +169,12 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
       setCallStatus({ status: 'error', message: data.message });
     });
 
+    // WebRTC via Janus: server sends connection details
+    ws.on('webrtc_ready', (data) => {
+      setCallStatus({ callId: data.callId, status: 'ringing' });
+      setWebrtcConfig(data);
+    });
+
     ws.on('_close', () => setIsConnected(false));
     ws.on('_open', () => setIsConnected(true));
 
@@ -221,6 +228,17 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
     wsRef.current?.send('request_call', { phone });
   }, []);
 
+  const requestWebRTCCall = useCallback(() => {
+    setCallStatus({ status: 'requesting' });
+    wsRef.current?.send('request_webrtc_call', {});
+  }, []);
+
+  const sendWebRTCHangup = useCallback((callId: string, duration?: number) => {
+    wsRef.current?.send('webrtc_hangup', { callId, duration });
+  }, []);
+
+  const clearWebrtcConfig = useCallback(() => setWebrtcConfig(null), []);
+
   const submitLead = useCallback((data: { name: string; email: string; phone?: string; company?: string }) => {
     wsRef.current?.send('lead_submit', data);
   }, []);
@@ -273,8 +291,11 @@ export function useChat({ apiUrl, visitorId }: UseChatOptions) {
   return {
     messages, isTyping, isConnected, isBusinessHours,
     language, businessLine, allRead, kbResults, showLeadForm, showPhoneForm, callStatus,
+    webrtcConfig,
     sendMessage, setLanguage, setBusinessLine,
-    escalate, requestCall, submitLead, submitOfflineForm, submitCsat,
+    escalate, requestCall, requestWebRTCCall, sendWebRTCHangup,
+    submitLead, submitOfflineForm, submitCsat,
     searchKB, sendQuickReply, uploadFile, clearLeadForm, clearPhoneForm, resetCallStatus,
+    clearWebrtcConfig,
   };
 }
