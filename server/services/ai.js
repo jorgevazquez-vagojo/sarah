@@ -3,7 +3,7 @@ const { redis } = require('../utils/redis');
 
 const PROVIDERS = {
   anthropic: { model: 'claude-sonnet-4-20250514', label: 'Claude Sonnet' },
-  gemini:    { model: 'gemini-2.0-flash',          label: 'Gemini 2.0 Flash' },
+  gemini:    { model: 'gemini-2.5-flash',          label: 'Gemini 2.5 Flash' },
   openai:    { model: 'gpt-4o-mini',              label: 'GPT-4o-mini' },
 };
 

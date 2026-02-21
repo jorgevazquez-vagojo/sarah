@@ -1,0 +1,1 @@
+Configuramos los webhooks para integrar con sistemas externos. Los eventos se firman con HMAC para garantizar la autenticidad. La integracion CRM envia leads automaticamente a Salesforce o HubSpot.

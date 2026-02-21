@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg_grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#0a0a1a"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1920" height="1080" rx="0" fill="url(#bg_grad)"/>
+  <text x="960" y="80" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="800" fill="#00d4aa">Arquitectura del Sistema</text>
+  <text x="480" y="220" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="700" fill="#3b82f6">MODO 1 — WebRTC (Navegador)</text>
+  <text x="480" y="280" text-anchor="start" font-family="JetBrains Mono, monospace" font-size="20" font-weight="400" fill="#e2e8f0">Widget ──WebSocket──► Janus Gateway ──SIP/UDP──► Vozelia PBX</text>
+  <text x="480" y="320" text-anchor="start" font-family="JetBrains Mono, monospace" font-size="16" font-weight="400" fill="#64748b">(browser WebRTC)        (Docker)              (cloud PBX)</text>
+  <text x="480" y="430" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="700" fill="#10b981">MODO 2 — Click2Call (Callback)</text>
+  <text x="480" y="490" text-anchor="start" font-family="JetBrains Mono, monospace" font-size="20" font-weight="400" fill="#e2e8f0">Widget ──WS──► Server ──SIP INVITE──► Teléfono Visitante</text>
+  <text x="480" y="530" text-anchor="start" font-family="JetBrains Mono, monospace" font-size="20" font-weight="400" fill="#e2e8f0">                        ──SIP REFER──► Extensión Agente</text>
+  <text x="480" y="640" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="700" fill="#f59e0b">GRABACIÓN (ambos modos)</text>
+  <text x="480" y="700" text-anchor="start" font-family="JetBrains Mono, monospace" font-size="20" font-weight="400" fill="#e2e8f0">Janus graba RTP → .mjr/.wav → Transcripción IA → 30 días retención</text>
+
+  <text x="960" y="1020" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="16" fill="#475569">Redegal Chatbot — WebRTC + Click2Call Demo</text>
+</svg>

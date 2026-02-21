@@ -1,0 +1,92 @@
+[
+  {
+    "slide": 1,
+    "num": "01",
+    "text": "En esta guia vamos a instalar el chatbot en la web corporativa de Redegal, configurar el backoffice y hacer una prueba completa del sistema."
+  },
+  {
+    "slide": 2,
+    "num": "02",
+    "text": "Solo necesitamos Docker y Git instalados. El sistema se despliega con un unico comando."
+  },
+  {
+    "slide": 3,
+    "num": "03",
+    "text": "Clonamos el repositorio, copiamos la configuracion de ejemplo y levantamos todo con Docker Compose. En menos de dos minutos tenemos PostgreSQL, Redis y el servidor Node corriendo."
+  },
+  {
+    "slide": 4,
+    "num": "04",
+    "text": "Al acceder por primera vez, un asistente de configuracion guia paso a paso. Configuramos el correo para notificaciones, la centralita VoIP, el proveedor de inteligencia artificial, los colores corporativos y el horario de atencion."
+  },
+  {
+    "slide": 5,
+    "num": "05",
+    "text": "Creamos el primer usuario administrador con acceso a todas las lineas de negocio y todos los idiomas."
+  },
+  {
+    "slide": 6,
+    "num": "06",
+    "text": "Accedemos al dashboard en la ruta barra dashboard. La pantalla de login tiene tema oscuro profesional con el logo de la empresa."
+  },
+  {
+    "slide": 7,
+    "num": "07",
+    "text": "El panel principal muestra la cola de conversaciones en tiempo real. Como acabamos de instalar, la cola esta vacia. En la sidebar tenemos acceso a leads, analiticas y configuracion."
+  },
+  {
+    "slide": 8,
+    "num": "08",
+    "text": "En configuracion personalizamos el widget. Elegimos el color corporativo de Redegal, activamos las funcionalidades que necesitamos y configuramos el horario. Todos los cambios se aplican en tiempo real."
+  },
+  {
+    "slide": 9,
+    "num": "09",
+    "text": "Las respuestas rapidas permiten a los agentes responder con shortcuts. Escriben barra hola y se expande automaticamente. Esto reduce el tiempo de respuesta drasticamente."
+  },
+  {
+    "slide": 10,
+    "num": "10",
+    "text": "Configuramos los webhooks para integrar con sistemas externos. Los eventos se firman con HMAC para garantizar la autenticidad. La integracion CRM envia leads automaticamente a Salesforce o HubSpot."
+  },
+  {
+    "slide": 11,
+    "num": "11",
+    "text": "El widget aparece en la esquina inferior derecha de la web de Redegal. Un boton flotante con un sutil pulso de atencion invita al visitante a interactuar."
+  },
+  {
+    "slide": 12,
+    "num": "12",
+    "text": "Al hacer clic, se abre la pantalla de bienvenida con las cuatro lineas de negocio. El visitante puede elegir directamente el area que le interesa o simplemente escribir su consulta."
+  },
+  {
+    "slide": 13,
+    "num": "13",
+    "text": "La inteligencia artificial responde con conocimiento especifico de cada linea de negocio. Detecta que el visitante necesita SEO y le ofrece una auditoria. Los mensajes enriquecidos incluyen tarjetas con botones de accion."
+  },
+  {
+    "slide": 14,
+    "num": "14",
+    "text": "Si el visitante escribe en otro idioma, el sistema lo detecta automaticamente y adapta todas las respuestas. Soportamos espanol, ingles, portugues y gallego."
+  },
+  {
+    "slide": 15,
+    "num": "15",
+    "text": "El visitante puede solicitar una llamada. Antes de conectar, el sistema ejecuta un test de conectividad verificando navegador, microfono y red. Si todo esta bien, la llamada se inicia automaticamente."
+  },
+  {
+    "slide": 16,
+    "num": "16",
+    "text": "Durante la llamada, el visitante ve un cronometro, indicador de calidad de conexion con barras de senal, y monitor de nivel de audio. Puede silenciar el microfono o colgar en cualquier momento."
+  },
+  {
+    "slide": 17,
+    "num": "17",
+    "text": "Al terminar la llamada, el sistema pide una valoracion con estrellas. Esta puntuacion se vincula a la conversacion y aparece en las analiticas del dashboard. El visitante puede volver al chat para cualquier otra consulta."
+  },
+  {
+    "slide": 18,
+    "num": "18",
+    "text": "El sistema esta listo. El widget se integra en cualquier pagina con dos lineas de codigo. El dashboard permite a los agentes gestionar conversaciones. El wallboard muestra metricas en tiempo real. Gracias por seguir esta guia."
+  }
+]

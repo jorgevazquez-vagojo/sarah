@@ -30,7 +30,7 @@ services:
   server:
     build: ./server
     ports:
-      - "127.0.0.1:9456:9456"
+      - "0.0.0.0:9456:9456"
     env_file: .env
     environment:
       PORT: 9456

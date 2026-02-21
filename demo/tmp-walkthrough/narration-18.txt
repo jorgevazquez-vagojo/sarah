@@ -1,0 +1,1 @@
+El sistema esta listo. El widget se integra en cualquier pagina con dos lineas de codigo. El dashboard permite a los agentes gestionar conversaciones. El wallboard muestra metricas en tiempo real. Gracias por seguir esta guia.

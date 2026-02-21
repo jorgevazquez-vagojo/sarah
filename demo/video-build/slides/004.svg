@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1920" height="1080" viewBox="0 0 1920 1080">
+  <defs>
+    <linearGradient id="bg_grad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#0a0a1a"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#0a0a1a"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="1920" height="1080" rx="0" fill="url(#bg_grad)"/>
+  <text x="960" y="100" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="44" font-weight="800" fill="#00d4aa">Stack Tecnológico</text>
+  <text x="400" y="250" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#e2e8f0">⚡ Node.js 20 + Express</text>
+  <text x="400" y="320" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#e2e8f0">⚛️ React 19 + TypeScript + Tailwind</text>
+  <text x="400" y="390" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#e2e8f0">🐘 PostgreSQL 16 + pgvector</text>
+  <text x="400" y="460" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#e2e8f0">🔴 Redis 7 (pub/sub + sessions)</text>
+  <text x="400" y="530" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#3b82f6">🌐 Janus WebRTC Gateway</text>
+  <text x="400" y="600" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#10b981">📞 Vozelia Cloud PBX (SIP/UDP)</text>
+  <text x="400" y="670" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#f59e0b">🤖 IA: Claude + Gemini + OpenAI</text>
+  <text x="400" y="740" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#e2e8f0">🐳 Docker Compose (1 comando)</text>
+  <text x="400" y="810" text-anchor="middle" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#e2e8f0">🌍 4 idiomas: ES, EN, PT, GL</text>
+
+  <text x="960" y="1020" text-anchor="middle" font-family="Inter, system-ui, sans-serif"
+        font-size="16" fill="#475569">Redegal Chatbot — WebRTC + Click2Call Demo</text>
+</svg>

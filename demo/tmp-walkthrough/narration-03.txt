@@ -1,0 +1,1 @@
+Clonamos el repositorio, copiamos la configuracion de ejemplo y levantamos todo con Docker Compose. En menos de dos minutos tenemos PostgreSQL, Redis y el servidor Node corriendo.
