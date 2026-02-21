@@ -4,7 +4,7 @@ import { Widget } from './Widget';
 import './styles.css';
 
 // IIFE: global init function for Shadow DOM mounting
-(window as any).__rdgbotInit = function (mountEl: HTMLElement, config: any) {
+(window as any).__sarahInit = function (mountEl: HTMLElement, config: any) {
   const root = ReactDOM.createRoot(mountEl);
   root.render(
     <React.StrictMode>
@@ -20,8 +20,11 @@ import './styles.css';
   );
 };
 
+// Backward compatibility alias
+(window as any).__rdgbotInit = (window as any).__sarahInit;
+
 // Auto-init if dev mode
-const el = document.getElementById('rdgbot-root');
+const el = document.getElementById('sarah-root') || document.getElementById('rdgbot-root');
 if (el) {
-  (window as any).__rdgbotInit(el, (window as any).RdgBot || {});
+  (window as any).__sarahInit(el, (window as any).Sarah || (window as any).RdgBot || {});
 }

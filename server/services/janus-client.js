@@ -97,7 +97,7 @@ async function sipRegister(sessionId, handleId, { proxy, username, secret, authu
       username: `sip:${username}@${proxy}`,
       secret,
       authuser: authuser || username,
-      display_name: 'RDGPhone',
+      display_name: 'SarahPhone',
     },
   });
   logger.info(`SIP register request sent: ${username}@${proxy}`);

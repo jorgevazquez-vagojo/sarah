@@ -178,7 +178,7 @@ router.post('/test-sip', requireAgent, requireRole('admin'), async (req, res) =>
           `Call-ID: ${callId}`,
           `CSeq: 1 OPTIONS`,
           `Max-Forwards: 70`,
-          `User-Agent: RdgBot/1.0`,
+          `User-Agent: Sarah/1.0`,
           `Content-Length: 0`,
           ``,
           ``,

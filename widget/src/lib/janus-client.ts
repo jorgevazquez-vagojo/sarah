@@ -292,7 +292,7 @@ export function createJanusClient(config: JanusCallConfig): SipClient {
                 username: `sip:${config.sipUser}@${config.sipProxy}`,
                 authuser: config.sipUser,
                 secret: config.sipPassword,
-                display_name: 'RDGPhone',
+                display_name: 'SarahPhone',
               },
             });
 

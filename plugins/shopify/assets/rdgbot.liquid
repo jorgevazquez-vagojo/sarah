@@ -1,5 +1,5 @@
 {% comment %}
-  RDGBot - Shopify Theme Snippet
+  Sarah - Shopify Theme Snippet
 
   Usage: Add to theme.liquid before </body>:
     {% render 'rdgbot' %}
@@ -9,7 +9,7 @@
 
 {% if settings.rdgbot_enabled %}
 <script>
-  window.RdgBot = {
+  window.Sarah = {
     baseUrl: '{{ settings.rdgbot_server_url | append: "/widget" }}',
     apiUrl: '{{ settings.rdgbot_server_url | replace: "https://", "wss://" | replace: "http://", "ws://" | append: "/ws/chat" }}',
     configUrl: '{{ settings.rdgbot_server_url | append: "/api/config/widget" }}',
@@ -25,6 +25,7 @@
       }
     }
   };
+  window.RdgBot = window.Sarah; // backward compatibility
 </script>
 <script src="{{ settings.rdgbot_server_url | append: '/widget/loader.js' }}" async></script>
 {% endif %}

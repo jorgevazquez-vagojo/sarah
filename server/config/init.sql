@@ -1,5 +1,5 @@
 -- ═══════════════════════════════════════════════════════════════
--- RDGBot + RDGPhone — Premium Schema
+-- Sarah + SarahPhone — Premium Schema (formerly RDGBot + RDGPhone)
 -- ═══════════════════════════════════════════════════════════════
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";

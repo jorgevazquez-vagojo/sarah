@@ -107,7 +107,7 @@ function buildSipRequest(method, uri, opts) {
   if (contact) msg += `Contact: ${contact}\r\n`;
   if (auth) msg += `${authHeader || 'Authorization'}: ${auth}\r\n`;
   msg += `Max-Forwards: 70\r\n`;
-  msg += `User-Agent: RdgBot/1.0\r\n`;
+  msg += `User-Agent: Sarah/1.0\r\n`;
   if (extraHeaders) {
     for (const [k, v] of Object.entries(extraHeaders)) msg += `${k}: ${v}\r\n`;
   }

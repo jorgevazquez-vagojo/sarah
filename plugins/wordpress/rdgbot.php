@@ -1,18 +1,18 @@
 <?php
 /**
- * Plugin Name: RDGBot
+ * Plugin Name: Sarah
  * Plugin URI: https://redegal.com/chatbot
- * Description: Chatbot IA + RDGPhone VoIP widget by Redegal. Multi-language, multi-CRM, fully customizable.
+ * Description: Sarah AI Chatbot + SarahPhone VoIP widget by Redegal. Multi-language, multi-CRM, fully customizable.
  * Version: 1.0.0
  * Author: Redegal
  * Author URI: https://redegal.com
  * License: GPL-2.0-or-later
- * Text Domain: rdgbot
+ * Text Domain: sarah-chatbot
  */
 
 if (!defined('ABSPATH')) exit;
 
-class RdgBot {
+class SarahChatbot {
 
     private static $instance = null;
 
@@ -30,59 +30,59 @@ class RdgBot {
 
     public function add_admin_menu() {
         add_options_page(
-            __('RDGBot', 'rdgbot'),
-            __('RDGBot', 'rdgbot'),
+            __('Sarah', 'sarah-chatbot'),
+            __('Sarah', 'sarah-chatbot'),
             'manage_options',
-            'rdgbot',
+            'sarah-chatbot',
             [$this, 'settings_page']
         );
     }
 
     public function register_settings() {
-        register_setting('rdgbot', 'rdgbot_server_url');
-        register_setting('rdgbot', 'rdgbot_api_key');
-        register_setting('rdgbot', 'rdgbot_language');
-        register_setting('rdgbot', 'rdgbot_primary_color');
-        register_setting('rdgbot', 'rdgbot_position');
-        register_setting('rdgbot', 'rdgbot_logo_url');
-        register_setting('rdgbot', 'rdgbot_company_name');
-        register_setting('rdgbot', 'rdgbot_enabled');
-        register_setting('rdgbot', 'rdgbot_pages');
+        register_setting('sarah-chatbot', 'rdgbot_server_url');
+        register_setting('sarah-chatbot', 'rdgbot_api_key');
+        register_setting('sarah-chatbot', 'rdgbot_language');
+        register_setting('sarah-chatbot', 'rdgbot_primary_color');
+        register_setting('sarah-chatbot', 'rdgbot_position');
+        register_setting('sarah-chatbot', 'rdgbot_logo_url');
+        register_setting('sarah-chatbot', 'rdgbot_company_name');
+        register_setting('sarah-chatbot', 'rdgbot_enabled');
+        register_setting('sarah-chatbot', 'rdgbot_pages');
     }
 
     public function settings_page() {
         ?>
         <div class="wrap">
-            <h1><?php echo esc_html__('RDGBot Settings', 'rdgbot'); ?></h1>
+            <h1><?php echo esc_html__('Sarah Settings', 'sarah-chatbot'); ?></h1>
             <form method="post" action="options.php">
-                <?php settings_fields('rdgbot'); ?>
+                <?php settings_fields('sarah-chatbot'); ?>
                 <table class="form-table">
                     <tr>
-                        <th><label for="rdgbot_enabled"><?php _e('Enabled', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_enabled"><?php _e('Enabled', 'sarah-chatbot'); ?></label></th>
                         <td><input type="checkbox" name="rdgbot_enabled" value="1" <?php checked(get_option('rdgbot_enabled'), '1'); ?> /></td>
                     </tr>
                     <tr>
-                        <th><label for="rdgbot_server_url"><?php _e('Server URL', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_server_url"><?php _e('Server URL', 'sarah-chatbot'); ?></label></th>
                         <td><input type="url" name="rdgbot_server_url" value="<?php echo esc_attr(get_option('rdgbot_server_url', 'https://chatbot.redegal.com')); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th><label for="rdgbot_api_key"><?php _e('API Key', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_api_key"><?php _e('API Key', 'sarah-chatbot'); ?></label></th>
                         <td><input type="text" name="rdgbot_api_key" value="<?php echo esc_attr(get_option('rdgbot_api_key')); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th><label for="rdgbot_company_name"><?php _e('Company Name', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_company_name"><?php _e('Company Name', 'sarah-chatbot'); ?></label></th>
                         <td><input type="text" name="rdgbot_company_name" value="<?php echo esc_attr(get_option('rdgbot_company_name', 'Redegal')); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th><label for="rdgbot_logo_url"><?php _e('Logo URL', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_logo_url"><?php _e('Logo URL', 'sarah-chatbot'); ?></label></th>
                         <td><input type="url" name="rdgbot_logo_url" value="<?php echo esc_attr(get_option('rdgbot_logo_url')); ?>" class="regular-text" /></td>
                     </tr>
                     <tr>
-                        <th><label for="rdgbot_primary_color"><?php _e('Primary Color', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_primary_color"><?php _e('Primary Color', 'sarah-chatbot'); ?></label></th>
                         <td><input type="color" name="rdgbot_primary_color" value="<?php echo esc_attr(get_option('rdgbot_primary_color', '#007fff')); ?>" /></td>
                     </tr>
                     <tr>
-                        <th><label for="rdgbot_language"><?php _e('Default Language', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_language"><?php _e('Default Language', 'sarah-chatbot'); ?></label></th>
                         <td>
                             <select name="rdgbot_language">
                                 <?php foreach (['auto' => 'Auto-detect', 'es' => 'Español', 'en' => 'English', 'pt' => 'Português', 'gl' => 'Galego'] as $code => $label): ?>
@@ -92,7 +92,7 @@ class RdgBot {
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="rdgbot_position"><?php _e('Widget Position', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_position"><?php _e('Widget Position', 'sarah-chatbot'); ?></label></th>
                         <td>
                             <select name="rdgbot_position">
                                 <option value="bottom-right" <?php selected(get_option('rdgbot_position', 'bottom-right'), 'bottom-right'); ?>>Bottom Right</option>
@@ -101,7 +101,7 @@ class RdgBot {
                         </td>
                     </tr>
                     <tr>
-                        <th><label for="rdgbot_pages"><?php _e('Show on pages (empty = all)', 'rdgbot'); ?></label></th>
+                        <th><label for="rdgbot_pages"><?php _e('Show on pages (empty = all)', 'sarah-chatbot'); ?></label></th>
                         <td><textarea name="rdgbot_pages" rows="3" class="regular-text" placeholder="One URL pattern per line"><?php echo esc_textarea(get_option('rdgbot_pages', '')); ?></textarea></td>
                     </tr>
                 </table>
@@ -127,7 +127,7 @@ class RdgBot {
         }
 
         $server = rtrim(get_option('rdgbot_server_url', 'https://chatbot.redegal.com'), '/');
-        wp_enqueue_script('rdgbot-loader', $server . '/widget/loader.js', [], '1.0.0', true);
+        wp_enqueue_script('sarah-loader', $server . '/widget/loader.js', [], '1.0.0', true);
     }
 
     public function render_widget() {
@@ -151,9 +151,12 @@ class RdgBot {
             ],
         ];
         ?>
-        <script>window.RdgBot = <?php echo wp_json_encode($config); ?>;</script>
+        <script>
+        window.Sarah = <?php echo wp_json_encode($config); ?>;
+        window.RdgBot = window.Sarah; // backward compatibility
+        </script>
         <?php
     }
 }
 
-RdgBot::get_instance();
+SarahChatbot::get_instance();

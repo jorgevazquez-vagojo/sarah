@@ -142,7 +142,7 @@ app.get('/widget/test.html', (_req, res) => {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>RDGBot - Widget Demo</title>
+  <title>Sarah - Widget Demo</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); min-height: 100vh; }
@@ -165,8 +165,8 @@ app.get('/widget/test.html', (_req, res) => {
 </head>
 <body>
   <div class="demo-page">
-    <h1>RDGBot</h1>
-    <p>Widget premium con chatbot IA, rdgphone VoIP, 4 idiomas y configuracion completa. Prueba el widget en la esquina inferior derecha.</p>
+    <h1>Sarah</h1>
+    <p>Widget premium con chatbot IA, SarahPhone VoIP, 4 idiomas y configuracion completa. Prueba el widget en la esquina inferior derecha.</p>
 
     <div class="cards">
       <div class="card">
@@ -182,7 +182,7 @@ app.get('/widget/test.html', (_req, res) => {
         <p>Claude (primario) + Gemini (fallback gratuito) + OpenAI. Cambio automatico si falla.</p>
       </div>
       <div class="card">
-        <h3>VoIP RDGPhone</h3>
+        <h3>VoIP SarahPhone</h3>
         <p>Llamadas via SIP + Vozelia Cloud PBX. Solo en horario laboral.</p>
       </div>
     </div>
@@ -214,13 +214,14 @@ app.get('/widget/test.html', (_req, res) => {
   </div>
 
   <script>
-    window.RdgBot = {
+    window.Sarah = {
       baseUrl: window.location.origin + '/widget',
       apiUrl: 'ws://' + window.location.host + '/ws/chat',
       configUrl: window.location.origin + '/api/config/widget',
       language: 'auto',
       primaryColor: '#007fff'
     };
+    window.RdgBot = window.Sarah; // backward compatibility
     function updateConfig(key, val) {
       if (window.__redegalWidget) window.__redegalWidget.updateConfig({ [key]: val });
     }

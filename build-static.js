@@ -126,19 +126,20 @@ php = php.replace('</head>',
 php = php.replace('</body>',
 `<!-- Real Chatbot Widget (Shadow DOM, connects to backend) -->
 <script>
-  window.RdgBot = {
+  window.Sarah = {
     baseUrl: window.location.origin + '/widget',
     apiUrl: (window.location.protocol === 'https:' ? 'wss://' : 'ws://') + window.location.host + '/ws/chat',
     configUrl: window.location.origin + '/api/config/widget',
     language: 'auto',
     primaryColor: '#007fff'
   };
+  window.RdgBot = window.Sarah; // backward compatibility
 </script>
 <script>
 (function(){
-  var BASE = window.RdgBot && window.RdgBot.baseUrl ? window.RdgBot.baseUrl : '/widget';
+  var BASE = window.Sarah && window.Sarah.baseUrl ? window.Sarah.baseUrl : '/widget';
   var host = document.createElement('div');
-  host.id = 'rdgbot-host';
+  host.id = 'sarah-host';
   host.style.cssText = 'position:fixed;z-index:2147483647;bottom:0;right:0;';
   document.body.appendChild(host);
   var shadow = host.attachShadow({ mode: 'open' });
@@ -147,13 +148,15 @@ php = php.replace('</body>',
   link.href = BASE + '/widget.css';
   shadow.appendChild(link);
   var mount = document.createElement('div');
-  mount.id = 'rdgbot-root';
+  mount.id = 'sarah-root';
   shadow.appendChild(mount);
   var script = document.createElement('script');
   script.src = BASE + '/widget.js';
   script.onload = function(){
-    if(typeof window.__rdgbotInit === 'function'){
-      window.__rdgbotInit(mount, window.RdgBot || {});
+    if(typeof window.__sarahInit === 'function'){
+      window.__sarahInit(mount, window.Sarah || {});
+    } else if(typeof window.__rdgbotInit === 'function'){
+      window.__rdgbotInit(mount, window.Sarah || {});
     }
   };
   document.body.appendChild(script);

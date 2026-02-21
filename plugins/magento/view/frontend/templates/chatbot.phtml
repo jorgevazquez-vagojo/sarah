@@ -1,13 +1,13 @@
 <?php
 /**
- * RDGBot - Magento 2 Template
+ * Sarah - Magento 2 Template
  *
  * Installation:
- * 1. Create module: app/code/Redegal/RdgBot/
+ * 1. Create module: app/code/Redegal/SarahChatbot/
  * 2. Add this template to default.xml layout:
  *    <referenceContainer name="before.body.end">
  *        <block class="Magento\Framework\View\Element\Template"
- *               template="Redegal_RdgBot::chatbot.phtml" />
+ *               template="Redegal_SarahChatbot::chatbot.phtml" />
  *    </referenceContainer>
  * 3. Configure via Stores > Configuration > Redegal > Chatbot
  */
@@ -32,7 +32,7 @@ $wsUrl = str_replace(['https://', 'http://'], ['wss://', 'ws://'], $serverUrl);
 ?>
 
 <script>
-window.RdgBot = {
+window.Sarah = {
     baseUrl: <?= json_encode($serverUrl . '/widget') ?>,
     apiUrl: <?= json_encode($wsUrl . '/ws/chat') ?>,
     configUrl: <?= json_encode($serverUrl . '/api/config/widget') ?>,
@@ -48,5 +48,6 @@ window.RdgBot = {
         }
     }
 };
+window.RdgBot = window.Sarah; // backward compatibility
 </script>
 <script src="<?= $this->escapeUrl($serverUrl . '/widget/loader.js') ?>" async></script>

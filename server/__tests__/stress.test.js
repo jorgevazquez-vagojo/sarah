@@ -1,5 +1,5 @@
 /**
- * Stress / Load Tests for RDGBot Server
+ * Stress / Load Tests for Sarah Chatbot Server
  *
  * Tests server internal handling capacity with mocked external dependencies.
  * Run: npx jest stress.test.js --forceExit

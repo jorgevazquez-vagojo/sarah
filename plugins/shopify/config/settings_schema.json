@@ -1,6 +1,6 @@
 [
   {
-    "name": "RDGBot",
+    "name": "Sarah",
     "settings": [
       {
         "type": "checkbox",
@@ -13,7 +13,7 @@
         "id": "rdgbot_server_url",
         "label": "Chatbot Server URL",
         "default": "https://chatbot.redegal.com",
-        "info": "URL of your RDGBot server"
+        "info": "URL of your Sarah chatbot server"
       },
       {
         "type": "text",

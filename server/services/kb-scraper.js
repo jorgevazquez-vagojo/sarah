@@ -37,7 +37,7 @@ function contentHash(text) {
 async function fetchPageContent(url) {
   try {
     const response = await fetch(url, {
-      headers: { 'User-Agent': 'RdgBot/1.0 (knowledge-updater)' },
+      headers: { 'User-Agent': 'Sarah/1.0 (knowledge-updater)' },
       signal: AbortSignal.timeout(15000),
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);

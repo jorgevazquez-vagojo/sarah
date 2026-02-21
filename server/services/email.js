@@ -73,7 +73,7 @@ async function sendEmail({ to, subject, html, text }) {
   try {
     const from = await FROM();
     await transporter.sendMail({
-      from: `"RDGBot" <${from}>`,
+      from: `"Sarah" <${from}>`,
       to: recipients,
       subject,
       html,
@@ -128,7 +128,7 @@ async function notifyEscalation(conversationId, visitorId, businessLine, languag
       </div>` : ''}
     </div>
     <div style="padding:12px 24px;background:#F7F9FC;border-top:1px solid #E5E9F0;text-align:center">
-      <p style="font-size:10px;color:#9CA3AF;margin:0">RDGBot · Notificacion automatica</p>
+      <p style="font-size:10px;color:#9CA3AF;margin:0">Sarah · Notificacion automatica</p>
     </div>
   </div>
 </body></html>`;
@@ -167,7 +167,7 @@ async function notifyCallRequest(conversationId, phone, businessLine) {
       </p>
     </div>
     <div style="padding:12px 24px;background:#F7F9FC;border-top:1px solid #E5E9F0;text-align:center">
-      <p style="font-size:10px;color:#9CA3AF;margin:0">RDGBot · Notificacion automatica</p>
+      <p style="font-size:10px;color:#9CA3AF;margin:0">Sarah · Notificacion automatica</p>
     </div>
   </div>
 </body></html>`;

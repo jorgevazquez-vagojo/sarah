@@ -4,10 +4,11 @@
 - Git remotes: `origin` (GitHub jorgevazquez-vagojo) y `gitlab` (git.redegal.net jorge.vazquez)
 - **Auto-guardado**: al acercarse al limite de contexto, guardar estado en `~/.claude/projects/-Users-jorgevazquez/memory/session-state.md` (ver `~/.claude/CLAUDE.md` para formato completo)
 
-# RDGBot + RDGPhone Widget
+# Sarah + SarahPhone Widget
 
 ## Project Overview
-Widget embebible para web corporativa Redegal: chatbot IA + rdgphone VoIP + dashboard agentes.
+Widget embebible para web corporativa Redegal: chatbot IA (Sarah) + SarahPhone VoIP + dashboard agentes.
+Rebranded from RDGBot/RDGPhone to Sarah/SarahPhone. Internal identifiers (rc- CSS prefix, DB names, docker names, API routes) kept as-is.
 Multi-tenant, 4 idiomas (es/en/pt/gl), 4 lineas de negocio, parametrizable al completo.
 
 ## Architecture
