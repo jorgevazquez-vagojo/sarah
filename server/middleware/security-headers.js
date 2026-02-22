@@ -1,4 +1,6 @@
 // Security headers middleware (CSP, HSTS, etc.) — Helmet-equivalent without the dependency
+const crypto = require('crypto');
+
 function securityHeaders(req, res, next) {
   res.setHeader('X-Content-Type-Options', 'nosniff');
   res.setHeader('X-Frame-Options', 'SAMEORIGIN');
@@ -18,15 +20,18 @@ function securityHeaders(req, res, next) {
     res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
   }
 
-  // CSP: allow inline scripts/styles for the corporate page + widget Shadow DOM
+  // Generate per-request CSP nonce (16 bytes = 128-bit entropy)
+  const nonce = crypto.randomBytes(16).toString('base64');
+  res.locals.cspNonce = nonce;
+
+  // CSP: use nonce for script-src to replace 'unsafe-inline'.
+  // style-src keeps 'unsafe-inline' because the widget injects CSS into Shadow DOM
+  // at runtime and many host pages use inline styles — nonce cannot be applied there.
   const allowedOrigins = (process.env.ALLOWED_ORIGINS || '').split(',').map(o => o.trim()).filter(Boolean);
   const connectSrc = ["'self'", 'wss:', 'ws:', ...allowedOrigins].join(' ');
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
-    // M-01: 'unsafe-inline' is required for the widget's Shadow DOM injection and inline
-    // event handlers on the corporate page. TODO: Replace with CSP nonces (generate per-request
-    // nonce, pass to templates) to eliminate 'unsafe-inline' entirely.
-    "script-src 'self' 'unsafe-inline'",
+    `script-src 'self' 'nonce-${nonce}'`,
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",
     `connect-src ${connectSrc}`,

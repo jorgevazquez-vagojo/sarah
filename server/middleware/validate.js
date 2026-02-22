@@ -1,8 +1,41 @@
-// Lightweight JSON schema validation middleware (no external deps)
+/**
+ * Request validation middleware.
+ *
+ * Supports two modes:
+ *   1. Joi schema validation (preferred): validate(joiSchema)
+ *   2. Legacy lightweight validation: validate({ field: { required, type, ... } })
+ *
+ * The middleware auto-detects which mode to use based on whether the schema
+ * has a Joi `validate` method or is a plain object.
+ */
 
-function validate(schema) {
+/**
+ * Validate request body against a schema.
+ * @param {object} schema — Either a Joi schema or a plain field-rules object
+ * @param {string} [source='body'] — 'body', 'query', or 'params'
+ */
+function validate(schema, source = 'body') {
   return (req, res, next) => {
-    const errors = validateObject(req.body, schema);
+    const data = req[source];
+
+    // ── Joi schema (has .validate method) ──
+    if (typeof schema.validate === 'function') {
+      const { error, value } = schema.validate(data, {
+        abortEarly: false,
+        stripUnknown: true,
+        allowUnknown: false,
+      });
+      if (error) {
+        const details = error.details.map((d) => d.message);
+        return res.status(400).json({ error: 'Validation failed', details });
+      }
+      // Replace body/query/params with the sanitized version from Joi
+      req[source] = value;
+      return next();
+    }
+
+    // ── Legacy lightweight validation ──
+    const errors = validateObject(data, schema);
     if (errors.length > 0) {
       return res.status(400).json({ error: 'Validation failed', details: errors });
     }

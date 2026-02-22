@@ -1,0 +1,113 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+  push:
+    tags:
+      - 'v*'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/sarah-server
+
+jobs:
+  build-and-push:
+    name: Build & Push Docker Image
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build widget
+        run: npm -w widget run build
+
+      - name: Build dashboard
+        run: npm -w dashboard run build
+
+      - name: Copy build artifacts to server public
+        run: |
+          mkdir -p server/public/widget server/public/dashboard
+          cp -r widget/dist/* server/public/widget/
+          cp -r dashboard/dist/* server/public/dashboard/
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix=
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./server
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+
+  deploy:
+    name: Deploy to Server
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    environment: ${{ github.event.inputs.environment || 'staging' }}
+
+    steps:
+      - name: Deploy via SSH
+        # Replace with your actual SSH action and server details
+        # Example using appleboy/ssh-action:
+        #
+        # uses: appleboy/ssh-action@v1
+        # with:
+        #   host: ${{ secrets.DEPLOY_HOST }}
+        #   username: ${{ secrets.DEPLOY_USER }}
+        #   key: ${{ secrets.DEPLOY_SSH_KEY }}
+        #   script: |
+        #     cd /opt/sarah
+        #     docker compose pull server
+        #     docker compose up -d server
+        #     echo "Deployed successfully"
+        run: |
+          echo "========================================="
+          echo "  DEPLOY PLACEHOLDER"
+          echo "========================================="
+          echo ""
+          echo "Environment: ${{ github.event.inputs.environment || 'staging' }}"
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}"
+          echo ""
+          echo "To enable real deployment:"
+          echo "  1. Set repository secrets: DEPLOY_HOST, DEPLOY_USER, DEPLOY_SSH_KEY"
+          echo "  2. Uncomment the SSH action above"
+          echo "  3. Configure docker compose on the target server"
+          echo ""
+          echo "========================================="

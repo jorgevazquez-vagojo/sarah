@@ -2,7 +2,10 @@ const { Router } = require('express');
 const { db } = require('../utils/db');
 const { redis } = require('../utils/redis');
 const { requireAgent, requireApiKey } = require('../middleware/auth');
+const { validate } = require('../middleware/validate');
 const { logger } = require('../utils/logger');
+const { updateTheme, createTenant, createCanned } = require('../schemas/config');
+const { createWebhook } = require('../schemas/webhooks');
 
 const router = Router();
 
@@ -38,8 +41,18 @@ router.get('/languages', async (req, res) => {
   res.json({ languages: getSupportedLanguages() });
 });
 
-// ─── Admin: get full theme ───
+// ─── Admin: get full theme (tenant-isolated) ───
 router.get('/theme', requireAgent, async (req, res) => {
+  if (req.tenantId) {
+    const themes = await db.query(
+      `SELECT wt.*, t.slug as tenant_slug FROM widget_themes wt
+       JOIN tenants t ON t.id = wt.tenant_id
+       WHERE wt.tenant_id = $1
+       ORDER BY wt.created_at`,
+      [req.tenantId]
+    );
+    return res.json(themes.rows);
+  }
   const themes = await db.query(
     `SELECT wt.*, t.slug as tenant_slug FROM widget_themes wt
      JOIN tenants t ON t.id = wt.tenant_id
@@ -48,16 +61,20 @@ router.get('/theme', requireAgent, async (req, res) => {
   res.json(themes.rows);
 });
 
-// ─── Admin: update theme ───
-router.put('/theme/:id', requireAgent, async (req, res) => {
+// ─── Admin: update theme (validated, tenant-isolated) ───
+router.put('/theme/:id', requireAgent, validate(updateTheme), async (req, res) => {
   const { config } = req.body;
-  if (!config) return res.status(400).json({ error: 'config required' });
 
-  const result = await db.query(
-    `UPDATE widget_themes SET config = $1, updated_at = NOW() WHERE id = $2 RETURNING *`,
-    [config, req.params.id]
-  );
+  // Tenant isolation: ensure the theme belongs to the agent's tenant
+  let query = `UPDATE widget_themes SET config = $1, updated_at = NOW() WHERE id = $2`;
+  const params = [config, req.params.id];
+  if (req.tenantId) {
+    query += ` AND tenant_id = $3`;
+    params.push(req.tenantId);
+  }
+  query += ` RETURNING *`;
 
+  const result = await db.query(query, params);
   if (!result.rows[0]) return res.status(404).json({ error: 'Theme not found' });
 
   // Invalidate cache
@@ -72,10 +89,9 @@ router.put('/theme/:id', requireAgent, async (req, res) => {
   res.json(result.rows[0]);
 });
 
-// ─── Admin: create tenant ───
-router.post('/tenants', requireAgent, async (req, res) => {
+// ─── Admin: create tenant (validated) ───
+router.post('/tenants', requireAgent, validate(createTenant), async (req, res) => {
   const { slug, name, domain } = req.body;
-  if (!slug || !name) return res.status(400).json({ error: 'slug and name required' });
 
   const result = await db.query(
     `INSERT INTO tenants (slug, name, domain) VALUES ($1, $2, $3) RETURNING *`,
@@ -91,12 +107,13 @@ router.post('/tenants', requireAgent, async (req, res) => {
   res.json(result.rows[0]);
 });
 
-// ─── Admin: manage canned responses ───
+// ─── Admin: manage canned responses (tenant-isolated) ───
 router.get('/canned', requireAgent, async (req, res) => {
   const { language, businessLine } = req.query;
   const conds = ['1=1'];
   const vals = [];
   let i = 1;
+  if (req.tenantId) { conds.push(`tenant_id = $${i++}`); vals.push(req.tenantId); }
   if (language) { conds.push(`language = $${i++}`); vals.push(language); }
   if (businessLine) { conds.push(`business_line = $${i++}`); vals.push(businessLine); }
   const result = await db.query(
@@ -106,38 +123,40 @@ router.get('/canned', requireAgent, async (req, res) => {
   res.json(result.rows);
 });
 
-router.post('/canned', requireAgent, async (req, res) => {
+router.post('/canned', requireAgent, validate(createCanned), async (req, res) => {
   const { shortcut, title, content, language, businessLine, category } = req.body;
-  if (!shortcut || !title || !content) {
-    return res.status(400).json({ error: 'shortcut, title, and content required' });
-  }
   const result = await db.query(
-    `INSERT INTO canned_responses (shortcut, title, content, language, business_line, category, created_by)
-     VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-    [shortcut, title, content, language || 'es', businessLine, category, req.agent.id]
+    `INSERT INTO canned_responses (shortcut, title, content, language, business_line, category, created_by, tenant_id)
+     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+    [shortcut, title, content, language || 'es', businessLine, category, req.agent.id, req.tenantId || null]
   );
   res.json(result.rows[0]);
 });
 
 router.delete('/canned/:id', requireAgent, async (req, res) => {
-  await db.query('DELETE FROM canned_responses WHERE id = $1', [req.params.id]);
+  if (req.tenantId) {
+    await db.query('DELETE FROM canned_responses WHERE id = $1 AND tenant_id = $2', [req.params.id, req.tenantId]);
+  } else {
+    await db.query('DELETE FROM canned_responses WHERE id = $1', [req.params.id]);
+  }
   res.json({ ok: true });
 });
 
-// ─── Admin: webhooks ───
+// ─── Admin: webhooks (validated, tenant-isolated) ───
 router.get('/webhooks', requireAgent, async (req, res) => {
+  if (req.tenantId) {
+    const result = await db.query('SELECT * FROM webhooks WHERE tenant_id = $1 ORDER BY created_at', [req.tenantId]);
+    return res.json(result.rows);
+  }
   const result = await db.query('SELECT * FROM webhooks ORDER BY created_at');
   res.json(result.rows);
 });
 
-router.post('/webhooks', requireAgent, async (req, res) => {
+router.post('/webhooks', requireAgent, validate(createWebhook), async (req, res) => {
   const { url, events, secret } = req.body;
-  if (!url || !events?.length) {
-    return res.status(400).json({ error: 'url and events required' });
-  }
   const result = await db.query(
-    `INSERT INTO webhooks (url, events, secret) VALUES ($1, $2, $3) RETURNING *`,
-    [url, events, secret]
+    `INSERT INTO webhooks (url, events, secret, tenant_id) VALUES ($1, $2, $3, $4) RETURNING *`,
+    [url, events, secret, req.tenantId || null]
   );
   res.json(result.rows[0]);
 });

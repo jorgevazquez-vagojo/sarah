@@ -255,6 +255,52 @@ export function Widget(props: WidgetConfig) {
     };
   }, []);
 
+  // ─── Accessibility: ESC to close widget ───
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        handleToggle();
+      }
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
+  // ─── Accessibility: Focus trap when widget is open ───
+  const panelRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isOpen || !panelRef.current) return;
+    const panel = panelRef.current;
+    const focusableSelector = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])';
+
+    const handleTab = (e: KeyboardEvent) => {
+      if (e.key !== 'Tab') return;
+      const focusable = Array.from(panel.querySelectorAll(focusableSelector)) as HTMLElement[];
+      if (focusable.length === 0) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey) {
+        if (document.activeElement === first || !panel.contains(document.activeElement as Node)) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last || !panel.contains(document.activeElement as Node)) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleTab);
+    // Focus first focusable element when widget opens
+    const firstFocusable = panel.querySelector(focusableSelector) as HTMLElement;
+    if (firstFocusable) setTimeout(() => firstFocusable.focus(), 100);
+    return () => document.removeEventListener('keydown', handleTab);
+  }, [isOpen]);
+
   const { colors, layout, features, branding } = theme;
   const isLeft = layout.position === 'bottom-left';
   const headerBg = colors.headerGradient
@@ -308,8 +354,10 @@ export function Widget(props: WidgetConfig) {
       {/* ─── Panel ─── */}
       {isOpen && (
         <div
+          ref={panelRef}
           className={`rc-widget-panel ${isClosing ? 'rc-panel-exit' : 'rc-panel-enter'}`}
           role="dialog"
+          aria-modal="true"
           aria-label="Chat with Redegal"
           style={{
             position: 'fixed',
@@ -371,21 +419,21 @@ export function Widget(props: WidgetConfig) {
             </div>
             <div style={{ display: 'flex', gap: 4, alignItems: 'center', position: 'relative', zIndex: 1 }}>
               {features.enableDarkMode && (
-                <HeaderBtn onClick={() => setDarkMode(!darkMode)} color={colors.textOnPrimary}>
+                <HeaderBtn onClick={() => setDarkMode(!darkMode)} color={colors.textOnPrimary} ariaLabel={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}>
                   {darkMode ? I.sun : I.moon}
                 </HeaderBtn>
               )}
               {features.enableSoundNotifications && (
-                <HeaderBtn onClick={() => setSoundEnabled(!soundEnabled)} color={colors.textOnPrimary}>
+                <HeaderBtn onClick={() => setSoundEnabled(!soundEnabled)} color={colors.textOnPrimary} ariaLabel={soundEnabled ? 'Mute notifications' : 'Enable notifications'}>
                   {soundEnabled ? I.sound : I.mute}
                 </HeaderBtn>
               )}
               {features.enableLanguageSelector && (
-                <HeaderBtn onClick={() => setShowLangPicker(!showLangPicker)} color={colors.textOnPrimary}>
+                <HeaderBtn onClick={() => setShowLangPicker(!showLangPicker)} color={colors.textOnPrimary} ariaLabel="Change language">
                   <span style={{ fontSize: 11, fontWeight: 600 }}>{LANG_META[chat.language]?.flag || '🌐'}</span>
                 </HeaderBtn>
               )}
-              <HeaderBtn onClick={handleToggle} color={colors.textOnPrimary}>
+              <HeaderBtn onClick={handleToggle} color={colors.textOnPrimary} ariaLabel="Minimize chat">
                 {I.minimize}
               </HeaderBtn>
             </div>
@@ -401,7 +449,7 @@ export function Widget(props: WidgetConfig) {
 
           {/* ─── Language Picker (overlay) ─── */}
           {showLangPicker && (
-            <div className="rc-fade-in" style={{
+            <div className="rc-fade-in" role="radiogroup" aria-label="Select language" style={{
               background: 'var(--rc-surface)', borderBottom: '1px solid var(--rc-border)',
               padding: '10px 14px', display: 'flex', flexWrap: 'wrap', gap: 6,
               maxHeight: 140, overflowY: 'auto',
@@ -412,6 +460,8 @@ export function Widget(props: WidgetConfig) {
                 const active = chat.language === l;
                 return (
                   <button key={l} onClick={() => { chat.setLanguage(l); setShowLangPicker(false); }}
+                    aria-label={`Switch to ${meta.label}`}
+                    aria-pressed={active}
                     style={{
                       padding: '5px 12px', fontSize: 12, borderRadius: 'var(--rc-radius-pill)',
                       cursor: 'pointer', transition: 'all 0.2s',
@@ -495,9 +545,9 @@ export function Widget(props: WidgetConfig) {
 }
 
 // ─── Header icon button ───
-function HeaderBtn({ onClick, children, color }: { onClick: () => void; children: React.ReactNode; color: string }) {
+function HeaderBtn({ onClick, children, color, ariaLabel }: { onClick: () => void; children: React.ReactNode; color: string; ariaLabel?: string }) {
   return (
-    <button onClick={onClick} style={{
+    <button onClick={onClick} aria-label={ariaLabel} style={{
       background: 'rgba(255,255,255,0.12)', border: 'none', borderRadius: 8,
       width: 32, height: 32, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
       color, transition: 'background 0.15s',
@@ -645,18 +695,18 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
           );
         })}
         {isTyping && features.enableTypingIndicator && (
-          <div className="rc-msg-enter" style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingTop: 4 }}>
+          <div className="rc-msg-enter" role="status" aria-label="Assistant is typing" style={{ display: 'flex', alignItems: 'flex-end', gap: 8, paddingTop: 4 }}>
             <div className="rc-avatar" style={{ background: `linear-gradient(135deg, ${theme.colors.gradientFrom}, ${theme.colors.gradientTo})`, width: 28, height: 28, fontSize: 11 }}>
-              <span>🤖</span>
+              <span aria-hidden="true">🤖</span>
             </div>
             <div style={{
               display: 'flex', gap: 5, padding: '12px 18px',
               background: 'var(--rc-bubble-bot)', borderRadius: 'var(--rc-radius-bubble)',
               borderBottomLeftRadius: 6,
             }}>
-              <span className="rc-typing-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
-              <span className="rc-typing-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
-              <span className="rc-typing-dot" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
+              <span className="rc-typing-dot" aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
+              <span className="rc-typing-dot" aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
+              <span className="rc-typing-dot" aria-hidden="true" style={{ width: 7, height: 7, borderRadius: '50%', background: 'var(--rc-text-tertiary)' }} />
             </div>
           </div>
         )}
@@ -664,18 +714,18 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
       </div>
 
       {/* Action chips */}
-      <div style={{ display: 'flex', gap: 6, padding: '6px 14px', borderTop: '1px solid var(--rc-border-subtle)', flexWrap: 'wrap' }}>
-        <button className="rc-btn-ghost" onClick={onEscalate}>
+      <div role="toolbar" aria-label="Chat actions" style={{ display: 'flex', gap: 6, padding: '6px 14px', borderTop: '1px solid var(--rc-border-subtle)', flexWrap: 'wrap' }}>
+        <button className="rc-btn-ghost" onClick={onEscalate} aria-label="Talk to a human agent">
           {I.agent} {t('escalate')}
         </button>
         {isBusinessHours && features.enableVoip && (
-          <button className="rc-btn-ghost" onClick={onCall}>
+          <button className="rc-btn-ghost" onClick={onCall} aria-label="Start a phone call">
             {I.phone} {t('call')}
           </button>
         )}
         {features.enableCsat && messages.length > 2 && (
-          <button className="rc-btn-ghost" onClick={onCsat} style={{ marginLeft: 'auto' }}>
-            ⭐ {t('rate_experience')}
+          <button className="rc-btn-ghost" onClick={onCsat} style={{ marginLeft: 'auto' }} aria-label="Rate your experience">
+            <span aria-hidden="true">⭐</span> {t('rate_experience')}
           </button>
         )}
       </div>
@@ -688,10 +738,11 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
       }}>
         {features.enableAttachments && onUpload && (
           <>
-            <input ref={fileRef} type="file" hidden
+            <input ref={fileRef} type="file" hidden aria-label="Upload file"
               accept={features.allowedFileTypes?.join(',') || 'image/*,application/pdf,.doc,.docx,.xls,.xlsx'}
               onChange={handleFileChange} />
             <button type="button" onClick={() => fileRef.current?.click()} disabled={uploading}
+              aria-label={uploading ? 'Uploading file...' : 'Attach a file'}
               style={{
                 background: 'none', border: 'none', cursor: uploading ? 'wait' : 'pointer', padding: 4,
                 color: uploading ? 'var(--rc-primary)' : 'var(--rc-text-tertiary)', display: 'flex', transition: 'color 0.15s',
@@ -699,7 +750,7 @@ function ChatView({ theme, t, messages, isTyping, onSend, onEscalate, onCall, on
               onMouseEnter={e => { if (!uploading) e.currentTarget.style.color = 'var(--rc-text-secondary)'; }}
               onMouseLeave={e => { if (!uploading) e.currentTarget.style.color = 'var(--rc-text-tertiary)'; }}
             >
-              {uploading ? <span style={{ animation: 'rc-spin 1s linear infinite', display: 'inline-block' }}>⟳</span> : I.attach}
+              {uploading ? <span aria-hidden="true" style={{ animation: 'rc-spin 1s linear infinite', display: 'inline-block' }}>⟳</span> : I.attach}
             </button>
           </>
         )}
@@ -768,7 +819,7 @@ function RichContentBlock({ content, theme, onQuickReply }: {
           borderRadius: 14, overflow: 'hidden', maxWidth: 280,
         }}>
           {content.imageUrl && (
-            <img src={content.imageUrl} alt="" style={{ width: '100%', height: 140, objectFit: 'cover' }} />
+            <img src={content.imageUrl} alt={content.title || 'Card image'} style={{ width: '100%', height: 140, objectFit: 'cover' }} />
           )}
           <div style={{ padding: '12px 14px' }}>
             {content.title && <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--rc-text)', marginBottom: 4 }}>{content.title}</div>}

@@ -7,7 +7,7 @@ const router = Router();
 
 router.get('/', requireAgent, asyncRoute(async (req, res) => {
   const { from, to } = req.query;
-  const stats = await getAnalyticsStats({ from, to });
+  const stats = await getAnalyticsStats({ from, to, tenantId: req.tenantId });
   res.json(stats);
 }));
 

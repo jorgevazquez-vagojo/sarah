@@ -9,7 +9,13 @@ const secret = JWT_SECRET || 'dev-secret-' + require('crypto').randomBytes(16).t
 
 function generateToken(agent) {
   return jwt.sign(
-    { id: agent.id, username: agent.username, displayName: agent.display_name, role: agent.role || 'agent' },
+    {
+      id: agent.id,
+      username: agent.username,
+      displayName: agent.display_name,
+      role: agent.role || 'agent',
+      tenantId: agent.tenant_id || null,
+    },
     secret,
     { expiresIn: '12h' }
   );
@@ -20,6 +26,7 @@ function verifyToken(token) {
 }
 
 // Middleware: require JWT for agent endpoints
+// Sets req.agent (decoded JWT) and req.tenantId for downstream tenant isolation
 function requireAgent(req, res, next) {
   const header = req.headers.authorization;
   if (!header?.startsWith('Bearer ')) {
@@ -27,6 +34,8 @@ function requireAgent(req, res, next) {
   }
   try {
     req.agent = verifyToken(header.slice(7));
+    // Propagate tenantId from the JWT to the request for tenant isolation
+    req.tenantId = req.agent.tenantId || null;
     next();
   } catch (e) {
     logger.warn(`Invalid agent token: ${e.message}`);
@@ -35,12 +44,23 @@ function requireAgent(req, res, next) {
 }
 
 // Middleware: require API key for widget
+// Also resolves tenantId from the tenant's API key in the database
 function requireApiKey(req, res, next) {
   const key = req.headers['x-api-key'] || req.query.apiKey;
   if (!key || key !== process.env.WIDGET_API_KEY) {
     // In development, allow without key ONLY if explicitly opted in
     if (process.env.NODE_ENV === 'development' && process.env.DEV_SKIP_AUTH === 'true') return next();
     return res.status(403).json({ error: 'Invalid API key' });
+  }
+  next();
+}
+
+// Middleware: resolve tenant from query param or header
+// Sets req.tenantId for use by downstream handlers
+function resolveTenant(req, _res, next) {
+  // Priority: JWT tenantId > X-Tenant-ID header > tenant query param
+  if (!req.tenantId) {
+    req.tenantId = req.headers['x-tenant-id'] || req.query.tenant || null;
   }
   next();
 }
@@ -56,4 +76,4 @@ function requireRole(...roles) {
   };
 }
 
-module.exports = { generateToken, verifyToken, requireAgent, requireApiKey, requireRole };
+module.exports = { generateToken, verifyToken, requireAgent, requireApiKey, requireRole, resolveTenant };

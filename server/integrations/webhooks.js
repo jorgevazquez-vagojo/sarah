@@ -18,11 +18,19 @@ function isAllowedUrl(urlStr) {
   }
 }
 
-async function triggerWebhooks(event, data) {
-  const result = await db.query(
-    `SELECT * FROM webhooks WHERE is_active = true AND $1 = ANY(events) AND failure_count < 50`,
-    [event]
-  );
+async function triggerWebhooks(event, data, tenantId) {
+  let result;
+  if (tenantId) {
+    result = await db.query(
+      `SELECT * FROM webhooks WHERE is_active = true AND $1 = ANY(events) AND failure_count < 50 AND tenant_id = $2`,
+      [event, tenantId]
+    );
+  } else {
+    result = await db.query(
+      `SELECT * FROM webhooks WHERE is_active = true AND $1 = ANY(events) AND failure_count < 50`,
+      [event]
+    );
+  }
 
   for (const webhook of result.rows) {
     if (!isAllowedUrl(webhook.url)) {

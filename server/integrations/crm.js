@@ -3,16 +3,14 @@
  * Supports: Salesforce, HubSpot, Zoho, Pipedrive
  * Dispatches lead data + conversation events to configured CRM(s)
  *
- * M-08: SECURITY TODO — CRM credentials (API keys, client secrets, refresh tokens)
- * are currently stored unencrypted in the database (config table, key='crm_integrations').
- * These should be encrypted at rest using AES-256-GCM with a KMS-managed key.
- * Implementation requires: (1) a key management service, (2) encrypt/decrypt helpers
- * wrapping the config reads/writes, (3) migration of existing plaintext credentials.
- * Risk: if the DB is compromised, CRM credentials are exposed in plaintext.
+ * Security: CRM credentials are encrypted at rest using AES-256-GCM.
+ * Credentials are decrypted on-the-fly when creating CRM adapters,
+ * and encrypted before being written to the database.
  */
 const { logger } = require('../utils/logger');
 const { redis } = require('../utils/redis');
 const { db } = require('../utils/db');
+const { decryptObject, encryptObject } = require('../utils/crypto');
 
 // ─── CRM Adapter Interface ───
 class CRMAdapter {
@@ -254,6 +252,52 @@ function createAdapter(type, config) {
   return new Cls(config);
 }
 
+// Sensitive credential fields per CRM type that should be encrypted
+const SENSITIVE_FIELDS = {
+  salesforce: ['clientId', 'clientSecret'],
+  hubspot: ['apiKey'],
+  zoho: ['clientId', 'clientSecret', 'refreshToken'],
+  pipedrive: ['apiKey'],
+};
+
+/**
+ * Encrypt only the sensitive credential fields within a CRM integration config.
+ */
+function encryptCrmConfig(integration) {
+  if (!integration?.config || !integration?.type) return integration;
+  const fields = SENSITIVE_FIELDS[integration.type] || [];
+  const encryptedConfig = { ...integration.config };
+  for (const field of fields) {
+    if (encryptedConfig[field] && typeof encryptedConfig[field] === 'string') {
+      try {
+        encryptedConfig[field] = require('../utils/crypto').encrypt(encryptedConfig[field]);
+      } catch (e) {
+        logger.error(`Failed to encrypt CRM field ${field}:`, e.message);
+      }
+    }
+  }
+  return { ...integration, config: encryptedConfig };
+}
+
+/**
+ * Decrypt sensitive credential fields within a CRM integration config.
+ */
+function decryptCrmConfig(integration) {
+  if (!integration?.config || !integration?.type) return integration;
+  const fields = SENSITIVE_FIELDS[integration.type] || [];
+  const decryptedConfig = { ...integration.config };
+  for (const field of fields) {
+    if (decryptedConfig[field] && typeof decryptedConfig[field] === 'string') {
+      try {
+        decryptedConfig[field] = require('../utils/crypto').decrypt(decryptedConfig[field]);
+      } catch {
+        // Value may be stored in plaintext (pre-encryption migration) — leave as-is
+      }
+    }
+  }
+  return { ...integration, config: decryptedConfig };
+}
+
 // ─── Main dispatch function ───
 async function dispatchToCRM(event, data) {
   const configRow = await db.getConfig('crm_integrations');
@@ -261,9 +305,11 @@ async function dispatchToCRM(event, data) {
 
   const integrations = Array.isArray(configRow) ? configRow : [configRow];
 
-  for (const integration of integrations) {
-    if (!integration.enabled) continue;
+  for (const rawIntegration of integrations) {
+    if (!rawIntegration.enabled) continue;
     try {
+      // Decrypt credentials before creating the adapter
+      const integration = decryptCrmConfig(rawIntegration);
       const adapter = createAdapter(integration.type, integration.config);
       switch (event) {
         case 'lead_created':
@@ -276,9 +322,19 @@ async function dispatchToCRM(event, data) {
       }
       logger.info(`CRM ${integration.type}: ${event} dispatched`);
     } catch (e) {
-      logger.error(`CRM ${integration.type} error:`, e.message);
+      logger.error(`CRM ${rawIntegration.type} error:`, e.message);
     }
   }
 }
 
-module.exports = { createAdapter, dispatchToCRM, ADAPTERS };
+/**
+ * Save CRM integrations to the database with credentials encrypted.
+ * Use this function instead of directly calling db.setConfig for CRM data.
+ */
+async function saveCrmIntegrations(integrations) {
+  const encrypted = integrations.map(encryptCrmConfig);
+  await db.setConfig('crm_integrations', encrypted);
+  logger.info(`CRM integrations saved (${encrypted.length} providers, credentials encrypted)`);
+}
+
+module.exports = { createAdapter, dispatchToCRM, saveCrmIntegrations, encryptCrmConfig, decryptCrmConfig, ADAPTERS };

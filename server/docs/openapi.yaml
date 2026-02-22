@@ -1,0 +1,2190 @@
+openapi: 3.0.3
+info:
+  title: Sarah Chatbot API
+  description: |
+    REST API for the Sarah premium chatbot platform.
+    Includes endpoints for widget configuration, chat management, agent dashboard,
+    VoIP calls, leads, analytics, AI caller, wallboard, and administration.
+  version: 1.0.0
+  contact:
+    name: Redegal
+    url: https://redegal.com
+
+servers:
+  - url: http://localhost:3000
+    description: Local development
+  - url: https://sarah.redegal.com
+    description: Production
+
+tags:
+  - name: Health
+    description: Server health checks
+  - name: Config
+    description: Widget configuration, themes, tenants, canned responses, webhooks
+  - name: Chat
+    description: Chat initialization and history
+  - name: Leads
+    description: Lead management
+  - name: Agents
+    description: Agent authentication and management
+  - name: Calls
+    description: VoIP call management, recordings, monitoring
+  - name: Callbacks
+    description: Callback scheduling
+  - name: Analytics
+    description: Analytics and reporting
+  - name: Upload
+    description: File uploads
+  - name: Settings
+    description: System settings and setup wizard
+  - name: Training
+    description: AI training, feedback, and knowledge base
+  - name: AI Caller
+    description: Outbound AI-powered calling
+  - name: Wallboard
+    description: Real-time contact center wallboard
+  - name: Queues
+    description: Call queue management
+  - name: Transcripts
+    description: Conversation transcript export
+  - name: Docs
+    description: API documentation
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: Agent JWT token obtained from POST /api/agents/login
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: API key for widget/external integrations
+
+  schemas:
+    HealthCheck:
+      type: object
+      properties:
+        server:
+          type: string
+          example: ok
+        postgres:
+          type: string
+          example: ok
+        redis:
+          type: string
+          example: ok
+
+    WidgetConfig:
+      type: object
+      properties:
+        branding:
+          type: object
+          properties:
+            companyName:
+              type: string
+              example: Redegal
+            logoUrl:
+              type: string
+            poweredByText:
+              type: string
+            showPoweredBy:
+              type: boolean
+        colors:
+          type: object
+          properties:
+            primary:
+              type: string
+              example: "#007fff"
+            gradientFrom:
+              type: string
+            gradientTo:
+              type: string
+        features:
+          type: object
+          properties:
+            enableVoip:
+              type: boolean
+            enableFileUpload:
+              type: boolean
+            enableCsat:
+              type: boolean
+            enableLanguageSelector:
+              type: boolean
+        layout:
+          type: object
+          properties:
+            position:
+              type: string
+              enum: [bottom-right, bottom-left]
+            width:
+              type: integer
+            maxHeight:
+              type: integer
+        i18n:
+          type: object
+          properties:
+            defaultLanguage:
+              type: string
+            availableLanguages:
+              type: array
+              items:
+                type: string
+        businessHours:
+          type: object
+          properties:
+            timezone:
+              type: string
+            schedule:
+              type: array
+              items:
+                type: object
+
+    ChatConfig:
+      type: object
+      properties:
+        isBusinessHours:
+          type: boolean
+        languages:
+          type: array
+          items:
+            type: string
+        businessLines:
+          type: array
+          items:
+            type: string
+        primaryColor:
+          type: string
+
+    Message:
+      type: object
+      properties:
+        sender:
+          type: string
+          enum: [visitor, bot, agent, system]
+        content:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+
+    Conversation:
+      type: object
+      properties:
+        conversationId:
+          type: string
+          format: uuid
+        state:
+          type: string
+          enum: [chat_idle, chat_active, chat_waiting_agent, closed]
+        language:
+          type: string
+        businessLine:
+          type: string
+        messages:
+          type: array
+          items:
+            $ref: '#/components/schemas/Message'
+
+    Lead:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        phone:
+          type: string
+        company:
+          type: string
+        status:
+          type: string
+          enum: [new, contacted, qualified, converted, lost]
+        score:
+          type: integer
+        businessLine:
+          type: string
+        notes:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    Agent:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        username:
+          type: string
+        displayName:
+          type: string
+        role:
+          type: string
+          enum: [admin, agent, supervisor]
+        email:
+          type: string
+        languages:
+          type: array
+          items:
+            type: string
+        businessLines:
+          type: array
+          items:
+            type: string
+        status:
+          type: string
+          enum: [online, busy, away, offline]
+
+    LoginRequest:
+      type: object
+      required: [username, password]
+      properties:
+        username:
+          type: string
+          minLength: 2
+          maxLength: 100
+        password:
+          type: string
+          minLength: 4
+          maxLength: 200
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        agent:
+          $ref: '#/components/schemas/Agent'
+
+    Webhook:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+          format: uri
+        events:
+          type: array
+          items:
+            type: string
+        secret:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    CannedResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        shortcut:
+          type: string
+          example: /hello
+        title:
+          type: string
+        content:
+          type: string
+        language:
+          type: string
+        business_line:
+          type: string
+        category:
+          type: string
+        usage_count:
+          type: integer
+
+    Theme:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        tenant_id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        is_active:
+          type: boolean
+        config:
+          $ref: '#/components/schemas/WidgetConfig'
+
+    Callback:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        phone:
+          type: string
+        name:
+          type: string
+        date:
+          type: string
+          format: date
+        timeSlot:
+          type: string
+        status:
+          type: string
+          enum: [pending, confirmed, completed, missed, cancelled]
+
+    CallRecord:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        conversation_id:
+          type: string
+          format: uuid
+        agent_id:
+          type: string
+          format: uuid
+        status:
+          type: string
+          enum: [active, ended, missed, failed]
+        duration_seconds:
+          type: integer
+        created_at:
+          type: string
+          format: date-time
+
+    FileUpload:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        url:
+          type: string
+        name:
+          type: string
+        mimeType:
+          type: string
+        size:
+          type: integer
+
+    AnalyticsStats:
+      type: object
+      properties:
+        totalConversations:
+          type: integer
+        totalMessages:
+          type: integer
+        avgCsat:
+          type: number
+        leadCount:
+          type: integer
+
+    WallboardData:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        global:
+          type: object
+          properties:
+            activeCalls:
+              type: integer
+            activeChats:
+              type: integer
+            inQueue:
+              type: integer
+            agentsOnline:
+              type: integer
+            slaPercent:
+              type: integer
+        queues:
+          type: array
+          items:
+            type: object
+        agents:
+          type: array
+          items:
+            type: object
+        alerts:
+          type: array
+          items:
+            type: object
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+
+paths:
+  # ═══════════════════════════════════════════════════════
+  # HEALTH
+  # ═══════════════════════════════════════════════════════
+  /health:
+    get:
+      tags: [Health]
+      summary: Health check
+      description: Returns the health status of the server, PostgreSQL, and Redis.
+      responses:
+        '200':
+          description: All systems operational
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+        '503':
+          description: One or more systems are down
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthCheck'
+
+  # ═══════════════════════════════════════════════════════
+  # CONFIG
+  # ═══════════════════════════════════════════════════════
+  /api/config/widget:
+    get:
+      tags: [Config]
+      summary: Get widget theme configuration
+      description: Public endpoint called by the widget loader to fetch theme, branding, and feature configuration.
+      parameters:
+        - name: tenant
+          in: query
+          schema:
+            type: string
+          description: Tenant slug (defaults to "redegal")
+      responses:
+        '200':
+          description: Widget configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WidgetConfig'
+
+  /api/config/languages:
+    get:
+      tags: [Config]
+      summary: Get available languages
+      responses:
+        '200':
+          description: List of supported languages
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  languages:
+                    type: array
+                    items:
+                      type: string
+
+  /api/config/theme:
+    get:
+      tags: [Config]
+      summary: List all themes
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Array of themes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Theme'
+
+  /api/config/theme/{id}:
+    put:
+      tags: [Config]
+      summary: Update a theme
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [config]
+              properties:
+                config:
+                  $ref: '#/components/schemas/WidgetConfig'
+      responses:
+        '200':
+          description: Updated theme
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Theme'
+        '404':
+          description: Theme not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/config/tenants:
+    post:
+      tags: [Config]
+      summary: Create a new tenant
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [slug, name]
+              properties:
+                slug:
+                  type: string
+                name:
+                  type: string
+                domain:
+                  type: string
+      responses:
+        '200':
+          description: Created tenant
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/config/canned:
+    get:
+      tags: [Config]
+      summary: List canned responses
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: language
+          in: query
+          schema:
+            type: string
+        - name: businessLine
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Array of canned responses
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CannedResponse'
+    post:
+      tags: [Config]
+      summary: Create a canned response
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [shortcut, title, content]
+              properties:
+                shortcut:
+                  type: string
+                title:
+                  type: string
+                content:
+                  type: string
+                language:
+                  type: string
+                businessLine:
+                  type: string
+                category:
+                  type: string
+      responses:
+        '200':
+          description: Created canned response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CannedResponse'
+
+  /api/config/canned/{id}:
+    delete:
+      tags: [Config]
+      summary: Delete a canned response
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Deleted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+
+  /api/config/webhooks:
+    get:
+      tags: [Config]
+      summary: List webhooks
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Array of webhooks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Webhook'
+    post:
+      tags: [Config]
+      summary: Create a webhook
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [url, events]
+              properties:
+                url:
+                  type: string
+                  format: uri
+                events:
+                  type: array
+                  items:
+                    type: string
+                secret:
+                  type: string
+      responses:
+        '200':
+          description: Created webhook
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Webhook'
+
+  # ═══════════════════════════════════════════════════════
+  # CHAT
+  # ═══════════════════════════════════════════════════════
+  /api/chat/config:
+    get:
+      tags: [Chat]
+      summary: Get chat initialization config
+      description: Returns business hours, languages, business lines, and primary color.
+      responses:
+        '200':
+          description: Chat configuration
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ChatConfig'
+
+  /api/chat/history/{visitorId}:
+    get:
+      tags: [Chat]
+      summary: Get conversation history
+      security:
+        - ApiKey: []
+      parameters:
+        - name: visitorId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Conversation with messages
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Conversation'
+
+  # ═══════════════════════════════════════════════════════
+  # LEADS
+  # ═══════════════════════════════════════════════════════
+  /api/leads:
+    get:
+      tags: [Leads]
+      summary: List leads
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: status
+          in: query
+          schema:
+            type: string
+            enum: [new, contacted, qualified, converted, lost]
+        - name: businessLine
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 200
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Array of leads
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Lead'
+
+  /api/leads/{id}:
+    patch:
+      tags: [Leads]
+      summary: Update a lead
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                status:
+                  type: string
+                  enum: [new, contacted, qualified, converted, lost]
+                notes:
+                  type: string
+                  maxLength: 5000
+      responses:
+        '200':
+          description: Updated lead
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Lead'
+        '404':
+          description: Lead not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/leads/{id}/score:
+    post:
+      tags: [Leads]
+      summary: Score a lead
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Lead score
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  score:
+                    type: integer
+
+  # ═══════════════════════════════════════════════════════
+  # AGENTS
+  # ═══════════════════════════════════════════════════════
+  /api/agents/login:
+    post:
+      tags: [Agents]
+      summary: Agent login
+      description: Authenticates an agent and returns a JWT token. Rate limited to 5 attempts per minute per IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/agents/me:
+    get:
+      tags: [Agents]
+      summary: Get current agent profile
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Agent profile
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Agent'
+
+  /api/agents/status:
+    patch:
+      tags: [Agents]
+      summary: Update agent status
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [online, busy, away, offline]
+      responses:
+        '200':
+          description: Status updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+
+  /api/agents:
+    get:
+      tags: [Agents]
+      summary: List online agents
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Array of agents (without password hashes)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Agent'
+
+  /api/agents/queue:
+    get:
+      tags: [Agents]
+      summary: Get waiting conversations queue
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Array of waiting conversations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  # ═══════════════════════════════════════════════════════
+  # CALLS
+  # ═══════════════════════════════════════════════════════
+  /api/calls/credentials:
+    post:
+      tags: [Calls]
+      summary: Request SIP credentials for widget
+      security:
+        - ApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [visitorId]
+              properties:
+                visitorId:
+                  type: string
+                conversationId:
+                  type: string
+                  format: uuid
+      responses:
+        '200':
+          description: SIP credentials
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  callId:
+                    type: string
+                    format: uuid
+                  sip:
+                    type: object
+                  queue:
+                    type: string
+
+  /api/calls/{id}/end:
+    post:
+      tags: [Calls]
+      summary: End a call
+      security:
+        - ApiKey: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                duration:
+                  type: integer
+      responses:
+        '200':
+          description: Call ended
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+
+  /api/calls/stats:
+    get:
+      tags: [Calls]
+      summary: Get call statistics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Call statistics
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/calls/recordings:
+    get:
+      tags: [Calls]
+      summary: List calls with recordings
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: businessLine
+          in: query
+          schema:
+            type: string
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Array of calls with recordings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CallRecord'
+
+  /api/calls/recordings/{callId}:
+    get:
+      tags: [Calls]
+      summary: Get call detail with transcript
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: callId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Call detail
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CallRecord'
+        '404':
+          description: Call not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/calls/recordings/file/{filename}:
+    get:
+      tags: [Calls]
+      summary: Serve recording audio file
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: filename
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Audio file
+          content:
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Recording file not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/calls/recordings/{callId}/upload:
+    post:
+      tags: [Calls]
+      summary: Upload a call recording (PBX webhook)
+      security:
+        - ApiKey: []
+      parameters:
+        - name: callId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                recording:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Recording URL
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+
+  /api/calls/recordings/{callId}/transcribe:
+    post:
+      tags: [Calls]
+      summary: Transcribe a call recording
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: callId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Transcript
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  transcript:
+                    type: string
+
+  /api/calls/recordings/{callId}/monitor:
+    post:
+      tags: [Calls]
+      summary: Start monitoring a live call (admin/supervisor)
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: callId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Monitoring started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  sipUri:
+                    type: string
+                  callId:
+                    type: string
+
+  /api/calls/recordings/{callId}/monitor/stop:
+    post:
+      tags: [Calls]
+      summary: Stop monitoring a call
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: callId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Monitoring stopped
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /api/calls/cleanup:
+    post:
+      tags: [Calls]
+      summary: Manual recording cleanup (admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Cleanup result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  # ═══════════════════════════════════════════════════════
+  # CALLBACKS
+  # ═══════════════════════════════════════════════════════
+  /api/callbacks/schedule:
+    post:
+      tags: [Callbacks]
+      summary: Schedule a callback from widget
+      security:
+        - ApiKey: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [phone, date, timeSlot, visitorId]
+              properties:
+                phone:
+                  type: string
+                name:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                timeSlot:
+                  type: string
+                timeRange:
+                  type: string
+                businessLine:
+                  type: string
+                visitorId:
+                  type: string
+                language:
+                  type: string
+                conversationId:
+                  type: string
+                  format: uuid
+                note:
+                  type: string
+      responses:
+        '200':
+          description: Callback scheduled
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  callbackId:
+                    type: string
+                    format: uuid
+                  scheduledFor:
+                    type: string
+
+  /api/callbacks/slots/{date}:
+    get:
+      tags: [Callbacks]
+      summary: Get available callback slots for a date
+      parameters:
+        - name: date
+          in: path
+          required: true
+          schema:
+            type: string
+            format: date
+          description: Date in YYYY-MM-DD format
+        - name: businessLine
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Available time slots
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  slots:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        slot:
+                          type: string
+                        timeRange:
+                          type: string
+                        available:
+                          type: boolean
+                        agentCount:
+                          type: integer
+
+  /api/callbacks:
+    get:
+      tags: [Callbacks]
+      summary: List callbacks with filters
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: businessLine
+          in: query
+          schema:
+            type: string
+        - name: date
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Array of callbacks
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Callback'
+
+  /api/callbacks/{id}/status:
+    put:
+      tags: [Callbacks]
+      summary: Update callback status
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [completed, confirmed, missed, cancelled]
+      responses:
+        '200':
+          description: Updated callback
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Callback'
+
+  # ═══════════════════════════════════════════════════════
+  # ANALYTICS
+  # ═══════════════════════════════════════════════════════
+  /api/analytics:
+    get:
+      tags: [Analytics]
+      summary: Get analytics statistics
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: from
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: to
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: Analytics stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AnalyticsStats'
+
+  # ═══════════════════════════════════════════════════════
+  # UPLOAD
+  # ═══════════════════════════════════════════════════════
+  /api/upload:
+    post:
+      tags: [Upload]
+      summary: Upload a file
+      security:
+        - ApiKey: []
+      parameters:
+        - name: conversationId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: sender
+          in: query
+          schema:
+            type: string
+            default: visitor
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Upload successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileUpload'
+        '400':
+          description: Invalid file type or size
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: File too large (max 10 MB)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  # ═══════════════════════════════════════════════════════
+  # SETTINGS
+  # ═══════════════════════════════════════════════════════
+  /api/settings/setup:
+    get:
+      tags: [Settings]
+      summary: Check if initial setup is needed
+      responses:
+        '200':
+          description: Setup status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  setupRequired:
+                    type: boolean
+    post:
+      tags: [Settings]
+      summary: Complete initial setup
+      description: First-time setup (no auth required). If already completed, requires admin auth.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                smtp:
+                  type: object
+                  properties:
+                    host:
+                      type: string
+                    port:
+                      type: integer
+                    user:
+                      type: string
+                    password:
+                      type: string
+                    from:
+                      type: string
+                sip:
+                  type: object
+                  properties:
+                    domain:
+                      type: string
+                    port:
+                      type: integer
+                    extension:
+                      type: string
+                    password:
+                      type: string
+                ai:
+                  type: object
+                  properties:
+                    provider:
+                      type: string
+                hours:
+                  type: object
+                  properties:
+                    timezone:
+                      type: string
+                    start:
+                      type: string
+                    end:
+                      type: string
+                brand:
+                  type: object
+                  properties:
+                    primaryColor:
+                      type: string
+                    companyName:
+                      type: string
+      responses:
+        '200':
+          description: Setup completed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/settings:
+    get:
+      tags: [Settings]
+      summary: Get all settings (admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All settings
+          content:
+            application/json:
+              schema:
+                type: object
+        '403':
+          description: Admin access required
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    put:
+      tags: [Settings]
+      summary: Update settings (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [settings]
+              properties:
+                settings:
+                  type: object
+      responses:
+        '200':
+          description: Settings updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  updated:
+                    type: array
+                    items:
+                      type: string
+
+  /api/settings/test-smtp:
+    post:
+      tags: [Settings]
+      summary: Test SMTP connection (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [host, user, password]
+              properties:
+                host:
+                  type: string
+                port:
+                  type: integer
+                user:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Test result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/settings/test-sip:
+    post:
+      tags: [Settings]
+      summary: Test SIP connectivity (admin only)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [domain, extension]
+              properties:
+                domain:
+                  type: string
+                port:
+                  type: integer
+                extension:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Test result
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  # ═══════════════════════════════════════════════════════
+  # TRAINING
+  # ═══════════════════════════════════════════════════════
+  /api/training/stats:
+    get:
+      tags: [Training]
+      summary: Get training statistics
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Training stats
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/training/responses:
+    get:
+      tags: [Training]
+      summary: List responses for review
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: feedback
+          in: query
+          schema:
+            type: string
+        - name: businessLine
+          in: query
+          schema:
+            type: string
+        - name: language
+          in: query
+          schema:
+            type: string
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: Array of responses for review
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/training/responses/{id}/feedback:
+    post:
+      tags: [Training]
+      summary: Submit feedback for a response
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [feedback]
+              properties:
+                feedback:
+                  type: string
+                  enum: [good, bad]
+                correctedResponse:
+                  type: string
+                notes:
+                  type: string
+      responses:
+        '200':
+          description: Feedback submitted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /api/training/scrape-history:
+    get:
+      tags: [Training]
+      summary: Get scrape history
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Scrape history
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+
+  /api/training/scrape:
+    post:
+      tags: [Training]
+      summary: Trigger a manual scrape
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Scrape result
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/training/embed-kb:
+    post:
+      tags: [Training]
+      summary: Trigger embedding of existing knowledge base entries
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Embedding started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  # ═══════════════════════════════════════════════════════
+  # AI CALLER
+  # ═══════════════════════════════════════════════════════
+  /api/ai-caller/call:
+    post:
+      tags: [AI Caller]
+      summary: Start a single AI call
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [targetNumber, greeting]
+              properties:
+                targetNumber:
+                  type: string
+                targetName:
+                  type: string
+                callerIdName:
+                  type: string
+                greeting:
+                  type: string
+                systemPrompt:
+                  type: string
+                maxTurns:
+                  type: integer
+                  default: 8
+                businessLine:
+                  type: string
+      responses:
+        '200':
+          description: Call started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  callId:
+                    type: string
+                  targetNumber:
+                    type: string
+                  state:
+                    type: string
+
+  /api/ai-caller/batch:
+    post:
+      tags: [AI Caller]
+      summary: Start multiple AI calls (max 20)
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [calls]
+              properties:
+                calls:
+                  type: array
+                  maxItems: 20
+                  items:
+                    type: object
+                    required: [targetNumber, greeting]
+                    properties:
+                      targetNumber:
+                        type: string
+                      targetName:
+                        type: string
+                      greeting:
+                        type: string
+                      businessLine:
+                        type: string
+      responses:
+        '200':
+          description: Batch started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  started:
+                    type: integer
+                  calls:
+                    type: array
+                    items:
+                      type: object
+
+  /api/ai-caller/status:
+    get:
+      tags: [AI Caller]
+      summary: Get all active calls status
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Active calls status
+          content:
+            application/json:
+              schema:
+                type: object
+
+  /api/ai-caller/call/{id}:
+    get:
+      tags: [AI Caller]
+      summary: Get single call detail
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Call detail
+          content:
+            application/json:
+              schema:
+                type: object
+        '404':
+          description: Call not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/ai-caller/hangup/{id}:
+    post:
+      tags: [AI Caller]
+      summary: Hangup a specific call
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Call hung up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  callId:
+                    type: string
+
+  /api/ai-caller/hangup-all:
+    post:
+      tags: [AI Caller]
+      summary: Hangup all active calls
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: All calls hung up
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/ai-caller/history:
+    get:
+      tags: [AI Caller]
+      summary: Get completed call history
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+      responses:
+        '200':
+          description: Call history
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  calls:
+                    type: array
+                    items:
+                      type: object
+
+  /api/ai-caller/inbound/start:
+    post:
+      tags: [AI Caller]
+      summary: Start inbound SIP listener (admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Inbound listener started
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/ai-caller/inbound/stop:
+    post:
+      tags: [AI Caller]
+      summary: Stop inbound SIP listener (admin only)
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Inbound listener stopped
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  message:
+                    type: string
+
+  /api/ai-caller/schedule:
+    post:
+      tags: [AI Caller]
+      summary: Create Google Calendar event from call
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, date, time]
+              properties:
+                callId:
+                  type: string
+                title:
+                  type: string
+                date:
+                  type: string
+                  format: date
+                time:
+                  type: string
+                duration:
+                  type: integer
+                  default: 30
+                attendeeEmail:
+                  type: string
+                  format: email
+                description:
+                  type: string
+      responses:
+        '200':
+          description: Calendar event created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  event:
+                    type: object
+
+  # ═══════════════════════════════════════════════════════
+  # WALLBOARD
+  # ═══════════════════════════════════════════════════════
+  /api/wallboard:
+    get:
+      tags: [Wallboard]
+      summary: Get wallboard data
+      description: Returns complete real-time contact center metrics including global stats, queue status, agent states, alerts, and hourly volume.
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: Wallboard data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WallboardData'
+
+  # ═══════════════════════════════════════════════════════
+  # TRANSCRIPTS
+  # ═══════════════════════════════════════════════════════
+  /api/conversations/{id}/transcript:
+    get:
+      tags: [Transcripts]
+      summary: Export conversation transcript
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: format
+          in: query
+          schema:
+            type: string
+            enum: [json, html, text]
+            default: json
+      responses:
+        '200':
+          description: Transcript in requested format
+          content:
+            application/json:
+              schema:
+                type: object
+            text/html:
+              schema:
+                type: string
+            text/plain:
+              schema:
+                type: string
+
+  # ═══════════════════════════════════════════════════════
+  # DOCS
+  # ═══════════════════════════════════════════════════════
+  /api/docs:
+    get:
+      tags: [Docs]
+      summary: Swagger UI — Interactive API documentation
+      responses:
+        '200':
+          description: Swagger UI HTML page
+
+  /api/docs/openapi.yaml:
+    get:
+      tags: [Docs]
+      summary: OpenAPI specification (YAML)
+      responses:
+        '200':
+          description: OpenAPI 3.0 YAML specification
+          content:
+            application/x-yaml:
+              schema:
+                type: string

@@ -4,26 +4,33 @@ const http = require('http');
 const express = require('express');
 const path = require('path');
 const { WebSocketServer } = require('ws');
-const { logger } = require('./utils/logger');
+const { logger, requestLoggerMiddleware } = require('./utils/logger');
 const { db } = require('./utils/db');
 const { redis } = require('./utils/redis');
 const { loadLanguages } = require('./utils/i18n');
 const { loadKnowledgeFiles, seedKnowledgeToDB } = require('./services/knowledge-base');
+const compression = require('compression');
+const { metricsMiddleware } = require('./services/metrics');
 const { corsMiddleware } = require('./middleware/cors');
 const { securityHeaders } = require('./middleware/security-headers');
 const { csrfProtection } = require('./middleware/csrf');
 const { requestId } = require('./middleware/request-id');
+const { resolveTenant } = require('./middleware/auth');
 const { errorHandler, notFoundHandler } = require('./middleware/error-handler');
 
 const app = express();
 const server = http.createServer(app);
 
 // ─── Middleware ───
+app.use(compression());
 app.use(requestId);
+app.use(requestLoggerMiddleware);
+app.use(metricsMiddleware);
 app.use(securityHeaders);
 app.use(corsMiddleware);
 app.use(express.json({ limit: '100kb' }));
 app.use(csrfProtection);
+app.use(resolveTenant);
 
 // ─── Static files ───
 app.use('/widget', express.static(path.join(__dirname, 'public', 'widget')));
@@ -38,6 +45,7 @@ app.get('/robots.txt', (_req, res) => {
 });
 
 // ─── REST Routes ───
+app.use(require('./routes/metrics'));
 app.use(require('./routes/health'));
 app.use('/api/config', require('./routes/config'));
 app.use('/api/chat', require('./routes/chat'));
@@ -51,6 +59,7 @@ app.use('/api/settings', require('./routes/settings'));
 app.use('/api/training', require('./routes/training'));
 app.use('/api/ai-caller', require('./routes/ai-caller'));
 app.use('/api/wallboard', require('./routes/wallboard'));
+app.use('/api/docs', require('./routes/docs'));
 
 // ─── WebSocket upgrade handling ───
 const wssChat = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024 });
@@ -135,8 +144,9 @@ app.get('/setup', async (_req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'setup.html'));
 });
 
-// ─── Premium test page ───
+// ─── Premium test page (CSP nonce injected) ───
 app.get('/widget/test.html', (_req, res) => {
+  const nonce = res.locals.cspNonce;
   res.send(`<!DOCTYPE html>
 <html lang="es">
 <head>
@@ -191,18 +201,18 @@ app.get('/widget/test.html', (_req, res) => {
       <h3>Personalizar Widget en Tiempo Real</h3>
       <div class="config-row">
         <label>Color primario:</label>
-        <input type="color" value="#007fff" onchange="updateConfig('primaryColor', this.value)" />
+        <input type="color" id="cfg-color" value="#007fff" />
       </div>
       <div class="config-row">
         <label>Posicion:</label>
-        <select onchange="updateConfig('position', this.value)">
+        <select id="cfg-position">
           <option value="bottom-right">Abajo derecha</option>
           <option value="bottom-left">Abajo izquierda</option>
         </select>
       </div>
       <div class="config-row">
         <label>Idioma:</label>
-        <select onchange="updateConfig('language', this.value)">
+        <select id="cfg-language">
           <option value="auto">Auto-detectar</option>
           <option value="es">Espanol</option>
           <option value="en">English</option>
@@ -213,7 +223,7 @@ app.get('/widget/test.html', (_req, res) => {
     </div>
   </div>
 
-  <script>
+  <script nonce="${nonce}">
     window.Sarah = {
       baseUrl: window.location.origin + '/widget',
       apiUrl: 'ws://' + window.location.host + '/ws/chat',
@@ -221,12 +231,15 @@ app.get('/widget/test.html', (_req, res) => {
       language: 'auto',
       primaryColor: '#007fff'
     };
-    window.RdgBot = window.Sarah; // backward compatibility
+    window.RdgBot = window.Sarah;
     function updateConfig(key, val) {
       if (window.__redegalWidget) window.__redegalWidget.updateConfig({ [key]: val });
     }
+    document.getElementById('cfg-color').addEventListener('change', function() { updateConfig('primaryColor', this.value); });
+    document.getElementById('cfg-position').addEventListener('change', function() { updateConfig('position', this.value); });
+    document.getElementById('cfg-language').addEventListener('change', function() { updateConfig('language', this.value); });
   </script>
-  <script src="/widget/loader.js" async></script>
+  <script nonce="${nonce}" src="/widget/loader.js" async></script>
 </body>
 </html>`);
 });
