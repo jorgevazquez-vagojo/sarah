@@ -190,7 +190,9 @@ asyncio.run(main())
   const { execFileSync } = require('child_process');
   execFileSync('python3', [scriptFile, JSON.stringify({ text, voice, rate: TTS_RATE, output: mp3File })], { timeout: 20000 });
   try { fs.unlinkSync(scriptFile); } catch {}
-  execSync(`afconvert -f WAVE -d ulaw@8000 -c 1 "${mp3File}" "${ulawFile}"`, { timeout: 10000 });
+  // A-04: SECURITY FIX — Use execFileSync with array args to prevent shell injection
+  const { execFileSync: execFileSync2 } = require('child_process');
+  execFileSync2('afconvert', ['-f', 'WAVE', '-d', 'ulaw@8000', '-c', '1', mp3File, ulawFile], { timeout: 10000 });
   const wavData = fs.readFileSync(ulawFile);
   const audioData = wavData.subarray(44);
   try { fs.unlinkSync(mp3File); } catch {}

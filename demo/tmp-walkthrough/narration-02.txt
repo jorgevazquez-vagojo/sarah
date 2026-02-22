@@ -1,1 +1,0 @@
-Solo necesitamos Docker y Git instalados. El sistema se despliega con un unico comando.

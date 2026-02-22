@@ -1,1 +1,0 @@
-Al hacer clic, se abre la pantalla de bienvenida con las cuatro lineas de negocio. El visitante puede elegir directamente el area que le interesa o simplemente escribir su consulta.

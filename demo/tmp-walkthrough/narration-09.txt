@@ -1,1 +1,0 @@
-Las respuestas rapidas permiten a los agentes responder con shortcuts. Escriben barra hola y se expande automaticamente. Esto reduce el tiempo de respuesta drasticamente.

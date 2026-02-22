@@ -23,6 +23,9 @@ function securityHeaders(req, res, next) {
   const connectSrc = ["'self'", 'wss:', 'ws:', ...allowedOrigins].join(' ');
   res.setHeader('Content-Security-Policy', [
     "default-src 'self'",
+    // M-01: 'unsafe-inline' is required for the widget's Shadow DOM injection and inline
+    // event handlers on the corporate page. TODO: Replace with CSP nonces (generate per-request
+    // nonce, pass to templates) to eliminate 'unsafe-inline' entirely.
     "script-src 'self' 'unsafe-inline'",
     "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
     "font-src 'self' https://fonts.gstatic.com",

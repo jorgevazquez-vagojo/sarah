@@ -1,1 +1,0 @@
-Si el visitante escribe en otro idioma, el sistema lo detecta automaticamente y adapta todas las respuestas. Soportamos espanol, ingles, portugues y gallego.

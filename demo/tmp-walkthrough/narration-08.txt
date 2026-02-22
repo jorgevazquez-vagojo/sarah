@@ -1,1 +1,0 @@
-En configuracion personalizamos el widget. Elegimos el color corporativo de Redegal, activamos las funcionalidades que necesitamos y configuramos el horario. Todos los cambios se aplican en tiempo real.

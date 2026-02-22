@@ -1,1 +1,0 @@
-El visitante puede solicitar una llamada. Antes de conectar, el sistema ejecuta un test de conectividad verificando navegador, microfono y red. Si todo esta bien, la llamada se inicia automaticamente.

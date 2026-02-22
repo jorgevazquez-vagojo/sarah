@@ -2,6 +2,13 @@
  * CRM Integration Layer
  * Supports: Salesforce, HubSpot, Zoho, Pipedrive
  * Dispatches lead data + conversation events to configured CRM(s)
+ *
+ * M-08: SECURITY TODO — CRM credentials (API keys, client secrets, refresh tokens)
+ * are currently stored unencrypted in the database (config table, key='crm_integrations').
+ * These should be encrypted at rest using AES-256-GCM with a KMS-managed key.
+ * Implementation requires: (1) a key management service, (2) encrypt/decrypt helpers
+ * wrapping the config reads/writes, (3) migration of existing plaintext credentials.
+ * Risk: if the DB is compromised, CRM credentials are exposed in plaintext.
  */
 const { logger } = require('../utils/logger');
 const { redis } = require('../utils/redis');

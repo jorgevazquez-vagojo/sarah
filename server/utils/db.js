@@ -1,3 +1,12 @@
+/**
+ * M-09: SECURITY TODO — Multi-tenant isolation is incomplete.
+ * Currently, queries do not filter by tenant_id, which means data from different
+ * tenants could potentially be accessed across tenant boundaries. All queries in
+ * this module (conversations, messages, leads, agents, knowledge, calls, analytics)
+ * should include a tenant_id filter parameter once full multi-tenant isolation is
+ * implemented. Each request context must carry the authenticated tenant_id and pass
+ * it to every db function call.
+ */
 const { Pool } = require('pg');
 const { logger } = require('./logger');
 

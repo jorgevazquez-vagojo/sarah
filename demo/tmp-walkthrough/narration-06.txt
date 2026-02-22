@@ -1,1 +1,0 @@
-Accedemos al dashboard en la ruta barra dashboard. La pantalla de login tiene tema oscuro profesional con el logo de la empresa.

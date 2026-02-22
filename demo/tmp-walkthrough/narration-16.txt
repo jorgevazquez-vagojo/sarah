@@ -1,1 +1,0 @@
-Durante la llamada, el visitante ve un cronometro, indicador de calidad de conexion con barras de senal, y monitor de nivel de audio. Puede silenciar el microfono o colgar en cualquier momento.

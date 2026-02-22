@@ -52,7 +52,10 @@ function send(ws, type, data) {
 function initChatHandler(wss) {
   wss.on('connection', async (ws, req) => {
     const params = new URL(req.url, 'http://localhost').searchParams;
-    const visitorId = params.get('visitorId') || uuid();
+    // M-05: Validate visitorId format (UUID v4) to prevent injection
+    const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+    const providedId = params.get('visitorId');
+    const visitorId = (providedId && UUID_REGEX.test(providedId)) ? providedId : uuid();
     visitors.set(visitorId, ws);
     logger.info(`Chat WS connected: ${visitorId}`);
 
@@ -107,10 +110,11 @@ function initChatHandler(wss) {
         const msg = JSON.parse(raw);
         // Sanitize string content: max 2000 chars, strip control characters and HTML tags
         if (typeof msg.content === 'string') {
+          // M-10: Improved HTML sanitization — catches unclosed tags too
           msg.content = msg.content
             .slice(0, 2000)
             .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
-            .replace(/<[^>]*>/g, ''); // Strip HTML tags to prevent stored XSS
+            .replace(/<[^>]*>?/g, ''); // Strip HTML tags (including unclosed) to prevent stored XSS
         }
         await handleMessage(ws, visitorId, msg);
       } catch (e) {
@@ -648,24 +652,18 @@ async function handleRequestWebRTCCall(ws, visitorId, _msg) {
   const extensions = (process.env.CLICK2CALL_EXTENSIONS || '107').split(',');
   const targetExt = extensions[0]; // Primary agent extension
 
-  // Send Janus connection details to widget
+  // C-01: SECURITY FIX — Do NOT send SIP credentials to the browser.
+  // Janus handles SIP registration server-side via janus.plugin.sip.jcfg.
+  // Only send the callId, Janus WebSocket URL, and target URI to the client.
   const janusWsUrl = process.env.JANUS_PUBLIC_WS || `ws://${process.env.SERVER_PUBLIC_IP || 'localhost'}:8188`;
   const sipProxy = process.env.SIP_DOMAIN || 'cloudpbx1584.vozelia.com';
-  const sipUser = process.env.SIP_EXTENSION || '108';
-  const sipPassword = process.env.SIP_PASSWORD || '';
   const targetUri = `sip:${targetExt}@${sipProxy}`;
 
   send(ws, 'webrtc_ready', {
     callId,
     janusWsUrl,
-    sipProxy,
-    sipUser,
-    sipPassword,
     targetUri,
-    iceServers: [
-      { urls: 'stun:stun.l.google.com:19302' },
-      { urls: 'stun:stun1.l.google.com:19302' },
-    ],
+    // sipUser and sipPassword REMOVED — Janus handles SIP registration server-side
   });
 
   // Notify agents via Redis

@@ -1,1 +1,0 @@
-El panel principal muestra la cola de conversaciones en tiempo real. Como acabamos de instalar, la cola esta vacia. En la sidebar tenemos acceso a leads, analiticas y configuracion.

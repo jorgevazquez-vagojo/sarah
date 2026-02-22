@@ -22,11 +22,19 @@ router.get('/setup', async (_req, res) => {
   res.json({ setupRequired: !done });
 });
 
-// ─── Initial setup (no auth if first time) ───
-router.post('/setup', async (req, res) => {
+// ─── Initial setup ───
+// M-02: If setup is already complete, require admin authentication to prevent re-setup attacks
+router.post('/setup', async (req, res, next) => {
   const done = await settings.isSetupComplete();
   if (done) {
-    return res.status(403).json({ error: 'Setup already completed. Use the admin panel to change settings.' });
+    // Setup already done — require admin auth for any subsequent setup attempts
+    return requireAgent(req, res, (err) => {
+      if (err) return next(err);
+      if (req.agent.role !== 'admin') {
+        return res.status(403).json({ error: 'Admin access required to modify setup' });
+      }
+      return res.status(403).json({ error: 'Setup already completed. Use the admin panel to change settings.' });
+    });
   }
 
   const { smtp, sip, rdgphone, notificationEmail, ai, hours, brand } = req.body;

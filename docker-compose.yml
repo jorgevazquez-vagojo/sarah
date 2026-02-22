@@ -52,7 +52,7 @@ services:
     image: canyan/janus-gateway:latest
     ports:
       - "127.0.0.1:8088:8088"          # REST API (server → janus, internal only)
-      - "8188:8188"                    # WebSocket (widget → janus via nginx)
+      - "127.0.0.1:8188:8188"          # A-03: WebSocket bound to localhost (widget → janus via nginx/reverse proxy)
       - "127.0.0.1:7088:7088"         # Admin API (internal only)
       - "10000-10200:10000-10200/udp"  # RTP media
     volumes:

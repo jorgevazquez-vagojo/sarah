@@ -1,1 +1,0 @@
-Al acceder por primera vez, un asistente de configuracion guia paso a paso. Configuramos el correo para notificaciones, la centralita VoIP, el proveedor de inteligencia artificial, los colores corporativos y el horario de atencion.

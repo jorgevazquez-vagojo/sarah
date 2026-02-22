@@ -1,1 +1,0 @@
-El widget aparece en la esquina inferior derecha de la web de Redegal. Un boton flotante con un sutil pulso de atencion invita al visitante a interactuar.

@@ -7,7 +7,9 @@ general: {
   transports_folder = "/usr/lib/janus/transports"
   log_to_stdout = true
   debug_level = 3
-  admin_secret = "rdg-janus-Xp4Km7Nq2Rs9Tw6Vy3Bz8Fd0Hj1Lk5"
+  # A-01: SECURITY — Do NOT hardcode admin_secret in git.
+  # Replace this placeholder with a strong secret at deploy time via JANUS_ADMIN_SECRET env var.
+  admin_secret = "ENV_JANUS_ADMIN_SECRET"
   server_name = "Redegal Janus Gateway"
   session_timeout = 60
   candidates_timeout = 45

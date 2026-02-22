@@ -1,1 +1,0 @@
-Al terminar la llamada, el sistema pide una valoracion con estrellas. Esta puntuacion se vincula a la conversacion y aparece en las analiticas del dashboard. El visitante puede volver al chat para cualquier otra consulta.

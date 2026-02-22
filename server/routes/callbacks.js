@@ -15,7 +15,7 @@
  */
 
 const { Router } = require('express');
-const { requireAgent } = require('../middleware/auth');
+const { requireAgent, requireApiKey } = require('../middleware/auth');
 const { asyncRoute } = require('../middleware/error-handler');
 const { logger } = require('../utils/logger');
 const {
@@ -38,7 +38,8 @@ const router = Router();
  * Body: { phone, name?, date, timeSlot, timeRange, businessLine?, visitorId, language?, conversationId?, note? }
  * Response: { callbackId, scheduledFor }
  */
-router.post('/schedule', asyncRoute(async (req, res) => {
+// M-04: Require API key for callback scheduling to prevent abuse
+router.post('/schedule', requireApiKey, asyncRoute(async (req, res) => {
   const {
     phone, name, date, timeSlot, timeRange,
     businessLine, visitorId, language, conversationId, note,

@@ -3,6 +3,7 @@ const { db } = require('../utils/db');
 const { isBusinessHours, BUSINESS_LINES } = require('../services/router');
 const { getSupportedLanguages } = require('../utils/i18n');
 const { asyncRoute } = require('../middleware/error-handler');
+const { requireApiKey } = require('../middleware/auth');
 
 const router = Router();
 
@@ -16,8 +17,8 @@ router.get('/config', (_req, res) => {
   });
 });
 
-// Get conversation history (for reconnecting visitors)
-router.get('/history/:visitorId', asyncRoute(async (req, res) => {
+// A-02: Get conversation history — requires API key to prevent unauthorized access
+router.get('/history/:visitorId', requireApiKey, asyncRoute(async (req, res) => {
   const conv = await db.getActiveConversation(req.params.visitorId);
   if (!conv) return res.json({ messages: [] });
   const messages = await db.getMessages(conv.id);

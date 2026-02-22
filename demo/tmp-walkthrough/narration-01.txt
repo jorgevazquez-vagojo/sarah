@@ -1,1 +1,0 @@
-En esta guia vamos a instalar el chatbot en la web corporativa de Redegal, configurar el backoffice y hacer una prueba completa del sistema.
