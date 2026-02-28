@@ -1,23 +1,25 @@
-# Janus Gateway — ARM64-native build (no usrsctp, SIP-only)
-# Two-stage build: compile on ubuntu:22.04, copy binaries to slim runtime.
-# Targets aarch64/ARM64 servers (Hetzner). Also works on amd64.
+# Janus Gateway — ARM64-native build
+# Source is COPY'd from janus-gateway/ dir (pre-cloned on host).
+# Run: git clone --branch v1.3.3 --depth 1 https://github.com/meetecho/janus-gateway.git janus/janus-gateway
+# Then: docker build -t rdg-janus-arm64 ./janus
+#
+# Two-stage: compile on ubuntu:22.04, slim runtime image.
 
 FROM ubuntu:22.04 AS builder
 
-ARG JANUS_VERSION=1.3.3
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    git build-essential autoconf automake libtool pkg-config gengetopt \
+    build-essential autoconf automake libtool pkg-config gengetopt \
     libmicrohttpd-dev libjansson-dev libssl-dev libsrtp2-dev \
     libsofia-sip-ua-dev libglib2.0-dev libopus-dev libogg-dev \
     libcurl4-openssl-dev libconfig-dev libnice-dev libwebsockets-dev \
     gtk-doc-tools \
     && rm -rf /var/lib/apt/lists/*
 
-RUN git clone --branch "v${JANUS_VERSION}" --depth 1 \
-        https://github.com/meetecho/janus-gateway.git /tmp/janus \
-    && cd /tmp/janus \
+COPY janus-gateway/ /tmp/janus/
+
+RUN cd /tmp/janus \
     && ./autogen.sh \
     && ./configure \
         --prefix=/usr \
