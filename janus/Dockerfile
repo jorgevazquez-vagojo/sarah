@@ -10,7 +10,7 @@ FROM ubuntu:22.04 AS builder
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential autoconf automake libtool pkg-config gengetopt \
+    git build-essential autoconf automake libtool pkg-config gengetopt \
     libmicrohttpd-dev libjansson-dev libssl-dev libsrtp2-dev \
     libsofia-sip-ua-dev libglib2.0-dev libopus-dev libogg-dev \
     libcurl4-openssl-dev libconfig-dev libnice-dev libwebsockets-dev \
