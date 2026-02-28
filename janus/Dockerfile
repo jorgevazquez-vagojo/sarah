@@ -4,7 +4,7 @@
 
 FROM ubuntu:22.04 AS builder
 
-ARG JANUS_VERSION=1.2.4
+ARG JANUS_VERSION=1.3.3
 ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
