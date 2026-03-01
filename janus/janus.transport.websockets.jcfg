@@ -5,11 +5,10 @@ general: {
   json = "indented"
   ws = true
   ws_port = 8188
-  ws_ip = "0.0.0.0"
+  # ws_ip not set — binds to all interfaces (0.0.0.0 is not a valid interface IP in Janus)
   # WSS disabled — handled by nginx reverse proxy in production
   wss = false
   ws_logging = "err,warn"
-  ws_acl = "127.0.0.0/8,10.0.0.0/8,172.16.0.0/12,192.168.0.0/16,100.64.0.0/10"
 }
 
 admin: {

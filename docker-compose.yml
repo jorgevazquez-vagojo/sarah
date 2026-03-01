@@ -113,6 +113,7 @@ services:
 
   janus:
     image: rdg-janus-arm64:latest
+    command: ["--config=/etc/janus/janus.jcfg", "--configs-folder=/etc/janus"]
     restart: unless-stopped
     ports:
       - "127.0.0.1:8088:8088"          # REST API (server -> janus, internal only)
