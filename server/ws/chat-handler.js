@@ -22,6 +22,8 @@ const visitors = new Map();
 // ── WebSocket rate limiting ──
 const wsRateLimits = new Map();
 const WS_RATE = { maxMessages: 20, windowMs: 10000 };
+const MAX_INCOMING_BYTES = 16 * 1024;
+const MAX_BUFFERED_BYTES = 512 * 1024;
 
 function checkWsRateLimit(visitorId) {
   const now = Date.now();
@@ -44,9 +46,12 @@ const wsCleanupInterval = setInterval(() => {
 wsCleanupInterval.unref(); // Don't prevent process exit
 
 function send(ws, type, data) {
-  if (ws.readyState === 1) {
-    ws.send(JSON.stringify({ type, ...data }));
+  if (ws.readyState !== 1) return;
+  if (ws.bufferedAmount > MAX_BUFFERED_BYTES) {
+    try { ws.close(1013, 'Backpressure'); } catch {}
+    return;
   }
+  ws.send(JSON.stringify({ type, ...data }));
 }
 
 function initChatHandler(wss) {
@@ -101,6 +106,11 @@ function initChatHandler(wss) {
     }
 
     ws.on('message', async (raw) => {
+      if (raw && raw.length && raw.length > MAX_INCOMING_BYTES) {
+        send(ws, 'error', { message: 'Message too large' });
+        try { ws.close(1009, 'Message too large'); } catch {}
+        return;
+      }
       // Rate limit WebSocket messages
       if (!checkWsRateLimit(visitorId)) {
         send(ws, 'error', { message: 'Too many messages. Please slow down.' });

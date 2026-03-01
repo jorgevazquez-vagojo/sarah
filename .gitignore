@@ -34,6 +34,10 @@ dist/
 # --- Demo build artifacts ---
 demo/tmp-walkthrough/
 demo/video-build/
+demo/video-production/output/
+docs/screencast-temp/
+docs/video-temp/
+docs/slides/concat.txt
 
 # --- Test files with credentials ---
 test-sip.js

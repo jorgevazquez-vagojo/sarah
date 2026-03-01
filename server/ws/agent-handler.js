@@ -18,11 +18,15 @@ const wallboardClients = new Set();
 
 /** Wallboard push interval (5 seconds) */
 const WALLBOARD_INTERVAL = 5000;
+const MAX_BUFFERED_BYTES = 512 * 1024;
 
 function send(ws, type, data) {
-  if (ws.readyState === 1) {
-    ws.send(JSON.stringify({ type, ...data }));
+  if (ws.readyState !== 1) return;
+  if (ws.bufferedAmount > MAX_BUFFERED_BYTES) {
+    try { ws.close(1013, 'Backpressure'); } catch {}
+    return;
   }
+  ws.send(JSON.stringify({ type, ...data }));
 }
 
 /**

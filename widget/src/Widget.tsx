@@ -343,6 +343,7 @@ export function Widget(props: WidgetConfig) {
         onMouseEnter={e => { if (!isOpen) e.currentTarget.style.transform = 'scale(1.08)'; }}
         onMouseLeave={e => { e.currentTarget.style.transform = isOpen ? 'scale(0.92)' : 'scale(1)'; }}
       >
+        <span className="rc-sr-only">{isOpen ? 'Close chat' : 'Open chat support'}</span>
         <span className="rc-icon-morph" key={isOpen ? 'close' : 'chat'} style={{ display: 'flex' }}>
           {isOpen ? I.close : I.chat}
         </span>

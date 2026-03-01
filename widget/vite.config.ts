@@ -11,6 +11,8 @@ export default defineConfig({
       fileName: () => 'widget.js',
     },
     cssCodeSplit: false,
+    minify: 'esbuild',
+    target: 'es2018',
     rollupOptions: {
       output: {
         assetFileNames: 'widget.[ext]',

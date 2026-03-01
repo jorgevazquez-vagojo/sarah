@@ -1,25 +1,42 @@
-const { Router } = require('express');
-const { db } = require('../utils/db');
-const { redis } = require('../utils/redis');
+const express = require('express');
+const router = express.Router();
+const db = require('../utils/db');
+const redis = require('../utils/redis');
+const logger = require('../services/logger');
 
-const router = Router();
+router.get('/health', async (req, res) => {
+  try {
+    const checks = {
+      status: 'healthy',
+      timestamp: new Date().toISOString(),
+      checks: {},
+    };
 
-router.get('/health', async (_req, res) => {
-  const checks = { server: 'ok', postgres: 'unknown', redis: 'unknown' };
-  try {
-    await db.query('SELECT 1');
-    checks.postgres = 'ok';
-  } catch {
-    checks.postgres = 'error';
+    // Database check
+    try {
+      const result = await db.query('SELECT NOW()');
+      checks.checks.database = { status: 'ok', responseTime: 'fast' };
+    } catch (err) {
+      checks.checks.database = { status: 'error', message: err.message };
+      checks.status = 'degraded';
+    }
+
+    // Redis check
+    try {
+      const client = redis.getClient();
+      await client.ping();
+      checks.checks.redis = { status: 'ok' };
+    } catch (err) {
+      checks.checks.redis = { status: 'error', message: err.message };
+      checks.status = 'degraded';
+    }
+
+    const statusCode = checks.status === 'healthy' ? 200 : 503;
+    res.status(statusCode).json(checks);
+  } catch (err) {
+    logger.error('Health check failed:', err);
+    res.status(500).json({ status: 'error', message: err.message });
   }
-  try {
-    await redis.set('health', 'ok', 10);
-    checks.redis = 'ok';
-  } catch {
-    checks.redis = 'error';
-  }
-  const allOk = Object.values(checks).every((v) => v === 'ok');
-  res.status(allOk ? 200 : 503).json(checks);
 });
 
 module.exports = router;

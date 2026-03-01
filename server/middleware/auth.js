@@ -46,10 +46,11 @@ function requireAgent(req, res, next) {
 // Middleware: require API key for widget
 // Also resolves tenantId from the tenant's API key in the database
 function requireApiKey(req, res, next) {
-  const key = req.headers['x-api-key'] || req.query.apiKey;
+  const key = req.headers['x-api-key'];
   if (!key || key !== process.env.WIDGET_API_KEY) {
-    // In development, allow without key ONLY if explicitly opted in
+    // In development, optionally allow ?apiKey for local testing
     if (process.env.NODE_ENV === 'development' && process.env.DEV_SKIP_AUTH === 'true') return next();
+    if (process.env.NODE_ENV === 'development' && req.query.apiKey === process.env.WIDGET_API_KEY) return next();
     return res.status(403).json({ error: 'Invalid API key' });
   }
   next();
@@ -58,8 +59,16 @@ function requireApiKey(req, res, next) {
 // Middleware: resolve tenant from query param or header
 // Sets req.tenantId for use by downstream handlers
 function resolveTenant(req, _res, next) {
-  // Priority: JWT tenantId > X-Tenant-ID header > tenant query param
-  if (!req.tenantId) {
+  // Priority: JWT tenantId > API key default > (dev-only) header/query
+  if (req.tenantId) return next();
+
+  const apiKey = req.headers['x-api-key'];
+  if (apiKey && apiKey === process.env.WIDGET_API_KEY) {
+    req.tenantId = process.env.DEFAULT_TENANT_ID || null;
+    return next();
+  }
+
+  if (process.env.NODE_ENV !== 'production') {
     req.tenantId = req.headers['x-tenant-id'] || req.query.tenant || null;
   }
   next();

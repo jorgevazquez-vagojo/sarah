@@ -59,4 +59,4 @@ EXPOSE 8088 8188 7088
 EXPOSE 10000-10200/udp
 
 ENTRYPOINT ["/usr/bin/janus"]
-CMD ["--config=/etc/janus/janus.jcfg"]
+CMD ["--config=/etc/janus/janus.jcfg", "--configs-folder=/etc/janus"]

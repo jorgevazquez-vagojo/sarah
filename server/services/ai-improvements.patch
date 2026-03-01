@@ -1,0 +1,42 @@
+// Exponential backoff retry logic (add to ai.js)
+
+async function callAIWithRetry(message, context, options = {}) {
+  const maxAttempts = 3;
+  const baseDelay = 1000; // ms
+
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      // Try primary provider first (Claude)
+      if (options.provider === 'claude' || !options.provider) {
+        return await callClaude(message, context);
+      } else if (options.provider === 'gemini') {
+        return await callGemini(message, context);
+      } else if (options.provider === 'openai') {
+        return await callOpenAI(message, context);
+      }
+    } catch (err) {
+      logger.warn(`AI call failed (attempt ${attempt}/${maxAttempts}):`, { error: err.message, provider: options.provider });
+
+      if (attempt < maxAttempts) {
+        // Exponential backoff: 1s, 2s, 4s
+        const delay = baseDelay * Math.pow(2, attempt - 1);
+        await new Promise(resolve => setTimeout(resolve, delay));
+
+        // Try fallback providers
+        const fallbackProviders = ['gemini', 'openai'].filter(p => p !== options.provider);
+        for (const fallback of fallbackProviders) {
+          try {
+            logger.info(`Trying fallback provider: ${fallback}`);
+            return await callAIWithRetry(message, context, { provider: fallback });
+          } catch (fallbackErr) {
+            logger.warn(`Fallback ${fallback} failed:`, { error: fallbackErr.message });
+          }
+        }
+      } else {
+        throw err;
+      }
+    }
+  }
+}
+
+module.exports = { callAIWithRetry };

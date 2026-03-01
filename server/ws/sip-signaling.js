@@ -8,11 +8,15 @@ const { triggerWebhooks } = require('../integrations/webhooks');
 const activeCalls = new Map();
 // Participant lookup: ws -> { role, callId, id }
 const participants = new Map();
+const MAX_BUFFERED_BYTES = 512 * 1024;
 
 function send(ws, type, data = {}) {
-  if (ws.readyState === 1) {
-    ws.send(JSON.stringify({ type, ...data }));
+  if (ws.readyState !== 1) return;
+  if (ws.bufferedAmount > MAX_BUFFERED_BYTES) {
+    try { ws.close(1013, 'Backpressure'); } catch {}
+    return;
   }
+  ws.send(JSON.stringify({ type, ...data }));
 }
 
 function getPeer(ws) {

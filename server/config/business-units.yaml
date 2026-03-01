@@ -1,0 +1,87 @@
+# Business Unit Extension Mapping
+# Maps business lines to SIP extensions at Vozelia Cloud PBX
+
+business_units:
+  boostic:
+    display_name: "Boostic - SEO & Growth"
+    extensions: [101, 102, 103]
+    default_extension: 101
+    pbx_queue: "boostic-queue"
+    skills:
+      - seo
+      - growth
+      - analytics
+    description: "SEO optimization and digital growth"
+    email: "boostic@redegal.com"
+    webhook_url: "https://boostic.webhook.redegal.com"
+
+  binnacle:
+    display_name: "Binnacle - Business Intelligence"
+    extensions: [104, 105]
+    default_extension: 104
+    pbx_queue: "binnacle-queue"
+    skills:
+      - analytics
+      - reporting
+      - dashboards
+    description: "BI and analytics platform"
+    email: "binnacle@redegal.com"
+    webhook_url: "https://binnacle.webhook.redegal.com"
+
+  marketing:
+    display_name: "Digital Marketing"
+    extensions: [106, 107]
+    default_extension: 106
+    pbx_queue: "marketing-queue"
+    skills:
+      - digital-marketing
+      - campaigns
+      - social-media
+    description: "Digital marketing and campaigns"
+    email: "marketing@redegal.com"
+    webhook_url: "https://marketing.webhook.redegal.com"
+
+  tech:
+    display_name: "Technical Development"
+    extensions: [108, 109, 110]
+    default_extension: 108
+    pbx_queue: "tech-queue"
+    skills:
+      - development
+      - infrastructure
+      - devops
+    description: "Software development and infrastructure"
+    email: "tech@redegal.com"
+    webhook_url: "https://tech.webhook.redegal.com"
+
+# Vozelia Cloud PBX Configuration
+pbx:
+  domain: cloudpbx1584.vozelia.com
+  protocol: sip
+  username: "{{ PBX_USERNAME }}"
+  password: "{{ PBX_PASSWORD }}"
+
+  # Click2Call extension (for outbound)
+  click2call_extension: 108
+  click2call_password: "{{ CLICK2CALL_PASSWORD }}"
+
+# Default routing rules
+routing:
+  default_rule: round_robin
+  timeout_seconds: 30
+  max_retries: 3
+  fallback_email_enabled: true
+
+# Skill-based routing
+skill_routing:
+  enabled: true
+  default_skill: "general"
+
+# Business hours
+business_hours:
+  timezone: "Europe/Madrid"
+  working_days: [mon, tue, wed, thu, fri]
+  working_hours:
+    start: "09:00"
+    end: "18:00"
+  timezone_fallback: "Europe/London"

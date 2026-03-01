@@ -1,41 +1,32 @@
 const { redis } = require('../utils/redis');
 
-// M-06: In-memory fallback store when Redis is unavailable
-const memoryStore = new Map();
+// Token bucket per key (tenant or custom)
+const getRateLimitKey = (key) => `ratelimit:${key}`;
 
-// Cleanup stale in-memory entries every 60s
-const memoryCleanupInterval = setInterval(() => {
-  const now = Date.now();
-  for (const [key, entry] of memoryStore) {
-    if (now > entry.resetAt) memoryStore.delete(key);
-  }
-}, 60000);
-memoryCleanupInterval.unref();
-
-function rateLimit({ maxRequests = 60, windowSec = 60, keyFn } = {}) {
+function rateLimit({ maxRequests = 100, windowSec = 60, keyFn } = {}) {
   return async (req, res, next) => {
-    const key = keyFn ? keyFn(req) : req.ip;
     try {
+      const defaultKey = req.agent?.tenantId || req.user?.tenant_id || req.body?.tenant_id || req.ip || 'anonymous';
+      const rawKey = typeof keyFn === 'function' ? keyFn(req) : defaultKey;
+      const key = getRateLimitKey(rawKey);
+
       const allowed = await redis.rateLimit(key, maxRequests, windowSec);
+
+      res.set('X-RateLimit-Limit', maxRequests);
+      res.set('X-RateLimit-Remaining', allowed ? '1' : '0');
+
       if (!allowed) {
-        return res.status(429).json({ error: 'Too many requests' });
+        return res.status(429).json({
+          error: 'Too many requests',
+          retryAfter: windowSec,
+        });
       }
-    } catch {
-      // M-06: Fallback to in-memory rate limiting when Redis is down
-      const windowMs = windowSec * 1000;
-      const now = Date.now();
-      const entry = memoryStore.get(key) || { count: 0, resetAt: now + windowMs };
-      if (now > entry.resetAt) {
-        entry.count = 0;
-        entry.resetAt = now + windowMs;
-      }
-      entry.count++;
-      memoryStore.set(key, entry);
-      if (entry.count > maxRequests) {
-        return res.status(429).json({ error: 'Too many requests' });
-      }
+
+      next();
+    } catch (err) {
+      // On Redis error, allow the request
+      next();
     }
-    next();
   };
 }
 

@@ -1,0 +1,45 @@
+// Add to server/ws/chat-handler.js
+
+const mailer = require('../integrations/mailer');
+
+// When lead is created:
+async function onLeadCreated(lead) {
+  try {
+    await mailer.sendLeadNotification(
+      lead.tenant_id,
+      lead.id,
+      lead.name,
+      lead.email
+    );
+  } catch (err) {
+    logger.warn('Failed to send lead notification', err);
+  }
+}
+
+// When escalated to agent:
+async function onEscalatedToAgent(conversation, agent) {
+  try {
+    await mailer.sendEscalationNotification(
+      conversation.tenant_id,
+      conversation.id,
+      agent.display_name
+    );
+  } catch (err) {
+    logger.warn('Failed to send escalation notification', err);
+  }
+}
+
+// Daily report (runs at 8am via cron)
+async function sendDailyReport() {
+  const tenants = await db.query('SELECT id FROM tenants WHERE active = true');
+  for (const tenant of tenants.rows) {
+    try {
+      const stats = await getConversationStats(tenant.id);
+      await mailer.sendDailyReport(tenant.id, stats);
+    } catch (err) {
+      logger.warn('Failed to send daily report', { tenantId: tenant.id, error: err.message });
+    }
+  }
+}
+
+module.exports = { onLeadCreated, onEscalatedToAgent, sendDailyReport };

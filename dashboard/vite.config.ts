@@ -6,6 +6,15 @@ export default defineConfig({
   base: '/dashboard/',
   build: {
     outDir: 'dist',
+    minify: 'esbuild',
+    target: 'es2018',
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          react: ['react', 'react-dom'],
+        },
+      },
+    },
   },
   server: {
     port: 3001,

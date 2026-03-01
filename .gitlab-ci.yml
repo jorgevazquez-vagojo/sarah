@@ -1,0 +1,88 @@
+stages:
+  - test
+  - build
+  - deploy
+
+variables:
+  NODE_VERSION: "20"
+  REGISTRY: $CI_REGISTRY
+
+test:
+  stage: test
+  image: node:20
+  services:
+    - postgres:16
+    - redis:7
+  before_script:
+    - npm ci
+  script:
+    - npm -w server test -- --coverage --forceExit
+    - npm -w widget test -- --run
+    - npm -w dashboard test -- --run
+  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+  artifacts:
+    reports:
+      coverage_report:
+        coverage_format: cobertura
+        path: server/coverage/cobertura-coverage.xml
+
+e2e:
+  stage: test
+  image: node:20
+  before_script:
+    - npm ci
+    - npx playwright install --with-deps
+  script:
+    - npx playwright test
+  artifacts:
+    when: always
+    paths:
+      - playwright-report/
+
+build:
+  stage: build
+  image: node:20
+  before_script:
+    - npm ci
+  script:
+    - npm -w widget run build
+    - npm -w dashboard run build
+    - npm -w server run build 2>/dev/null || true
+  artifacts:
+    paths:
+      - widget/dist/
+      - dashboard/dist/
+      - server/public/
+    expire_in: 1 day
+
+deploy_staging:
+  stage: deploy
+  image: alpine:latest
+  before_script:
+    - apk add --no-cache openssh-client
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - chmod 600 ~/.ssh/id_rsa
+    - ssh-keyscan -H $STAGING_SERVER >> ~/.ssh/known_hosts
+  script:
+    - echo "Deploying to staging..."
+    - scp -r widget/dist/* $DEPLOY_USER@$STAGING_SERVER:/app/widget/
+    - scp -r dashboard/dist/* $DEPLOY_USER@$STAGING_SERVER:/app/dashboard/
+    - ssh $DEPLOY_USER@$STAGING_SERVER "cd /app && docker compose up -d"
+  only:
+    - main
+  environment:
+    name: staging
+    url: https://staging-chatbot.redegal.com
+
+deploy_production:
+  stage: deploy
+  image: alpine:latest
+  script:
+    - echo "Deploying to production..."
+  only:
+    - tags
+  when: manual
+  environment:
+    name: production
+    url: https://chatbot.redegal.com

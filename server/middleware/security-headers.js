@@ -13,8 +13,10 @@ function securityHeaders(req, res, next) {
   res.setHeader('X-DNS-Prefetch-Control', 'off');
   res.setHeader('Origin-Agent-Cluster', '?1');
 
-  // noindex — staging/tunnel only
-  res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+  // noindex — staging/tunnel only (opt-in via env)
+  if (process.env.NODE_ENV !== 'production' || process.env.ROBOTS_NOINDEX === 'true') {
+    res.setHeader('X-Robots-Tag', 'noindex, nofollow, noarchive, nosnippet');
+  }
 
   if (process.env.NODE_ENV === 'production') {
     res.setHeader('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload');
