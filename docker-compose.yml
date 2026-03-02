@@ -60,7 +60,7 @@ services:
       - backups:/backups
       - ./docker/logrotate.conf:/etc/logrotate.d/sarah:ro
     healthcheck:
-      test: ["CMD-SHELL", "curl -f http://localhost:9456/health || exit 1"]
+      test: ["CMD-SHELL", "wget -qO- http://localhost:9456/health || exit 1"]
       interval: 15s
       timeout: 5s
       retries: 3
