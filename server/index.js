@@ -33,7 +33,7 @@ app.use(csrfProtection);
 app.use(resolveTenant);
 
 // ─── Static files ───
-app.use('/widget', express.static(path.join(__dirname, 'public', 'widget')));
+app.use('/widget', (_req, res, next) => { res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); next(); }, express.static(path.join(__dirname, 'public', 'widget')));
 app.use('/dashboard', express.static(path.join(__dirname, 'public', 'dashboard')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
