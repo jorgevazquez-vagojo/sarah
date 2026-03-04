@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../utils/db');
-const redis = require('../utils/redis');
+const { db } = require('../utils/db');
+const { redis } = require('../utils/redis');
 const logger = require('../services/logger');
 
 router.get('/health', async (req, res) => {
@@ -23,8 +23,7 @@ router.get('/health', async (req, res) => {
 
     // Redis check
     try {
-      const client = redis.getClient();
-      await client.ping();
+      await redis.get('_healthcheck');
       checks.checks.redis = { status: 'ok' };
     } catch (err) {
       checks.checks.redis = { status: 'error', message: err.message };
