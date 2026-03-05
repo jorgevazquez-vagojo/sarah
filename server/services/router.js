@@ -47,7 +47,7 @@ REGLAS:
 5. Máximo 3-4 párrafos cortos por respuesta.
 6. Si hay respuestas aprendidas de interacciones previas, úsalas como referencia para el tono y contenido.`;
 
-const LANGUAGE_NAMES = { es: 'español', gl: 'gallego', en: 'inglés', pt: 'portugués' };
+const LANGUAGE_NAMES = { es: 'español', gl: 'gallego', en: 'inglés', pt: 'portugués', nl: 'neerlandés', it: 'italiano' };
 
 async function generateResponse({ message, language, businessLine, conversationHistory }) {
   const line = businessLine || detectBusinessLine(message) || 'general';

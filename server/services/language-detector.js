@@ -1,4 +1,4 @@
-// 4-language detector with weighted scoring (es, en, pt, gl)
+// 6-language detector with weighted scoring (es, en, pt, gl, nl, it)
 const PATTERNS = {
   gl: {
     strong: ['podo', 'grazas', 'benvido', 'hoxe', 'noite', 'tamén', 'axuda', 'gustaría', 'servizos', 'dixital'],
@@ -15,6 +15,14 @@ const PATTERNS = {
   pt: {
     strong: ['olá', 'obrigado', 'ajuda', 'preciso', 'gostaria', 'informação', 'por favor', 'empresa'],
     words: ['serviços', 'contato', 'negócio', 'projeto', 'preço', 'quero'],
+  },
+  nl: {
+    strong: ['hallo', 'bedankt', 'dank', 'hulp', 'nodig', 'graag', 'welkom', 'goedemorgen', 'goedemiddag'],
+    words: ['bedrijf', 'diensten', 'contact', 'prijs', 'project', 'informatie', 'wil', 'kan', 'help'],
+  },
+  it: {
+    strong: ['ciao', 'grazie', 'aiuto', 'buongiorno', 'buonasera', 'salve', 'prego', 'scusi'],
+    words: ['azienda', 'servizi', 'contatto', 'prezzo', 'progetto', 'informazioni', 'voglio', 'posso', 'aiutarmi'],
   },
 };
 
