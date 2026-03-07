@@ -244,7 +244,7 @@ function getDefaultTheme() {
 }
 
 function getCopilotTheme(role = 'admin') {
-  const validRoles = ['admin', 'boostic', 'binnacle', 'tech', 'business'];
+  const validRoles = ['admin', 'bu', 'boostic', 'binnacle', 'tech', 'business', 'comercial'];
   const safeRole = validRoles.includes(role) ? role : 'admin';
   return {
     language: `es-copilot-${safeRole}`,
