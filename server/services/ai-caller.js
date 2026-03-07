@@ -10,7 +10,7 @@
  * - Parallel calls support
  * - CRM lead creation post-call
  * - Google Calendar scheduling detection
- * - Microsoft Edge TTS (Elvira Neural)
+ * - Multi-provider TTS: Edge TTS (default) | Qwen3-TTS (TTS_PROVIDER=qwen3)
  */
 
 const dgram = require('dgram');
@@ -26,14 +26,13 @@ const settings = require('./settings');
 const { logCallStart, logCallEnd, saveRecording } = require('./call-recording');
 const { aiComplete } = require('./ai');
 const { dispatchToCRM } = require('../integrations/crm');
+const { generateTts, TTS_PROVIDER } = require('./tts-providers');
 
 // ─── Constants ───
 const STUN_HOST = 'stun.l.google.com';
 const STUN_PORT = 19302;
 const MAGIC_COOKIE = 0x2112A442;
 const PACKET_SIZE = 160; // 20ms @ 8kHz
-const TTS_VOICE = 'es-ES-ElviraNeural';
-const TTS_RATE = '+5%';
 
 // ─── u-law decode table ───
 const ULAW_DECODE = new Int16Array(256);
@@ -172,33 +171,9 @@ function ulawToWav(ulawData) {
   return Buffer.concat([wavHeader, pcmData]);
 }
 
-// ─── TTS: Microsoft Edge TTS ───
-function generateTts(text, voice = TTS_VOICE) {
-  const tmpDir = '/tmp';
-  const ts = Date.now();
-  const mp3File = path.join(tmpDir, `tts-${ts}.mp3`);
-  const ulawFile = path.join(tmpDir, `tts-${ts}.wav`);
-  // SECURITY: Write Python script to temp file instead of interpolating user text into shell
-  const scriptFile = path.join(tmpDir, `tts-script-${ts}.py`);
-  fs.writeFileSync(scriptFile, `import asyncio, sys, json, edge_tts
-async def main():
-    args = json.loads(sys.argv[1])
-    comm = edge_tts.Communicate(args['text'], args['voice'], rate=args['rate'])
-    await comm.save(args['output'])
-asyncio.run(main())
-`);
-  const { execFileSync } = require('child_process');
-  execFileSync('python3', [scriptFile, JSON.stringify({ text, voice, rate: TTS_RATE, output: mp3File })], { timeout: 20000 });
-  try { fs.unlinkSync(scriptFile); } catch {}
-  // A-04: SECURITY FIX — Use execFileSync with array args to prevent shell injection
-  const { execFileSync: execFileSync2 } = require('child_process');
-  execFileSync2('afconvert', ['-f', 'WAVE', '-d', 'ulaw@8000', '-c', '1', mp3File, ulawFile], { timeout: 10000 });
-  const wavData = fs.readFileSync(ulawFile);
-  const audioData = wavData.subarray(44);
-  try { fs.unlinkSync(mp3File); } catch {}
-  try { fs.unlinkSync(ulawFile); } catch {}
-  return audioData;
-}
+// ─── TTS: delegated to tts-providers.js (edge | qwen3) ───
+// generateTts is imported from './tts-providers'
+// Active provider: process.env.TTS_PROVIDER (default: 'edge')
 
 // ═══════════════════════════════════════════════════════════════
 // ActiveCall — single bidirectional call instance
@@ -589,7 +564,7 @@ class ActiveCall extends EventEmitter {
 
     // ─── Conversation loop ───
     logger.info(`Call ${this.id}: Sending greeting`);
-    const greetingAudio = generateTts(this.config.greeting);
+    const greetingAudio = await generateTts(this.config.greeting);
     await this.sendRtpAudio(greetingAudio);
 
     const maxTurns = this.config.maxTurns || 8;
@@ -610,7 +585,7 @@ class ActiveCall extends EventEmitter {
       const lower = userText.toLowerCase();
       if (lower.includes('adiós') || lower.includes('hasta luego') || lower.includes('no me interesa') || lower.includes('no gracias')) {
         const goodbye = 'Perfecto, muchas gracias por su tiempo. Si necesita algo, no dude en llamarnos. Que tenga buena tarde.';
-        const goodbyeAudio = generateTts(goodbye);
+        const goodbyeAudio = await generateTts(goodbye);
         await this.sendRtpAudio(goodbyeAudio);
         this.history.push({ user: userText, assistant: goodbye });
         break;
@@ -622,7 +597,7 @@ class ActiveCall extends EventEmitter {
       this.history.push({ user: userText, assistant: aiResponse });
       this.emit('turn', { turn: turn + 1, userText, aiResponse });
 
-      const responseAudio = generateTts(aiResponse);
+      const responseAudio = await generateTts(aiResponse);
       await this.sendRtpAudio(responseAudio);
     }
 

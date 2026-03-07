@@ -1,69 +1,55 @@
 /**
  * Embedding service — generates vector embeddings for RAG.
- * Primary: Gemini text-embedding-004 (free, 768 dims)
- * Fallback: OpenAI text-embedding-3-small (1536 dims, truncated to 768)
+ * Uses Xenova/multilingual-e5-small (384 dims, local, no API key needed).
+ * Same model as Optimus — consistent embeddings across the ecosystem.
  */
 
 const { logger } = require('../utils/logger');
+const crypto = require('crypto');
 
-const EMBEDDING_DIM = 768;
+const EMBEDDING_DIM = 384;
 
-// ─── Gemini Embeddings (free tier) ───
-async function geminiEmbed(texts) {
-  const { GoogleGenerativeAI } = require('@google/generative-ai');
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  const model = genAI.getGenerativeModel({ model: 'text-embedding-004' });
+// ─── HuggingFace pipeline singleton ───
+let _pipeline = null;
 
-  const results = [];
-  for (const text of texts) {
-    const result = await model.embedContent(text);
-    results.push(result.embedding.values);
-  }
-  return results;
-}
-
-// ─── OpenAI Embeddings (fallback) ───
-async function openaiEmbed(texts) {
-  const OpenAI = require('openai');
-  const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-  const response = await client.embeddings.create({
-    model: 'text-embedding-3-small',
-    input: texts,
-    dimensions: EMBEDDING_DIM,
+async function getEmbeddingPipeline() {
+  if (_pipeline) return _pipeline;
+  const { pipeline, env } = await import('@huggingface/transformers');
+  if (process.env.HF_CACHE_DIR) env.cacheDir = process.env.HF_CACHE_DIR;
+  _pipeline = await pipeline('feature-extraction', 'Xenova/multilingual-e5-small', {
+    dtype: 'fp32',
   });
-  return response.data.map((d) => d.embedding);
+  logger.info('Embedding pipeline loaded: Xenova/multilingual-e5-small (384d)');
+  return _pipeline;
 }
 
-// ─── Router with fallback ───
-async function generateEmbeddings(texts) {
-  if (!Array.isArray(texts) || texts.length === 0) return [];
+// ─── In-process cache (SHA256 key, 1h TTL) ───
+const _cache = new Map();
+const CACHE_TTL_MS = 60 * 60 * 1000;
 
-  // Clean texts
-  const cleaned = texts.map((t) => (t || '').trim().slice(0, 8000));
-
-  try {
-    if (process.env.GEMINI_API_KEY) {
-      return await geminiEmbed(cleaned);
-    }
-  } catch (e) {
-    logger.warn('Gemini embedding failed, trying OpenAI:', e.message);
-  }
-
-  try {
-    if (process.env.OPENAI_API_KEY) {
-      return await openaiEmbed(cleaned);
-    }
-  } catch (e) {
-    logger.warn('OpenAI embedding failed:', e.message);
-  }
-
-  logger.error('All embedding providers failed');
-  return [];
+function _cacheKey(text) {
+  return crypto.createHash('sha256').update(text).digest('hex');
 }
+
+// ─── Core embedding functions ───
 
 async function generateEmbedding(text) {
-  const results = await generateEmbeddings([text]);
-  return results[0] || null;
+  const cleaned = (text || '').trim().slice(0, 8000);
+  const key = _cacheKey(cleaned);
+  const cached = _cache.get(key);
+  if (cached && cached.expires > Date.now()) return cached.embedding;
+
+  const extractor = await getEmbeddingPipeline();
+  const output = await extractor(cleaned, { pooling: 'mean', normalize: true });
+  const embedding = Array.from(output.data);
+
+  _cache.set(key, { embedding, expires: Date.now() + CACHE_TTL_MS });
+  return embedding;
+}
+
+async function generateEmbeddings(texts) {
+  if (!Array.isArray(texts) || texts.length === 0) return [];
+  return Promise.all(texts.map(generateEmbedding));
 }
 
 // ─── Cosine similarity (for in-memory fallback) ───

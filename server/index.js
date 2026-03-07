@@ -33,7 +33,11 @@ app.use(csrfProtection);
 app.use(resolveTenant);
 
 // ─── Static files ───
-app.use('/widget', (_req, res, next) => { res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin'); next(); }, express.static(path.join(__dirname, 'public', 'widget')));
+// Widget assets must be loadable cross-origin (embeddable in any host page)
+app.use('/widget', (_req, res, next) => {
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+  next();
+}, express.static(path.join(__dirname, 'public', 'widget')));
 app.use('/dashboard', express.static(path.join(__dirname, 'public', 'dashboard')));
 app.use('/css', express.static(path.join(__dirname, 'public', 'css')));
 app.use('/js', express.static(path.join(__dirname, 'public', 'js')));
@@ -60,6 +64,7 @@ app.use('/api/training', require('./routes/training'));
 app.use('/api/ai-caller', require('./routes/ai-caller'));
 app.use('/api/wallboard', require('./routes/wallboard'));
 app.use('/api/docs', require('./routes/docs'));
+app.use('/api/hot-lead', require('./routes/hot-lead'));
 
 // ─── WebSocket upgrade handling ───
 const wssChat = new WebSocketServer({ noServer: true, maxPayload: 16 * 1024 });

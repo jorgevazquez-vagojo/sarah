@@ -1,4 +1,4 @@
-// 6-language detector with weighted scoring (es, en, pt, gl, nl, it)
+// 6-language detector with weighted scoring (es, en, pt, gl, de, it)
 const PATTERNS = {
   gl: {
     strong: ['podo', 'grazas', 'benvido', 'hoxe', 'noite', 'tamén', 'axuda', 'gustaría', 'servizos', 'dixital'],
@@ -16,13 +16,13 @@ const PATTERNS = {
     strong: ['olá', 'obrigado', 'ajuda', 'preciso', 'gostaria', 'informação', 'por favor', 'empresa'],
     words: ['serviços', 'contato', 'negócio', 'projeto', 'preço', 'quero'],
   },
-  nl: {
-    strong: ['hallo', 'bedankt', 'dank', 'hulp', 'nodig', 'graag', 'welkom', 'goedemorgen', 'goedemiddag'],
-    words: ['bedrijf', 'diensten', 'contact', 'prijs', 'project', 'informatie', 'wil', 'kan', 'help'],
+  de: {
+    strong: ['hallo', 'danke', 'bitte', 'hilfe', 'guten', 'ich', 'möchte', 'könnte', 'brauche', 'unternehmen'],
+    words: ['dienste', 'kontakt', 'projekt', 'preis', 'angebot', 'mehr', 'informationen', 'website'],
   },
   it: {
-    strong: ['ciao', 'grazie', 'aiuto', 'buongiorno', 'buonasera', 'salve', 'prego', 'scusi'],
-    words: ['azienda', 'servizi', 'contatto', 'prezzo', 'progetto', 'informazioni', 'voglio', 'posso', 'aiutarmi'],
+    strong: ['ciao', 'grazie', 'salve', 'buongiorno', 'aiuto', 'vorrei', 'bisogno', 'informazioni', 'per favore'],
+    words: ['azienda', 'servizi', 'contatto', 'progetto', 'prezzo', 'preventivo', 'sito'],
   },
 };
 

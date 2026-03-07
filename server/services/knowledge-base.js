@@ -58,8 +58,62 @@ async function searchKnowledge(query, businessLine, language) {
     .slice(0, 5);
 }
 
+// ─── RAG Service central search ───
+// When RAG_SERVICE_URL is configured, delegates vector search to the central rag-service.
+// Audience defaults to ["lead","*"] (public web visitor). Pass "commercial" for agents.
+async function ragServiceSearch(query, businessLine, language, audience = 'lead', limit = 3) {
+  const ragUrl = process.env.RAG_SERVICE_URL;
+  const ragKey = process.env.RAG_SERVICE_KEY;
+  if (!ragUrl) return null; // not configured
+
+  const body = {
+    query,
+    scope: {
+      audience: [audience, '*'],
+      businessLine: businessLine ? [businessLine, '*'] : ['*'],
+      language: language || null,
+    },
+    limit,
+    threshold: 0.5,
+  };
+
+  const res = await fetch(`${ragUrl}/v1/search`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Rag-Key': ragKey || '',
+    },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(5000),
+  });
+
+  if (!res.ok) {
+    throw new Error(`rag-service responded ${res.status}`);
+  }
+
+  const { results } = await res.json();
+  return (results || []).map((r) => ({
+    title: r.documentTitle || r.source || 'Knowledge',
+    content: r.content,
+    business_line: businessLine,
+    similarity: r.similarity,
+  }));
+}
+
 // ─── Vector search (RAG) using pgvector embeddings ───
-async function vectorSearchKnowledge(query, businessLine, limit = 3) {
+// If RAG_SERVICE_URL is configured, uses central rag-service (with fallback to local pgvector).
+async function vectorSearchKnowledge(query, businessLine, limit = 3, language = null, audience = 'lead') {
+  // Try central rag-service first
+  if (process.env.RAG_SERVICE_URL) {
+    try {
+      const results = await ragServiceSearch(query, businessLine, language, audience, limit);
+      if (results && results.length > 0) return results;
+    } catch (e) {
+      logger.debug('rag-service search failed, falling back to local pgvector: %s', e.message);
+    }
+  }
+
+  // Local pgvector fallback
   const { generateEmbedding } = require('./embeddings');
   const embedding = await generateEmbedding(query);
   if (!embedding) return [];

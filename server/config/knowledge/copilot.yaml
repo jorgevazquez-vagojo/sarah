@@ -1,0 +1,92 @@
+# Conocimiento interno — Sarah Copilot (herramientas Redegal)
+# Accesible para todos los roles autenticados en Agatha
+
+entries:
+  - title: "Agatha — Qué es"
+    content: >
+      Agatha es la plataforma interna de contact intelligence de Redegal.
+      Permite buscar contactos comerciales de cualquier empresa usando AI (AI Finder),
+      enriquecer perfiles con Hunter.io, Brave Search y LinkedIn,
+      importar listas XLSX, y gestionar contactos y empresas en la base de datos.
+      También integra Bran Mecano y Optimus en el mismo menú.
+    tags: [agatha, contactos, plataforma]
+
+  - title: "Agatha — AI Finder"
+    content: >
+      El AI Finder de Agatha busca contactos usando lenguaje natural.
+      Escribe el nombre de una empresa o dominio y Agatha consulta Hunter.io,
+      Brave Search (LinkedIn), y un extractor con IA para encontrar emails, títulos y perfiles.
+      Los resultados se pueden guardar en la base de datos o enviar directamente a Bran Mecano.
+    tags: [agatha, finder, contactos, hunter, linkedin]
+
+  - title: "Agatha — Importar contactos"
+    content: >
+      Agatha permite importar contactos desde Excel (XLSX) mediante el botón "Importar XLSX".
+      Las columnas requeridas son: nombre, apellido, email, empresa, título, LinkedIn.
+      Los contactos importados se guardan en la BD y pueden enviarse a Bran Mecano.
+    tags: [agatha, importar, xlsx, excel]
+
+  - title: "Agatha — Credenciales"
+    content: >
+      Acceso a Agatha: http://localhost:3600 (local) o http://100.70.97.6:3600 (servidor Tailscale).
+      Usuarios predefinidos: admin, boostic, binnacle, tech, business. Contraseña: Agatha2026!
+      El admin tiene acceso completo. Cada BU ve contenido filtrado por su línea de negocio.
+    tags: [agatha, acceso, credenciales]
+
+  - title: "Bran Mecano — Qué es"
+    content: >
+      Bran Mecano es el CRM de prospección B2B de Redegal. Recibe leads desde Agatha,
+      ejecuta un pipeline de scoring automático con 4 dimensiones de negocio:
+      Boostic (SEO/Growth), Binnacle (BI), Digital Tech y Digital Business.
+      Cada lead recibe una puntuación de 0-100 por línea de negocio según criterios como
+      sector, tamaño, presencia digital, país y señales de intención.
+    tags: [bran, crm, prospección, scoring, pipeline]
+
+  - title: "Bran Mecano — Pipeline"
+    content: >
+      El pipeline de Bran Mecano tiene 11 pasos: fetch datos empresa, scraping web,
+      análisis tecnológico, análisis LinkedIn, búsqueda noticias, análisis financiero,
+      detección señales intención, scoring multi-BU, clasificación hot/high/medium/low,
+      generación outreach personalizado, y notificación hot lead a Sarah.
+      Se ejecuta automáticamente o manualmente con el botón "▶" por dominio.
+    tags: [bran, pipeline, scoring, automatico]
+
+  - title: "Bran Mecano — Outreach"
+    content: >
+      Bran genera mensajes de outreach personalizados por LinkedIn/email para cada lead calificado.
+      Los mensajes pasan por revisión humana antes de enviarse.
+      En Agatha, la sección Bran > Outreach muestra los mensajes pendientes de aprobación.
+      Aprobación: botón ✓. Rechazo: botón ✗. Envío directo: botón ▶.
+    tags: [bran, outreach, mensajes, aprobacion]
+
+  - title: "Optimus — Qué es"
+    content: >
+      Optimus es el generador de propuestas comerciales con IA de Redegal.
+      Permite crear propuestas profesionales a partir de una descripción del cliente y servicio.
+      Accesible directamente desde el menú de Agatha (sección Optimus > Propuestas).
+      El acceso es automático (SSO) — no necesitas un login separado si estás en Agatha.
+    tags: [optimus, propuestas, generador, ia]
+
+  - title: "Optimus — Crear propuesta"
+    content: >
+      Para crear una propuesta en Optimus: ve a la sección Propuestas > Nueva propuesta.
+      Describe el cliente (sector, tamaño, necesidad), el servicio Redegal a proponer,
+      y Optimus generará un documento estructurado con: punto de partida, metodología,
+      equipo, cronograma y presupuesto. Las propuestas pueden exportarse a PDF.
+    tags: [optimus, propuesta, crear, pdf]
+
+  - title: "Redegal — Datos corporativos"
+    content: >
+      Redegal S.A. — CIF A32318354. Fundada en 2004. Sede: Ourense, España.
+      Oficinas en Ourense, Ciudad de México y Bogotá. Cotiza en BME Growth (ticker RDG)
+      desde julio 2025. Consultora digital full-service: SEO, BI, Marketing Digital,
+      Desarrollo Tecnológico. 4 líneas de negocio: Boostic, Binnacle, Marketing, Tech.
+    tags: [redegal, empresa, corporativo]
+
+  - title: "Redegal — Líneas de negocio"
+    content: >
+      Boostic: SEO, Growth, Analytics, CRO, posicionamiento orgánico.
+      Binnacle: Business Intelligence, dashboards, BigQuery, Looker, ETL, reporting.
+      Marketing Digital: SEM, Redes Sociales, Email Marketing, Publicidad programática.
+      Digital Tech: Desarrollo web, e-commerce (Magento, Shopify), APIs, cloud, integraciones.
+    tags: [redegal, lineas, boostic, binnacle, marketing, tech]

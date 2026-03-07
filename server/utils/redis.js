@@ -3,9 +3,9 @@ const { logger } = require('./logger');
 
 const redisHost = process.env.REDIS_HOST || 'redis';
 const redisPassword = process.env.REDIS_PASSWORD || '';
-const encodedRedisPassword = encodeURIComponent(redisPassword);
-const redisUrl = encodedRedisPassword
-  ? `redis://:${encodedRedisPassword}@${redisHost}:6379`
+const encodedPassword = encodeURIComponent(redisPassword);
+const redisUrl = redisPassword
+  ? `redis://:${encodedPassword}@${redisHost}:6379`
   : `redis://${redisHost}:6379`;
 
 const client = createClient({ url: redisUrl });

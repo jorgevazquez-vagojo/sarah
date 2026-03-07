@@ -375,6 +375,74 @@
       <p class="hint">Gemini 2.0 Flash es gratuito con 20 peticiones/dia. Claude y OpenAI requieren API key en .env</p>
     </div>
 
+    <p class="section-title">Sintesis de Voz (TTS) <span class="optional">Para llamadas AI</span></p>
+    <div class="field">
+      <label>Proveedor de voz</label>
+      <select id="ttsProvider" onchange="onTtsProviderChange()">
+        <option value="edge">Microsoft Edge TTS (sin coste, sin GPU)</option>
+        <option value="qwen3-cloud">Qwen3-TTS Cloud — DashScope (Alibaba)</option>
+        <option value="qwen3-local">Qwen3-TTS Local — self-hosted Docker (requiere GPU)</option>
+      </select>
+      <p class="hint">Edge TTS usa voces neurales de Microsoft (Elvira Neural en español). Qwen3-TTS ofrece voz clonada y diseño de voz por texto.</p>
+    </div>
+    <div id="ttsEdgeFields">
+      <div class="field">
+        <label>Voz Edge TTS</label>
+        <select id="ttsEdgeVoice">
+          <option value="es-ES-ElviraNeural">es-ES-ElviraNeural (España, femenina)</option>
+          <option value="es-ES-AlvaroNeural">es-ES-AlvaroNeural (España, masculina)</option>
+          <option value="es-MX-DaliaNeural">es-MX-DaliaNeural (Mexico, femenina)</option>
+          <option value="es-MX-JorgeNeural">es-MX-JorgeNeural (Mexico, masculina)</option>
+          <option value="es-AR-ElenaNeural">es-AR-ElenaNeural (Argentina, femenina)</option>
+          <option value="pt-PT-RaquelNeural">pt-PT-RaquelNeural (Portugal, femenina)</option>
+          <option value="pt-BR-FranciscaNeural">pt-BR-FranciscaNeural (Brasil, femenina)</option>
+          <option value="gl-ES-SabelaNeural">gl-ES-SabelaNeural (Gallego, femenina)</option>
+        </select>
+      </div>
+    </div>
+    <div id="ttsQwenCloudFields" style="display:none">
+      <div class="field">
+        <label>DashScope API Key <span class="required">*</span></label>
+        <input type="password" id="dashscopeApiKey" placeholder="sk-..." />
+        <p class="hint">Obtén tu API key en <strong>dashscope.aliyuncs.com</strong> → API Keys. El modelo qwen3-tts-flash tiene créditos gratuitos de prueba.</p>
+      </div>
+      <div class="field">
+        <label>Descripción de voz</label>
+        <input type="text" id="qwenVoicePrompt" placeholder="Una voz femenina profesional en español, cálida y clara" />
+        <p class="hint">Describe la voz en lenguaje natural. Qwen3-TTS la sintetizará con esas características.</p>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <button class="btn-test" onclick="testQwenCloud()">Probar API DashScope</button>
+        <div id="qwenCloudTestResult" class="test-result"></div>
+      </div>
+    </div>
+    <div id="ttsQwenLocalFields" style="display:none">
+      <div style="padding:16px;border-radius:12px;background:rgba(251,191,36,0.08);border:1px solid rgba(251,191,36,0.3);margin-bottom:12px">
+        <p style="font-size:11px;color:#92400e;font-weight:600">Requisitos para Qwen3-TTS local</p>
+        <p style="font-size:11px;color:#78350f;line-height:1.6;margin-top:4px">
+          • Docker con soporte NVIDIA GPU (cuda)<br>
+          • ~4 GB VRAM (modelo 0.6B) o ~8 GB (1.7B)<br>
+          • Primera vez: descarga ~1 GB del modelo desde HuggingFace<br>
+          • Sin GPU: funciona en CPU pero con latencia alta (~10s/frase)
+        </p>
+      </div>
+      <div class="field">
+        <label>Modelo</label>
+        <select id="qwenLocalModel">
+          <option value="Qwen/Qwen3-TTS-0.6B">Qwen3-TTS-0.6B (ligero, ~4GB VRAM)</option>
+          <option value="Qwen/Qwen3-TTS-1.7B">Qwen3-TTS-1.7B (mayor calidad, ~8GB VRAM)</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Descripción de voz</label>
+        <input type="text" id="qwenLocalVoicePrompt" placeholder="Una voz femenina profesional en español, cálida y clara" />
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:4px">
+        <button class="btn-test" onclick="testQwenLocal()">Probar servicio local</button>
+        <div id="qwenLocalTestResult" class="test-result"></div>
+      </div>
+    </div>
+
     <p class="section-title">Horario de Atencion</p>
     <div class="field">
       <label>Zona horaria</label>
@@ -570,6 +638,13 @@ async function saveSetup() {
       callerIdName: val('c2cCallerIdName'),
     },
     ai: { provider: val('aiProvider') },
+    tts: {
+      provider: val('ttsProvider'),
+      edgeVoice: val('ttsEdgeVoice'),
+      dashscopeApiKey: val('dashscopeApiKey'),
+      voicePrompt: val('qwenVoicePrompt') || val('qwenLocalVoicePrompt'),
+      qwenLocalModel: val('qwenLocalModel'),
+    },
     hours: {
       timezone: val('hoursTimezone'),
       start: val('hoursStart'),
@@ -665,6 +740,66 @@ async function testSip() {
     btn.textContent = 'Error';
   }
   setTimeout(() => { btn.className = 'btn-test'; btn.textContent = 'Probar registro SIP'; }, 4000);
+}
+
+// ─── TTS provider toggle ───
+function onTtsProviderChange() {
+  const p = val('ttsProvider');
+  document.getElementById('ttsEdgeFields').style.display = p === 'edge' ? '' : 'none';
+  document.getElementById('ttsQwenCloudFields').style.display = p === 'qwen3-cloud' ? '' : 'none';
+  document.getElementById('ttsQwenLocalFields').style.display = p === 'qwen3-local' ? '' : 'none';
+}
+
+async function testQwenCloud() {
+  const btn = document.querySelector('[onclick="testQwenCloud()"]');
+  const result = document.getElementById('qwenCloudTestResult');
+  btn.className = 'btn-test testing';
+  btn.textContent = 'Probando...';
+  result.classList.remove('show', 'success', 'error');
+  try {
+    const res = await fetch('/api/settings/test-tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: 'qwen3-cloud', dashscopeApiKey: val('dashscopeApiKey') }),
+    });
+    const data = await res.json();
+    result.textContent = data.message;
+    result.className = 'test-result show ' + (data.success ? 'success' : 'error');
+    btn.className = 'btn-test ' + (data.success ? 'success' : 'error');
+    btn.textContent = data.success ? 'API OK' : 'Fallo';
+  } catch (e) {
+    result.textContent = e.message;
+    result.className = 'test-result show error';
+    btn.className = 'btn-test error';
+    btn.textContent = 'Error';
+  }
+  setTimeout(() => { btn.className = 'btn-test'; btn.textContent = 'Probar API DashScope'; }, 5000);
+}
+
+async function testQwenLocal() {
+  const btn = document.querySelector('[onclick="testQwenLocal()"]');
+  const result = document.getElementById('qwenLocalTestResult');
+  btn.className = 'btn-test testing';
+  btn.textContent = 'Probando...';
+  result.classList.remove('show', 'success', 'error');
+  try {
+    const res = await fetch('/api/settings/test-tts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: 'qwen3-local' }),
+    });
+    const data = await res.json();
+    result.textContent = data.message;
+    result.className = 'test-result show ' + (data.success ? 'success' : 'error');
+    btn.className = 'btn-test ' + (data.success ? 'success' : 'error');
+    btn.textContent = data.success ? 'Servicio OK' : 'Fallo';
+  } catch (e) {
+    result.textContent = e.message;
+    result.className = 'test-result show error';
+    btn.className = 'btn-test error';
+    btn.textContent = 'Error';
+  }
+  setTimeout(() => { btn.className = 'btn-test'; btn.textContent = 'Probar servicio local'; }, 5000);
 }
 
 // Live preview for branding step

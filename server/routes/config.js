@@ -41,6 +41,27 @@ router.get('/languages', async (req, res) => {
   res.json({ languages: getSupportedLanguages() });
 });
 
+// ─── Public: language strings for a specific lang ───
+router.get('/languages/:lang', async (req, res) => {
+  const fs = require('fs');
+  const path = require('path');
+  const yaml = require('js-yaml');
+  const lang = req.params.lang.replace(/[^a-z0-9\-]/gi, '');
+  const filePath = path.join(__dirname, '..', 'config', 'languages', `${lang}.yaml`);
+  try {
+    const content = yaml.load(fs.readFileSync(filePath, 'utf8'));
+    res.json(content);
+  } catch {
+    res.status(404).json({ error: 'Language not found' });
+  }
+});
+
+// ─── Public: Copilot widget config (internal use, role-aware) ───
+router.get('/copilot', (req, res) => {
+  const role = req.query.role || 'admin';
+  res.json(getCopilotTheme(role));
+});
+
 // ─── Admin: get full theme (tenant-isolated) ───
 router.get('/theme', requireAgent, async (req, res) => {
   if (req.tenantId) {
@@ -222,5 +243,65 @@ function getDefaultTheme() {
   };
 }
 
+function getCopilotTheme(role = 'admin') {
+  const validRoles = ['admin', 'boostic', 'binnacle', 'tech', 'business'];
+  const safeRole = validRoles.includes(role) ? role : 'admin';
+  return {
+    language: `es-copilot-${safeRole}`,
+    branding: {
+      companyName: 'Sarah Copilot',
+      logoUrl: '',
+      faviconUrl: '',
+      poweredByText: '',
+      showPoweredBy: false,
+    },
+    colors: {
+      primary: '#6366f1', primaryDark: '#4f46e5', primaryLight: '#eef2ff',
+      secondary: '#1e1b4b', accent: '#818cf8',
+      background: '#FFFFFF', surface: '#F5F5FF',
+      text: '#1e1b4b', textSecondary: '#4b5563', textOnPrimary: '#FFFFFF',
+      border: '#e0e7ff', success: '#10b981', warning: '#f59e0b', error: '#ef4444',
+      gradientFrom: '#4f46e5', gradientTo: '#7c3aed', headerGradient: true,
+    },
+    typography: {
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+      fontSize: 14, headerFontSize: 15, messagesFontSize: 14,
+    },
+    layout: {
+      position: 'bottom-right', offsetX: 20, offsetY: 20,
+      width: 400, maxHeight: 650, borderRadius: 14,
+      buttonSize: 54, buttonBorderRadius: 27, headerHeight: 60,
+      zIndex: 2147483647, mobileFullscreen: true,
+    },
+    features: {
+      enableVoip: false, enableFileUpload: true, enableEmoji: false,
+      enableCsat: false, enableLeadForm: false, enableQuickReplies: true,
+      enableRichMessages: true, enableSoundNotifications: false,
+      enableReadReceipts: true, enableTypingIndicator: true,
+      enableLanguageSelector: false, enableBusinessLines: false,
+      enableDarkMode: false, enableAttachments: true,
+      maxFileSize: 10485760,
+      allowedFileTypes: ['image/*', 'application/pdf', '.doc', '.docx', '.xls', '.xlsx'],
+    },
+    i18n: {
+      defaultLanguage: 'es-copilot',
+      availableLanguages: ['es-copilot'],
+      autoDetect: false,
+    },
+    businessLines: [],
+    businessHours: {
+      timezone: 'Europe/Madrid',
+      schedule: [{ days: [1, 2, 3, 4, 5], start: '07:00', end: '22:00' }],
+      holidays: [],
+    },
+    messages: {
+      welcomeDelay: 500, typingDelay: 400,
+      autoGreet: true, autoGreetDelay: 1500, inactivityTimeout: 3600,
+    },
+    sounds: { newMessage: 'notification', agentJoined: 'chime', callRinging: 'ring' },
+  };
+}
+
 module.exports = router;
 module.exports.getDefaultTheme = getDefaultTheme;
+module.exports.getCopilotTheme = getCopilotTheme;

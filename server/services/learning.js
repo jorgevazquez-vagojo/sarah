@@ -10,6 +10,7 @@
 const { logger } = require('../utils/logger');
 const { db } = require('../utils/db');
 const { generateEmbedding } = require('./embeddings');
+const { learnFromInteraction } = require('./rag-learn');
 
 const CSAT_AUTO_LEARN_THRESHOLD = 4; // CSAT 4 or 5 → auto-learn
 
@@ -47,7 +48,7 @@ async function processCSATForLearning(conversationId, rating) {
         [row.id, rating]
       );
 
-      // Create learned response
+      // Create learned response (local pgvector)
       await learnResponse({
         feedbackId: row.id,
         visitorPattern: row.visitor_message,
@@ -55,6 +56,16 @@ async function processCSATForLearning(conversationId, rating) {
         businessLine: row.business_line,
         language: row.language,
         confidence: rating >= 5 ? 0.9 : 0.7,
+      });
+
+      // Deposit in central RAG — only validated responses reach here (CSAT >= 4)
+      learnFromInteraction({
+        question: row.visitor_message,
+        answer: row.ai_response,
+        businessLine: row.business_line || '*',
+        language: row.language || 'es',
+        audience: 'lead',
+        minLength: 80,
       });
     }
 
@@ -80,13 +91,24 @@ async function submitFeedback({ feedbackId, feedback, correctedResponse, notes, 
         [feedbackId]
       );
       if (rows[0]) {
+        const idealResponse = correctedResponse || rows[0].ai_response;
         await learnResponse({
           feedbackId,
           visitorPattern: rows[0].visitor_message,
-          idealResponse: correctedResponse || rows[0].ai_response,
+          idealResponse,
           businessLine: rows[0].business_line,
           language: rows[0].language,
           confidence: correctedResponse ? 0.95 : 0.85,
+        });
+
+        // Agent-validated response → deposit in central RAG
+        learnFromInteraction({
+          question: rows[0].visitor_message,
+          answer: idealResponse,
+          businessLine: rows[0].business_line || '*',
+          language: rows[0].language || 'es',
+          audience: 'lead',
+          minLength: 80,
         });
       }
     }

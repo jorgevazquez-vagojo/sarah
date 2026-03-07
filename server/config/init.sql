@@ -165,8 +165,8 @@ CREATE TABLE knowledge_entries (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- Embedding column for RAG (768-dim = Gemini text-embedding-004)
-ALTER TABLE knowledge_entries ADD COLUMN IF NOT EXISTS embedding vector(768);
+-- Embedding column for RAG (384-dim = Xenova/multilingual-e5-small, consistent with Optimus)
+ALTER TABLE knowledge_entries ADD COLUMN IF NOT EXISTS embedding vector(384);
 ALTER TABLE knowledge_entries ADD COLUMN IF NOT EXISTS source VARCHAR(20) DEFAULT 'yaml';
 
 CREATE INDEX idx_knowledge_line ON knowledge_entries(business_line);
@@ -349,7 +349,7 @@ CREATE TABLE learned_responses (
     ideal_response TEXT NOT NULL,
     business_line VARCHAR(32),
     language VARCHAR(5) DEFAULT 'es',
-    embedding vector(768),
+    embedding vector(384),
     confidence REAL DEFAULT 0.5,
     use_count INTEGER DEFAULT 0,
     is_active BOOLEAN DEFAULT true,
@@ -398,6 +398,25 @@ CREATE TABLE callbacks (
 
 CREATE INDEX idx_callbacks_date_status ON callbacks(scheduled_date, status);
 CREATE INDEX idx_callbacks_business_line ON callbacks(business_line);
+
+-- ─── Hot Lead Flags (received from Bran Mecano via /api/hot-lead) ───
+CREATE TABLE hot_lead_flags (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    domain VARCHAR(255) NOT NULL,
+    company_name VARCHAR(255),
+    business_line VARCHAR(32) NOT NULL,
+    total_score REAL NOT NULL DEFAULT 0,
+    contact_email VARCHAR(255),
+    contact_name VARCHAR(100),
+    language VARCHAR(5) DEFAULT 'es',
+    acknowledged_at TIMESTAMPTZ,
+    agent_id UUID REFERENCES agents(id),
+    received_at TIMESTAMPTZ DEFAULT NOW(),
+    UNIQUE (domain, business_line)
+);
+
+CREATE INDEX idx_hot_lead_received ON hot_lead_flags(received_at DESC);
+CREATE INDEX idx_hot_lead_acknowledged ON hot_lead_flags(acknowledged_at) WHERE acknowledged_at IS NULL;
 
 -- ═══════════════════════════════════════════════════════════════
 -- Default data

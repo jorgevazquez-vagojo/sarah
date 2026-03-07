@@ -218,4 +218,58 @@ router.post('/test-sip', requireAgent, requireRole('admin'), async (req, res) =>
   }
 });
 
+// ─── Test TTS provider (admin only) ───
+router.post('/test-tts', requireAgent, requireRole('admin'), async (req, res) => {
+  const { provider, dashscopeApiKey } = req.body;
+
+  if (provider === 'qwen3-cloud') {
+    const key = dashscopeApiKey || process.env.DASHSCOPE_API_KEY;
+    if (!key) return res.json({ success: false, message: 'DASHSCOPE_API_KEY no configurada' });
+    try {
+      const https = require('https');
+      const body = JSON.stringify({ model: 'qwen-tts-latest', input: 'Hola, prueba de voz.', voice: 'Scarlett', response_format: 'mp3' });
+      const audio = await new Promise((resolve, reject) => {
+        const r = https.request({
+          hostname: 'dashscope.aliyuncs.com',
+          path: '/compatible-mode/v1/audio/speech',
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }
+        }, (resp) => {
+          if (resp.statusCode !== 200) {
+            const e = []; resp.on('data', c => e.push(c)); resp.on('end', () => reject(new Error(`HTTP ${resp.statusCode}: ${Buffer.concat(e).toString().slice(0, 100)}`)));
+            return;
+          }
+          const chunks = []; resp.on('data', c => chunks.push(c)); resp.on('end', () => resolve(Buffer.concat(chunks)));
+        });
+        r.setTimeout(15000, () => { r.destroy(); reject(new Error('timeout')); });
+        r.on('error', reject); r.write(body); r.end();
+      });
+      res.json({ success: true, message: `DashScope OK — ${audio.length} bytes de audio generados` });
+    } catch (e) {
+      res.json({ success: false, message: e.message });
+    }
+
+  } else if (provider === 'qwen3-local') {
+    try {
+      const http = require('http');
+      const url = new URL((process.env.QWEN3_TTS_URL || 'http://qwen3-tts:8020') + '/health');
+      const result = await new Promise((resolve, reject) => {
+        http.get({ hostname: url.hostname, port: url.port || 8020, path: '/health' }, (resp) => {
+          const chunks = []; resp.on('data', c => chunks.push(c));
+          resp.on('end', () => {
+            try { resolve(JSON.parse(Buffer.concat(chunks).toString())); } catch { resolve({ status: 'ok' }); }
+          });
+        }).on('error', reject).setTimeout(5000, () => reject(new Error('timeout')));
+      });
+      const loaded = result.loaded !== false;
+      res.json({ success: loaded, message: loaded ? `Servicio local OK — modelo: ${result.model || 'cargado'}` : 'Servicio accesible pero modelo no cargado aún' });
+    } catch (e) {
+      res.json({ success: false, message: `No se puede conectar al servicio local (${e.message}). Asegúrate de que el contenedor qwen3-tts está corriendo.` });
+    }
+
+  } else {
+    res.json({ success: false, message: 'Proveedor no reconocido' });
+  }
+});
+
 module.exports = router;

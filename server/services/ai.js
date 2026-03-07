@@ -2,9 +2,9 @@ const { logger } = require('../utils/logger');
 const { redis } = require('../utils/redis');
 
 const PROVIDERS = {
-  anthropic: { model: 'claude-sonnet-4-20250514', label: 'Claude Sonnet' },
-  gemini:    { model: 'gemini-2.5-flash',          label: 'Gemini 2.5 Flash' },
-  openai:    { model: 'gpt-4o-mini',              label: 'GPT-4o-mini' },
+  anthropic: { model: 'claude-sonnet-4-6',  label: 'Claude Sonnet 4.6' },
+  gemini:    { model: 'gemini-2.5-flash',   label: 'Gemini 2.5 Flash' },
+  openai:    { model: 'gpt-4o-mini',        label: 'GPT-4o-mini' },
 };
 
 const DEFAULT_PROVIDER = process.env.AI_PROVIDER || 'gemini';
